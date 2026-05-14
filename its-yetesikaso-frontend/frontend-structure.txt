@@ -1,0 +1,71 @@
+src
+├── app
+│   ├── dashboard
+│   │   └── page.tsx
+│   ├── features
+│   ├── globals.css
+│   ├── hooks
+│   │   └── useListings.ts
+│   ├── jobs
+│   │   └── page.tsx
+│   ├── layout.tsx
+│   ├── lib
+│   ├── login
+│   │   └── page.tsx
+│   ├── marketplace
+│   │   ├── [slug]
+│   │   │   └── page.tsx
+│   │   └── page.tsx
+│   ├── page.tsx
+│   ├── profile
+│   │   └── page.tsx
+│   ├── register
+│   │   └── page.tsx
+│   ├── services
+│   ├── styles
+│   └── utils
+├── components
+│   ├── layout
+│   │   ├── container.tsx
+│   │   ├── footer.tsx
+│   │   ├── mobile-nav.tsx
+│   │   └── navbar.tsx
+│   ├── listings
+│   │   ├── ListingCard.tsx
+│   │   ├── ListingGrid.tsx
+│   │   └── ListingSkeleton.tsx
+│   ├── marketplace
+│   │   ├── categories.tsx
+│   │   ├── cta-banner.tsx
+│   │   ├── featured-listings.tsx
+│   │   ├── hero.tsx
+│   │   ├── listing-card.tsx
+│   │   └── stats.tsx
+│   ├── MobileFilterModal.tsx
+│   ├── MobileNavDrawer.tsx
+│   ├── MobileStickySearch.tsx
+│   ├── providers
+│   │   └── theme-provider.tsx
+│   └── shared
+│       ├── button.tsx
+│       └── theme-toggle.tsx
+├── data
+│   └── listings.ts
+├── lib
+│   ├── api
+│   │   ├── client.ts
+│   │   ├── listings.ts
+│   │   ├── public.ts
+│   │   └── seller.ts
+│   ├── auth
+│   │   ├── api.ts
+│   │   ├── tokens.ts
+│   │   ├── useAuth.ts
+│   │   └── useSessions.ts
+│   └── marketplace
+│       ├── filters.ts
+│       └── useListings.ts
+└── types
+    └── listing.ts
+
+27 directories, 42 files
