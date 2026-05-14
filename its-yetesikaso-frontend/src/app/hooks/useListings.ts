@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { listings as mockListings } from "@/data/listings"
-import { Listing } from '@/lib/marketplace/types'
+import { Listing } from "@/types/listing"
 
 export function useListings() {
   const [listings, setListings] = useState<Listing[]>([])
