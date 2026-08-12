@@ -1,15 +1,10 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { getAccessToken, clearTokens } from "./tokens"
 
 export function useSession() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-
-  useEffect(() => {
-    const token = getAccessToken()
-    setIsLoggedIn(!!token)
-  }, [])
+  const [isLoggedIn, setIsLoggedIn] = useState(() => !!getAccessToken())
 
   function logout() {
     clearTokens()

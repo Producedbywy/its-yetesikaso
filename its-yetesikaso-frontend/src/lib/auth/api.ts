@@ -1,4 +1,12 @@
-const API_URL = "http://127.0.0.1:8000/api"
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://127.0.0.1:8000/api"
+
+type ApiResponse = {
+  detail?: string
+  error?: string
+  [key: string]: unknown
+}
 
 export async function loginUser(
   username: string,
@@ -15,16 +23,19 @@ export async function loginUser(
     }),
   })
 
-  let data = {}
+  let data: ApiResponse = {}
 
   try {
     data = await res.json()
-  } catch {}
+  } catch {
+    // Keep the default empty response if the server returns no JSON.
+  }
 
   if (!res.ok) {
     throw new Error(
-      (data as any)?.detail ||
-      "Invalid login credentials"
+      data.detail ||
+        data.error ||
+        "Invalid login credentials"
     )
   }
 
@@ -34,30 +45,38 @@ export async function loginUser(
 export async function registerUser(
   username: string,
   email: string,
-  password: string
+  password: string,
+  role: "buyer" | "seller"
 ) {
-  const res = await fetch(`${API_URL}/auth/register/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      username,
-      email,
-      password,
-    }),
-  })
+  const res = await fetch(
+    `${API_URL}/auth/register/`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username,
+        email,
+        password,
+        role,
+      }),
+    }
+  )
 
-  let data = {}
+  let data: ApiResponse = {}
 
   try {
     data = await res.json()
-  } catch {}
+  } catch {
+    // Keep the default empty response if the server returns no JSON.
+  }
 
   if (!res.ok) {
     throw new Error(
-      (data as any)?.error ||
-      "Registration failed"
+      data.error ||
+        data.detail ||
+        "Registration failed"
     )
   }
 

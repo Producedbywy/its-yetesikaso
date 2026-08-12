@@ -27,17 +27,38 @@ export default function MarketplacePage() {
 
   function updateFilters(newFilters: Partial<typeof filters>) {
     setFilters((prev) => ({ ...prev, ...newFilters }))
+    setPage(1)
+  }
+
+  function resetFilters() {
+    setFilters({
+      search: "",
+      category: "all",
+      location: "all",
+      sort: "newest",
+    })
+    setPage(1)
   }
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-[var(--background)]">
       <Navbar />
 
-      <MobileStickySearch />
-      <MobileFilterModal />
+      <MobileStickySearch
+        value={filters.search}
+        onChange={(search) => {
+          setPage(1)
+          updateFilters({ search })
+        }}
+      />
+
+      <MobileFilterModal
+        filters={filters}
+        onApply={(newFilters) => updateFilters(newFilters)}
+      />
 
       {/* HERO */}
-      <section className="border-b border-[var(--border)] bg-white py-10">
+      <section className="border-b border-[var(--border)] bg-[var(--card)] py-10">
         <Container>
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
@@ -58,7 +79,7 @@ export default function MarketplacePage() {
                 onChange={(e) =>
                   updateFilters({ search: e.target.value })
                 }
-                className="hidden md:block rounded-2xl border border-[var(--border)] bg-white px-4 py-3 outline-none"
+                className="rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 outline-none"
               />
 
               <select
@@ -66,7 +87,7 @@ export default function MarketplacePage() {
                 onChange={(e) =>
                   updateFilters({ category: e.target.value })
                 }
-                className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 outline-none"
+                className="rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 outline-none"
               >
                 <option value="all">All Categories</option>
                 <option value="electronics">Electronics</option>
@@ -81,7 +102,7 @@ export default function MarketplacePage() {
                 onChange={(e) =>
                   updateFilters({ location: e.target.value })
                 }
-                className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 outline-none"
+                className="rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 outline-none"
               >
                 <option value="all">All Locations</option>
                 <option value="accra">Accra</option>
@@ -97,46 +118,91 @@ export default function MarketplacePage() {
       <section className="py-12">
         <Container>
           <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
+
             {/* SIDEBAR */}
-            <aside className="hidden rounded-3xl border border-[var(--border)] bg-white p-6 lg:block">
-              <h3 className="mb-6 text-lg font-semibold">Filters</h3>
+            <aside className="hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 lg:block">
+              <h3 className="mb-6 text-lg font-semibold">
+                Filters
+              </h3>
 
               <div className="space-y-6">
                 <div>
-                  <p className="mb-3 font-medium">Category</p>
+                  <p className="mb-3 font-medium">
+                    Category
+                  </p>
 
                   <div className="space-y-2 text-sm text-[var(--muted)]">
-                    <button onClick={() => updateFilters({ category: "electronics" })}>
+                    <button
+                      onClick={() =>
+                        updateFilters({ category: "all" })
+                      }
+                      className="block"
+                    >
+                      All Categories
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        updateFilters({ category: "electronics" })
+                      }
+                      className="block"
+                    >
                       Electronics
                     </button>
-                    <button onClick={() => updateFilters({ category: "vehicles" })}>
+
+                    <button
+                      onClick={() =>
+                        updateFilters({ category: "vehicles" })
+                      }
+                      className="block"
+                    >
                       Vehicles
                     </button>
-                    <button onClick={() => updateFilters({ category: "property" })}>
+
+                    <button
+                      onClick={() =>
+                        updateFilters({ category: "property" })
+                      }
+                      className="block"
+                    >
                       Property
                     </button>
-                    <button onClick={() => updateFilters({ category: "fashion" })}>
+
+                    <button
+                      onClick={() =>
+                        updateFilters({ category: "fashion" })
+                      }
+                      className="block"
+                    >
                       Fashion
                     </button>
-                    <button onClick={() => updateFilters({ category: "services" })}>
+
+                    <button
+                      onClick={() =>
+                        updateFilters({ category: "services" })
+                      }
+                      className="block"
+                    >
                       Services
                     </button>
                   </div>
                 </div>
 
                 <div>
-                  <p className="mb-3 font-medium">Price Range</p>
+                  <p className="mb-3 font-medium">
+                    Price Range
+                  </p>
 
                   <input
                     type="number"
                     placeholder="Min"
-                    className="w-full rounded-xl border border-[var(--border)] px-3 py-2 mb-2"
+                    className="mb-2 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2"
                   />
 
                   <input
                     type="number"
                     placeholder="Max"
-                    className="w-full rounded-xl border border-[var(--border)] px-3 py-2"
+                    className="w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2"
                   />
                 </div>
               </div>
@@ -154,7 +220,7 @@ export default function MarketplacePage() {
                   onChange={(e) =>
                     updateFilters({ sort: e.target.value })
                   }
-                  className="rounded-xl border border-[var(--border)] bg-white px-4 py-2"
+                  className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2"
                 >
                   <option value="newest">Newest First</option>
                   <option value="low">Lowest Price</option>
@@ -163,36 +229,49 @@ export default function MarketplacePage() {
               </div>
 
               {/* LOADING */}
-              {loading && (
+              {loading && listings.length === 0 && (
                 <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                   {Array.from({ length: 6 }).map((_, i) => (
                     <div
                       key={i}
-                      className="h-80 animate-pulse rounded-3xl bg-gray-200"
+                      className="h-80 animate-pulse rounded-3xl bg-[var(--border)]"
                     />
                   ))}
                 </div>
               )}
 
-              {/* GRID */}
-              {!loading && (
-                <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                  {listings.map((listing, i) => (
-                    <div
-                      key={listing.id}
-                      className="animate-fadeIn"
-                      style={{ animationDelay: `${i * 40}ms` }}
-                    >
-                      <ListingCard listing={listing} />
+              {listings.length > 0 && (
+                <div className="relative">
+                  {loading && (
+                    <div className="absolute right-2 top-2 z-10 rounded-full bg-[var(--card)] px-3 py-1 text-xs text-[var(--muted)] shadow-sm">
+                      Updating…
                     </div>
-                  ))}
+                  )}
+
+                  <div
+                    className={`grid gap-6 md:grid-cols-2 xl:grid-cols-3 transition-opacity ${
+                      loading ? "opacity-60" : "opacity-100"
+                    }`}
+                  >
+                    {listings.map((listing, i) => (
+                      <div
+                        key={listing.id}
+                        className="animate-fadeIn"
+                        style={{
+                          animationDelay: `${i * 40}ms`,
+                        }}
+                      >
+                        <ListingCard listing={listing} />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 
               {/* EMPTY STATE */}
               {!loading && listings.length === 0 && (
                 <div className="py-24 text-center">
-                  <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-gray-100" />
+                  <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-[var(--border)]" />
 
                   <p className="text-lg font-medium text-[var(--foreground)]">
                     No listings found
@@ -203,14 +282,7 @@ export default function MarketplacePage() {
                   </p>
 
                   <button
-                    onClick={() =>
-                      setFilters({
-                        search: "",
-                        category: "all",
-                        location: "all",
-                        sort: "newest",
-                      })
-                    }
+                    onClick={resetFilters}
                     className="mt-6 rounded-xl bg-black px-5 py-3 text-white"
                   >
                     Reset Filters
@@ -222,9 +294,11 @@ export default function MarketplacePage() {
               {!loading && total > 12 && (
                 <div className="mt-10 flex items-center justify-center gap-4">
                   <button
-                    className="rounded-xl border border-[var(--border)] bg-white px-4 py-2 disabled:opacity-40"
+                    className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2 disabled:opacity-40"
                     disabled={page === 1}
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    onClick={() =>
+                      setPage((p) => Math.max(1, p - 1))
+                    }
                   >
                     Previous
                   </button>
@@ -234,7 +308,8 @@ export default function MarketplacePage() {
                   </span>
 
                   <button
-                    className="rounded-xl border border-[var(--border)] bg-white px-4 py-2"
+                    className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2"
+                    disabled={listings.length < 12}
                     onClick={() => setPage((p) => p + 1)}
                   >
                     Next

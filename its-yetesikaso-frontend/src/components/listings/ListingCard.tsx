@@ -1,72 +1,110 @@
-"use client";
+"use client"
 
-import { Heart, Share2 } from "lucide-react";
-import { useState } from "react";
+import Image from "next/image"
+import Link from "next/link"
+import { Heart, Share2 } from "lucide-react"
+import { useState } from "react"
+import type { Listing } from "@/types/listing"
 
-type Listing = {
-  id: string;
-  title: string;
-  price: number;
-  category: string;
-  image: string;
-  seller: string;
-};
+interface ListingCardProps {
+listing: Listing
+}
 
-export default function ListingCard({ listing }: { listing: Listing }) {
-  const [saved, setSaved] = useState(false);
+const API_BASE_URL = "http://127.0.0.1:8000"
 
-  return (
-    <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
-      {/* Image */}
-      <div className="relative">
-        <img
-          src={listing.image}
-          alt={listing.title}
-          className="w-full h-40 object-cover"
+function getImageUrl(image: string | null) {
+if (!image) return null
+
+if (image.startsWith("http://") || image.startsWith("https://")) {
+return image
+}
+
+return `${API_BASE_URL}${image}`
+}
+
+export default function ListingCard({ listing }: ListingCardProps) {
+const [saved, setSaved] = useState(false)
+
+const imageSrc = getImageUrl(listing.image)
+
+return ( <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-white shadow-sm dark:bg-[var(--card)]">
+{/* IMAGE */}
+<Link href={`/marketplace/${listing.slug}`}> <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-100 dark:bg-gray-900">
+{imageSrc ? ( <Image
+           src={imageSrc}
+           alt={listing.title}
+           fill
+           sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+           className="object-cover object-center transition duration-500 hover:scale-105"
+           unoptimized
+         />
+) : ( <div className="flex h-full items-center justify-center text-sm text-[var(--muted)]">
+No image </div>
+)}
+
+```
+      {/* SAVE BUTTON */}
+      <button
+        type="button"
+        onClick={(event) => {
+          event.preventDefault()
+          event.stopPropagation()
+          setSaved((current) => !current)
+        }}
+        aria-label={saved ? "Remove from saved listings" : "Save listing"}
+        className="absolute right-3 top-3 rounded-full bg-white/90 p-2 shadow-sm transition hover:bg-white"
+      >
+        <Heart
+          className={`h-4 w-4 ${
+            saved
+              ? "fill-red-500 text-red-500"
+              : "text-[var(--muted)]"
+          }`}
         />
-
-        {/* Save button */}
-        <button
-          onClick={() => setSaved(!saved)}
-          className="absolute top-2 right-2 bg-white/90 p-2 rounded-full"
-        >
-          <Heart
-            className={`w-4 h-4 ${
-              saved ? "fill-red-500 text-red-500" : "text-[var(--muted)]"
-            }`}
-          />
-        </button>
-      </div>
-
-      {/* Content */}
-      <div className="p-3">
-        <h3 className="font-semibold text-sm line-clamp-1">
-          {listing.title}
-        </h3>
-
-        <p className="text-xs text-[var(--muted)] mt-1">
-          by {listing.seller}
-        </p>
-
-        <div className="flex items-center justify-between mt-3">
-          <span className="font-bold text-sm">
-            ${listing.price}
-          </span>
-
-          <button className="text-xs bg-black text-white px-3 py-1 rounded-lg">
-            View
-          </button>
-        </div>
-
-        {/* Actions */}
-        <div className="flex items-center justify-between mt-3 text-gray-400">
-          <span className="text-xs">{listing.category}</span>
-
-          <button>
-            <Share2 className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
+      </button>
     </div>
-  );
+  </Link>
+
+  {/* CONTENT */}
+  <div className="p-4">
+    <Link href={`/marketplace/${listing.slug}`}>
+      <h3 className="line-clamp-1 text-sm font-semibold">
+        {listing.title}
+      </h3>
+
+      <p className="mt-1 text-xs text-[var(--muted)]">
+        {listing.location}
+      </p>
+
+      <p className="mt-3 text-lg font-bold">
+        GH₵ {listing.price.toLocaleString()}
+      </p>
+    </Link>
+
+    {/* ACTIONS */}
+    <div className="mt-3 flex items-center justify-between border-t border-[var(--border)] pt-3">
+      <span className="text-xs text-[var(--muted)]">
+        {listing.category}
+      </span>
+
+      <button
+        type="button"
+        aria-label="Share listing"
+        className="text-[var(--muted)] transition hover:text-[var(--foreground)]"
+        onClick={() => {
+          if (typeof navigator !== "undefined" && navigator.share) {
+            navigator.share({
+              title: listing.title,
+              url: `${window.location.origin}/marketplace/${listing.slug}`,
+            })
+          }
+        }}
+      >
+        <Share2 className="h-4 w-4" />
+      </button>
+    </div>
+  </div>
+</div>
+
+)
 }

@@ -43,14 +43,14 @@ const categories = [
 
 export default function Categories() {
   return (
-    <section className="py-20">
+    <section className="py-20 text-gray-900 dark:text-white">
       <Container>
         <div className="mb-12">
           <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-lime-600">
             Explore
           </p>
 
-          <h2 className="text-4xl font-bold md:text-5xl">
+          <h2 className="text-4xl font-bold text-[var(--foreground)] md:text-5xl">
             Browse Categories
           </h2>
         </div>
@@ -62,7 +62,7 @@ export default function Categories() {
             return (
               <div
                 key={category.title}
-                className="group cursor-pointer rounded-3xl border border-[var(--border)] bg-white p-8 transition duration-300 hover:-translate-y-1 hover:border-lime-300 hover:shadow-xl"
+                className="group cursor-pointer rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 transition duration-300 hover:-translate-y-1 hover:border-lime-300 hover:shadow-xl"
               >
                 <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-lime-100 text-lime-700 transition group-hover:scale-110">
                   <Icon size={30} />

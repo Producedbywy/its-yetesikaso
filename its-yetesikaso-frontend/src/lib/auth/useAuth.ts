@@ -6,6 +6,12 @@ import { useState } from "react"
 import { loginUser, registerUser } from "./api"
 import { setTokens, clearTokens } from "./tokens"
 
+type LoginResponse = {
+  access?: string
+  refresh?: string
+  [key: string]: unknown
+}
+
 export function useAuth() {
   const router = useRouter()
 
@@ -20,18 +26,29 @@ export function useAuth() {
       setLoading(true)
       setError(null)
 
-      const data: any = await loginUser(
+      const data = await loginUser(
         username,
         password
-      )
+      ) as LoginResponse
+
+      if (!data.access || !data.refresh) {
+        throw new Error(
+          "Login response is missing authentication tokens"
+        )
+      }
 
       setTokens(data.access, data.refresh)
 
       router.push("/dashboard")
 
       return data
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Login failed"
+
+      setError(message)
     } finally {
       setLoading(false)
     }
@@ -40,7 +57,8 @@ export function useAuth() {
   async function register(
     username: string,
     email: string,
-    password: string
+    password: string,
+    role: "buyer" | "seller"
   ) {
     try {
       setLoading(true)
@@ -49,10 +67,16 @@ export function useAuth() {
       return await registerUser(
         username,
         email,
-        password
+        password,
+        role
       )
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Registration failed"
+
+      setError(message)
     } finally {
       setLoading(false)
     }

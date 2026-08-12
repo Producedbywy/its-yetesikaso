@@ -32,10 +32,10 @@ const jobs = [
 
 export default function JobsPage() {
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-[var(--background)]">
       <Navbar />
 
-      <section className="border-b border-[var(--border)] bg-white py-14">
+      <section className="border-b border-[var(--border)] bg-[var(--card)] py-14">
         <Container>
           <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-lime-600">
             Careers
@@ -53,7 +53,7 @@ export default function JobsPage() {
             {jobs.map((job) => (
               <div
                 key={job.id}
-                className="rounded-3xl border border-[var(--border)] bg-white p-8 transition hover:-translate-y-1 hover:shadow-xl"
+                className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 transition hover:-translate-y-1 hover:shadow-xl"
               >
                 <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
                   <div>

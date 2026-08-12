@@ -1,4 +1,6 @@
-import { useEffect, useState } from "react"
+"use client"
+
+import { useEffect, useRef, useState } from "react"
 import type { Listing } from "@/types/listing"
 
 export type Filters = {
@@ -7,6 +9,14 @@ export type Filters = {
   location: string
   sort: string
 }
+
+type ListingsResponse = {
+  results?: Listing[]
+  total?: number
+}
+
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api"
 
 export function useListings(
   filters: Filters,
@@ -17,7 +27,12 @@ export function useListings(
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  const requestId = useRef(0)
+
   useEffect(() => {
+    const controller = new AbortController()
+    const currentRequestId = ++requestId.current
+
     async function fetchListings() {
       try {
         setLoading(true)
@@ -25,53 +40,102 @@ export function useListings(
 
         const params = new URLSearchParams()
 
-        // SEARCH
-        if (filters.search) {
-          params.set("search", filters.search)
+        if (filters.search.trim()) {
+          params.set("search", filters.search.trim())
         }
 
-        // CATEGORY
-        if (filters.category && filters.category !== "all") {
+        if (
+          filters.category &&
+          filters.category !== "all"
+        ) {
           params.set("category", filters.category)
         }
 
-        // LOCATION
-        if (filters.location && filters.location !== "all") {
+        if (
+          filters.location &&
+          filters.location !== "all"
+        ) {
           params.set("location", filters.location)
         }
 
-        // SORT (MATCH BACKEND)
         if (filters.sort) {
           params.set("sort", filters.sort)
         }
 
-        // PAGINATION
         params.set("page", String(page))
         params.set("page_size", "12")
 
         const res = await fetch(
-          `http://127.0.0.1:8000/api/listings/?${params.toString()}`
+          `${API_URL}/listings/?${params.toString()}`,
+          {
+            signal: controller.signal,
+            cache: "no-store",
+          }
         )
 
         if (!res.ok) {
           throw new Error("Failed to fetch listings")
         }
 
-        const json = await res.json()
+        const json: ListingsResponse = await res.json()
+
+        if (
+          controller.signal.aborted ||
+          currentRequestId !== requestId.current
+        ) {
+          return
+        }
 
         setData(json.results || [])
         setTotal(json.total || 0)
-      } catch (err: any) {
-        setError(err?.message || "Error loading listings")
+      } catch (err: unknown) {
+        if (
+          err instanceof DOMException &&
+          err.name === "AbortError"
+        ) {
+          return
+        }
+
+        if (controller.signal.aborted) {
+          return
+        }
+
+        const message =
+          err instanceof Error
+            ? err.message
+            : "Error loading listings"
+
+        setError(message)
         setData([])
         setTotal(0)
       } finally {
-        setLoading(false)
+        if (
+          !controller.signal.aborted &&
+          currentRequestId === requestId.current
+        ) {
+          setLoading(false)
+        }
       }
     }
 
-    fetchListings()
-  }, [filters, page])
+    const delay = filters.search.trim() ? 300 : 0
+
+    const timeout = window.setTimeout(
+      fetchListings,
+      delay
+    )
+
+    return () => {
+      window.clearTimeout(timeout)
+      controller.abort()
+    }
+  }, [
+    filters.search,
+    filters.category,
+    filters.location,
+    filters.sort,
+    page,
+  ])
 
   return {
     data,

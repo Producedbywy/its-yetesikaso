@@ -2,13 +2,14 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from .models import Listing
-from .serializers import ListingSerializer
+from .models import Listing, SellerProfile
+from .serializers import ListingSerializer, SellerProfileSerializer
 
 
 # =========================
 # PUBLIC LISTINGS
 # =========================
+
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def listings(request):
@@ -27,6 +28,7 @@ def listings(request):
         qs = qs.filter(location__iexact=location)
 
     sort = request.GET.get("sort")
+
     if sort == "low":
         qs = qs.order_by("price")
     elif sort == "high":
@@ -45,7 +47,10 @@ def listings(request):
 
     total = qs.count()
 
-    serializer = ListingSerializer(qs[start:end], many=True)
+    serializer = ListingSerializer(
+        qs[start:end],
+        many=True,
+    )
 
     return Response({
         "results": serializer.data,
@@ -53,13 +58,14 @@ def listings(request):
         "page": page,
         "page_size": page_size,
         "has_next": end < total,
-        "has_prev": page > 1
+        "has_prev": page > 1,
     })
 
 
 # =========================
-# CREATE LISTING (SELLER)
+# CREATE LISTING
 # =========================
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def create_listing(request):
@@ -72,24 +78,65 @@ def create_listing(request):
         price=data["price"],
         category=data["category"],
         location=data["location"],
-        image=request.FILES.get("image")
+        image=request.FILES.get("image"),
     )
 
     return Response({
         "message": "Listing created successfully",
-        "listing": ListingSerializer(listing).data
+        "listing": ListingSerializer(listing).data,
     })
 
 
 # =========================
-# MY LISTINGS (DASHBOARD)
+# MY LISTINGS
 # =========================
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def my_listings(request):
-    qs = Listing.objects.filter(owner=request.user).order_by("-id")
+    qs = Listing.objects.filter(
+        owner=request.user
+    ).order_by("-id")
 
     return Response({
         "total": qs.count(),
-        "results": ListingSerializer(qs, many=True).data
+        "results": ListingSerializer(
+            qs,
+            many=True,
+        ).data,
     })
+
+
+# =========================
+# SELLER PROFILE
+# =========================
+
+@api_view(["GET", "PUT", "PATCH"])
+@permission_classes([IsAuthenticated])
+def seller_profile(request):
+    profile, _ = SellerProfile.objects.get_or_create(
+        user=request.user
+    )
+
+    if request.method == "GET":
+        return Response(
+            SellerProfileSerializer(profile).data
+        )
+
+    serializer = SellerProfileSerializer(
+        profile,
+        data=request.data,
+        partial=request.method == "PATCH",
+    )
+
+    if not serializer.is_valid():
+        return Response(
+            serializer.errors,
+            status=400,
+        )
+
+    serializer.save()
+
+    return Response(
+        SellerProfileSerializer(profile).data
+    )

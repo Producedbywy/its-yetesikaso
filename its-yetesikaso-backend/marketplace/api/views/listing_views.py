@@ -21,6 +21,14 @@ def listings(request):
     if search:
         qs = qs.filter(title__icontains=search)
 
+    slug = request.GET.get("slug")
+    if slug:
+        qs = qs.filter(slug=slug)
+
+    slug = request.GET.get("slug")
+    if slug:
+        qs = qs.filter(slug=slug)
+
     category = request.GET.get("category")
     if category and category != "all":
         qs = qs.filter(category__iexact=category)

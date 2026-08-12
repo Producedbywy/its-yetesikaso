@@ -15,13 +15,22 @@ export default function DashboardPage() {
 
   async function loadListings(isRefresh = false) {
     try {
-      isRefresh ? setRefreshing(true) : setLoading(true)
+      if (isRefresh) {
+        setRefreshing(true)
+      } else {
+        setLoading(true)
+      }
+
       setError(null)
 
       const res = await getMyListings()
       setListings(res.results || [])
-    } catch (err: any) {
-      setError(err.message || "Failed to load listings")
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to load listings"
+      )
     } finally {
       setLoading(false)
       setRefreshing(false)
@@ -29,7 +38,36 @@ export default function DashboardPage() {
   }
 
   useEffect(() => {
-    loadListings()
+    let cancelled = false
+
+    async function loadInitialListings() {
+      try {
+        const res = await getMyListings()
+
+        if (!cancelled) {
+          setListings(res.results || [])
+          setError(null)
+        }
+      } catch (err: unknown) {
+        if (!cancelled) {
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Failed to load listings"
+          )
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      }
+    }
+
+    loadInitialListings()
+
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   return (
@@ -38,23 +76,20 @@ export default function DashboardPage() {
 
       <Container>
         <div className="py-10">
-
           {/* HEADER */}
-          <div className="flex flex-col gap-4 mb-8 md:flex-row md:items-center md:justify-between">
-
+          <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
               <h1 className="text-4xl font-bold">
                 Seller Dashboard
               </h1>
 
-              <p className="text-sm text-[var(--muted)] mt-1">
+              <p className="mt-1 text-sm text-[var(--muted)]">
                 Manage your listings and track performance
               </p>
             </div>
 
             {/* ACTIONS */}
             <div className="flex items-center gap-3">
-
               <button
                 onClick={() => loadListings(true)}
                 disabled={refreshing || loading}
@@ -65,7 +100,7 @@ export default function DashboardPage() {
 
               <Link
                 href="/dashboard/create"
-                className="rounded-xl bg-lime-400 px-4 py-2 text-sm font-medium text-black hover:bg-lime-300 transition"
+                className="rounded-xl bg-lime-400 px-4 py-2 text-sm font-medium text-black transition hover:bg-lime-300"
               >
                 + Create
               </Link>
@@ -82,9 +117,9 @@ export default function DashboardPage() {
           {/* LOADING */}
           {loading && (
             <div className="space-y-3">
-              <div className="h-24 animate-pulse rounded-2xl bg-[var(--card)] border" />
-              <div className="h-24 animate-pulse rounded-2xl bg-[var(--card)] border" />
-              <div className="h-24 animate-pulse rounded-2xl bg-[var(--card)] border" />
+              <div className="h-24 animate-pulse rounded-2xl border bg-[var(--card)]" />
+              <div className="h-24 animate-pulse rounded-2xl border bg-[var(--card)]" />
+              <div className="h-24 animate-pulse rounded-2xl border bg-[var(--card)]" />
             </div>
           )}
 
@@ -112,9 +147,10 @@ export default function DashboardPage() {
           {!loading && listings.length > 0 && (
             <div className="grid gap-6 md:grid-cols-2">
               {listings.map((item) => (
-                <div
+                <Link
                   key={item.id}
-                  className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 hover:shadow-md transition"
+                  href={`/marketplace/${item.slug}`}
+                  className="block rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 transition hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <h2 className="text-xl font-semibold">
                     {item.title}
@@ -125,13 +161,16 @@ export default function DashboardPage() {
                   </p>
 
                   <p className="mt-2 font-bold text-lime-500">
-                    ${item.price}
+                    GH₵ {item.price.toLocaleString()}
                   </p>
-                </div>
+
+                  <p className="mt-3 text-sm font-medium text-[var(--muted)]">
+                    View listing →
+                  </p>
+                </Link>
               ))}
             </div>
           )}
-
         </div>
       </Container>
     </main>

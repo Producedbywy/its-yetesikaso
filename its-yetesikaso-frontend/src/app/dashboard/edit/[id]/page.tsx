@@ -5,6 +5,7 @@ import Navbar from "@/components/layout/navbar"
 import Container from "@/components/layout/container"
 import { useParams, useRouter } from "next/navigation"
 import { apiClient } from "@/lib/api/client"
+import type { Listing } from "@/types/listing"
 
 type ListingForm = {
   title: string
@@ -15,7 +16,8 @@ type ListingForm = {
 }
 
 export default function EditListingPage() {
-  const { id } = useParams()
+  const params = useParams<{ id: string }>()
+  const id = params.id
   const router = useRouter()
 
   const [form, setForm] = useState<ListingForm>({
@@ -31,11 +33,15 @@ export default function EditListingPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    async function load() {
+    let cancelled = false
+
+    async function loadListing() {
       try {
         setError(null)
 
-        const data: any = await apiClient(`/listings/${id}/`)
+        const data = await apiClient<Listing>(`/listings/${id}/`)
+
+        if (cancelled) return
 
         setForm({
           title: data.title ?? "",
@@ -44,24 +50,38 @@ export default function EditListingPage() {
           category: data.category ?? "",
           location: data.location ?? "",
         })
-      } catch (err: any) {
-        setError(err.message || "Failed to load listing")
+      } catch (err: unknown) {
+        if (cancelled) return
+
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Failed to load listing"
+        )
       } finally {
-        setLoading(false)
+        if (!cancelled) {
+          setLoading(false)
+        }
       }
     }
 
-    load()
+    if (id) {
+      loadListing()
+    }
+
+    return () => {
+      cancelled = true
+    }
   }, [id])
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
 
     try {
       setSaving(true)
       setError(null)
 
-      await apiClient(`/listings/${id}/`, {
+      await apiClient<Listing>(`/listings/${id}/`, {
         method: "PUT",
         body: JSON.stringify({
           ...form,
@@ -70,8 +90,13 @@ export default function EditListingPage() {
       })
 
       router.push(`/dashboard/${id}`)
-    } catch (err: any) {
-      setError(err.message || "Failed to save")
+      router.refresh()
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to save listing"
+      )
     } finally {
       setSaving(false)
     }
@@ -79,9 +104,17 @@ export default function EditListingPage() {
 
   if (loading) {
     return (
-      <div className="p-10 text-[var(--muted)]">
-        Loading...
-      </div>
+      <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+        <Navbar />
+
+        <Container>
+          <div className="mx-auto max-w-2xl py-10">
+            <p className="text-[var(--muted)]">
+              Loading listing...
+            </p>
+          </div>
+        </Container>
+      </main>
     )
   }
 
@@ -92,72 +125,144 @@ export default function EditListingPage() {
       <Container>
         <div className="mx-auto max-w-2xl py-10">
 
-          <h1 className="mb-6 text-4xl font-bold">
-            Edit Listing
-          </h1>
+          <div className="mb-8">
+            <button
+              type="button"
+              onClick={() => router.push(`/dashboard/${id}`)}
+              className="mb-4 text-sm text-[var(--muted)] hover:text-[var(--foreground)]"
+            >
+              ← Back to listing
+            </button>
+
+            <h1 className="text-4xl font-bold">
+              Edit Listing
+            </h1>
+
+            <p className="mt-2 text-sm text-[var(--muted)]">
+              Update the details of your listing.
+            </p>
+          </div>
 
           {error && (
-            <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-red-600">
+            <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-600">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
 
-            <input
-              value={form.title}
-              onChange={(e) =>
-                setForm({ ...form, title: e.target.value })
-              }
-              className="w-full rounded-xl border p-3"
-              placeholder="Title"
-            />
+            <div>
+              <label className="mb-2 block text-sm font-medium">
+                Title
+              </label>
 
-            <textarea
-              value={form.description}
-              onChange={(e) =>
-                setForm({ ...form, description: e.target.value })
-              }
-              className="w-full rounded-xl border p-3"
-              placeholder="Description"
-            />
+              <input
+                value={form.title}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    title: e.target.value,
+                  }))
+                }
+                className="w-full rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 outline-none focus:ring-2 focus:ring-lime-400"
+                placeholder="Title"
+                required
+              />
+            </div>
 
-            <input
-              value={form.price}
-              onChange={(e) =>
-                setForm({ ...form, price: e.target.value })
-              }
-              className="w-full rounded-xl border p-3"
-              placeholder="Price"
-            />
+            <div>
+              <label className="mb-2 block text-sm font-medium">
+                Description
+              </label>
 
-            <input
-              value={form.category}
-              onChange={(e) =>
-                setForm({ ...form, category: e.target.value })
-              }
-              className="w-full rounded-xl border p-3"
-              placeholder="Category"
-            />
+              <textarea
+                value={form.description}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
+                }
+                className="min-h-[140px] w-full rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 outline-none focus:ring-2 focus:ring-lime-400"
+                placeholder="Description"
+              />
+            </div>
 
-            <input
-              value={form.location}
-              onChange={(e) =>
-                setForm({ ...form, location: e.target.value })
-              }
-              className="w-full rounded-xl border p-3"
-              placeholder="Location"
-            />
+            <div>
+              <label className="mb-2 block text-sm font-medium">
+                Price
+              </label>
+
+              <input
+                value={form.price}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    price: e.target.value,
+                  }))
+                }
+                className="w-full rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 outline-none focus:ring-2 focus:ring-lime-400"
+                placeholder="Price"
+                type="number"
+                min="0"
+                step="0.01"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium">
+                Category
+              </label>
+
+              <select
+                value={form.category}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    category: e.target.value,
+                  }))
+                }
+                className="w-full rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 outline-none focus:ring-2 focus:ring-lime-400"
+                required
+              >
+                <option value="">Select category</option>
+                <option value="electronics">Electronics</option>
+                <option value="vehicles">Vehicles</option>
+                <option value="property">Property</option>
+                <option value="fashion">Fashion</option>
+                <option value="services">Services</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium">
+                Location
+              </label>
+
+              <input
+                value={form.location}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    location: e.target.value,
+                  }))
+                }
+                className="w-full rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 outline-none focus:ring-2 focus:ring-lime-400"
+                placeholder="Location"
+                required
+              />
+            </div>
 
             <button
+              type="submit"
               disabled={saving}
-              className="w-full rounded-xl bg-lime-400 p-3 font-medium text-black"
+              className="w-full rounded-xl bg-lime-400 p-3 font-medium text-black transition hover:bg-lime-300 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {saving ? "Saving..." : "Save Changes"}
             </button>
 
           </form>
-
         </div>
       </Container>
     </main>
