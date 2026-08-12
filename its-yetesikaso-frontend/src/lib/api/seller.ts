@@ -45,6 +45,22 @@ export async function createListing(
   return response.listing
 }
 
+// UPDATE LISTING
+export async function updateListing(
+  id: number,
+  data: FormData
+): Promise<Listing> {
+  const response = await apiClient<{
+    message: string
+    listing: Listing
+  }>(`/listings/${id}/`, {
+    method: "PATCH",
+    body: data,
+  })
+
+  return response.listing
+}
+
 // GET SELLER PROFILE
 export async function getMyProfile(): Promise<SellerProfile> {
   return apiClient<SellerProfile>("/auth/profile/")

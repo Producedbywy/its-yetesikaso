@@ -1,10 +1,14 @@
 "use client"
 
+import Image from "next/image"
 import { useEffect, useState } from "react"
+import { useParams, useRouter } from "next/navigation"
+
 import Navbar from "@/components/layout/navbar"
 import Container from "@/components/layout/container"
-import { useParams, useRouter } from "next/navigation"
+import ImageUploader from "@/components/upload/ImageUploader"
 import { apiClient } from "@/lib/api/client"
+import { updateListing } from "@/lib/api/seller"
 import type { Listing } from "@/types/listing"
 
 type ListingForm = {
@@ -28,6 +32,9 @@ export default function EditListingPage() {
     location: "",
   })
 
+  const [currentImage, setCurrentImage] = useState<string | null>(null)
+  const [newImage, setNewImage] = useState<File | null>(null)
+
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -39,7 +46,9 @@ export default function EditListingPage() {
       try {
         setError(null)
 
-        const data = await apiClient<Listing>(`/listings/${id}/`)
+        const data = await apiClient<Listing>(
+          `/listings/${id}/`
+        )
 
         if (cancelled) return
 
@@ -50,6 +59,8 @@ export default function EditListingPage() {
           category: data.category ?? "",
           location: data.location ?? "",
         })
+
+        setCurrentImage(data.image ?? null)
       } catch (err: unknown) {
         if (cancelled) return
 
@@ -74,22 +85,60 @@ export default function EditListingPage() {
     }
   }, [id])
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
+  function updateField(
+    field: keyof ListingForm,
+    value: string
+  ) {
+    setForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }))
+  }
+
+  async function handleSubmit(
+    event: React.FormEvent<HTMLFormElement>
+  ) {
+    event.preventDefault()
+
+    if (
+      !form.title.trim() ||
+      !form.price ||
+      !form.location.trim()
+    ) {
+      setError("Please fill in all required fields")
+      return
+    }
 
     try {
       setSaving(true)
       setError(null)
 
-      await apiClient<Listing>(`/listings/${id}/`, {
-        method: "PUT",
-        body: JSON.stringify({
-          ...form,
-          price: Number(form.price),
-        }),
-      })
+      const data = new FormData()
 
-      router.push(`/dashboard/${id}`)
+      data.append("title", form.title.trim())
+      data.append(
+        "description",
+        form.description.trim()
+      )
+      data.append("price", form.price)
+      data.append("category", form.category)
+      data.append(
+        "location",
+        form.location.trim()
+      )
+
+      if (newImage) {
+        data.append("image", newImage)
+      }
+
+      const listing = await updateListing(
+        Number(id),
+        data
+      )
+
+      router.push(
+        `/marketplace/${listing.slug}`
+      )
       router.refresh()
     } catch (err: unknown) {
       setError(
@@ -128,10 +177,14 @@ export default function EditListingPage() {
           <div className="mb-8">
             <button
               type="button"
-              onClick={() => router.push(`/dashboard/${id}`)}
+              onClick={() =>
+                router.push(
+                  `/marketplace/${id}`
+                )
+              }
               className="mb-4 text-sm text-[var(--muted)] hover:text-[var(--foreground)]"
             >
-              ← Back to listing
+              ← Back
             </button>
 
             <h1 className="text-4xl font-bold">
@@ -149,7 +202,52 @@ export default function EditListingPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-5"
+          >
+
+            {/* CURRENT IMAGE */}
+
+            {currentImage && !newImage && (
+              <div>
+                <label className="mb-2 block text-sm font-medium">
+                  Current image
+                </label>
+
+                <div className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]">
+                  <Image
+                    src={currentImage}
+                    alt={form.title || "Listing image"}
+                    width={800}
+                    height={600}
+                    className="aspect-[4/3] w-full object-cover"
+                    unoptimized
+                  />
+                </div>
+
+                <p className="mt-2 text-xs text-[var(--muted)]">
+                  Upload a new image below if you want to
+                  replace it.
+                </p>
+              </div>
+            )}
+
+            {/* NEW IMAGE */}
+
+            <div>
+              <label className="mb-2 block text-sm font-medium">
+                {currentImage
+                  ? "Replace image"
+                  : "Listing image"}
+              </label>
+
+              <ImageUploader
+                onChange={setNewImage}
+              />
+            </div>
+
+            {/* TITLE */}
 
             <div>
               <label className="mb-2 block text-sm font-medium">
@@ -158,17 +256,19 @@ export default function EditListingPage() {
 
               <input
                 value={form.title}
-                onChange={(e) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    title: e.target.value,
-                  }))
+                onChange={(event) =>
+                  updateField(
+                    "title",
+                    event.target.value
+                  )
                 }
                 className="w-full rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 outline-none focus:ring-2 focus:ring-lime-400"
                 placeholder="Title"
                 required
               />
             </div>
+
+            {/* DESCRIPTION */}
 
             <div>
               <label className="mb-2 block text-sm font-medium">
@@ -177,16 +277,18 @@ export default function EditListingPage() {
 
               <textarea
                 value={form.description}
-                onChange={(e) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    description: e.target.value,
-                  }))
+                onChange={(event) =>
+                  updateField(
+                    "description",
+                    event.target.value
+                  )
                 }
                 className="min-h-[140px] w-full rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 outline-none focus:ring-2 focus:ring-lime-400"
                 placeholder="Description"
               />
             </div>
+
+            {/* PRICE */}
 
             <div>
               <label className="mb-2 block text-sm font-medium">
@@ -195,11 +297,11 @@ export default function EditListingPage() {
 
               <input
                 value={form.price}
-                onChange={(e) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    price: e.target.value,
-                  }))
+                onChange={(event) =>
+                  updateField(
+                    "price",
+                    event.target.value
+                  )
                 }
                 className="w-full rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 outline-none focus:ring-2 focus:ring-lime-400"
                 placeholder="Price"
@@ -210,6 +312,8 @@ export default function EditListingPage() {
               />
             </div>
 
+            {/* CATEGORY */}
+
             <div>
               <label className="mb-2 block text-sm font-medium">
                 Category
@@ -217,23 +321,37 @@ export default function EditListingPage() {
 
               <select
                 value={form.category}
-                onChange={(e) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    category: e.target.value,
-                  }))
+                onChange={(event) =>
+                  updateField(
+                    "category",
+                    event.target.value
+                  )
                 }
                 className="w-full rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 outline-none focus:ring-2 focus:ring-lime-400"
                 required
               >
-                <option value="">Select category</option>
-                <option value="electronics">Electronics</option>
-                <option value="vehicles">Vehicles</option>
-                <option value="property">Property</option>
-                <option value="fashion">Fashion</option>
-                <option value="services">Services</option>
+                <option value="">
+                  Select category
+                </option>
+                <option value="electronics">
+                  Electronics
+                </option>
+                <option value="vehicles">
+                  Vehicles
+                </option>
+                <option value="property">
+                  Property
+                </option>
+                <option value="fashion">
+                  Fashion
+                </option>
+                <option value="services">
+                  Services
+                </option>
               </select>
             </div>
+
+            {/* LOCATION */}
 
             <div>
               <label className="mb-2 block text-sm font-medium">
@@ -242,11 +360,11 @@ export default function EditListingPage() {
 
               <input
                 value={form.location}
-                onChange={(e) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    location: e.target.value,
-                  }))
+                onChange={(event) =>
+                  updateField(
+                    "location",
+                    event.target.value
+                  )
                 }
                 className="w-full rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 outline-none focus:ring-2 focus:ring-lime-400"
                 placeholder="Location"
@@ -259,7 +377,9 @@ export default function EditListingPage() {
               disabled={saving}
               className="w-full rounded-xl bg-lime-400 p-3 font-medium text-black transition hover:bg-lime-300 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {saving ? "Saving..." : "Save Changes"}
+              {saving
+                ? "Saving..."
+                : "Save Changes"}
             </button>
 
           </form>

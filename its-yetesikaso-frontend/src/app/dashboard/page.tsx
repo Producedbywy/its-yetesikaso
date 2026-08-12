@@ -1,11 +1,12 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Link from "next/link"
+
 import Navbar from "@/components/layout/navbar"
 import Container from "@/components/layout/container"
 import { getMyListings } from "@/lib/api/seller"
 import type { Listing } from "@/types/listing"
-import Link from "next/link"
 
 export default function DashboardPage() {
   const [listings, setListings] = useState<Listing[]>([])
@@ -143,14 +144,13 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* GRID */}
+          {/* LISTINGS */}
           {!loading && listings.length > 0 && (
             <div className="grid gap-6 md:grid-cols-2">
               {listings.map((item) => (
-                <Link
+                <div
                   key={item.id}
-                  href={`/marketplace/${item.slug}`}
-                  className="block rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 transition hover:-translate-y-0.5 hover:shadow-md"
+                  className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 transition hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <h2 className="text-xl font-semibold">
                     {item.title}
@@ -164,10 +164,22 @@ export default function DashboardPage() {
                     GH₵ {item.price.toLocaleString()}
                   </p>
 
-                  <p className="mt-3 text-sm font-medium text-[var(--muted)]">
-                    View listing →
-                  </p>
-                </Link>
+                  <div className="mt-4 flex items-center justify-between">
+                    <Link
+                      href={`/marketplace/${item.slug}`}
+                      className="text-sm font-medium text-[var(--muted)] hover:text-[var(--foreground)]"
+                    >
+                      View listing →
+                    </Link>
+
+                    <Link
+                      href={`/dashboard/edit/${item.id}`}
+                      className="rounded-lg border border-[var(--border)] px-3 py-1.5 text-sm font-medium transition hover:bg-[var(--background)]"
+                    >
+                      Edit
+                    </Link>
+                  </div>
+                </div>
               ))}
             </div>
           )}
