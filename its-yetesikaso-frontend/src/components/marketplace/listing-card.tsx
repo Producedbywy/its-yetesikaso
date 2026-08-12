@@ -6,19 +6,20 @@ import { motion } from 'framer-motion'
 import type { Listing } from '@/types/listing'
 
 interface ListingCardProps {
-listing: Listing
+  listing: Listing
 }
 
-const API_BASE_URL = 'http://127.0.0.1:8000'
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, '') || ''
 
 function getImageUrl(image: string | null) {
-if (!image) return null
+  if (!image) return null
 
-if (image.startsWith('http://') || image.startsWith('https://')) {
-return image
-}
+  if (image.startsWith('http://') || image.startsWith('https://')) {
+    return image
+  }
 
-return `${API_BASE_URL}${image}`
+  return `${API_BASE_URL}${image}`
 }
 
 export default function ListingCard({ listing }: ListingCardProps) {
