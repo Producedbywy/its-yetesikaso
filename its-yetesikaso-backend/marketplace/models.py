@@ -90,8 +90,7 @@ class Listing(models.Model):
         max_length=100,
     )
 
-    image = models.ImageField(
-        upload_to="listings/",
+    image = models.URLField(
         blank=True,
         null=True,
     )

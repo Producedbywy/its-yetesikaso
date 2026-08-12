@@ -2,11 +2,11 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from django.contrib.auth.models import User
 
 
 from marketplace.models import Listing
 from marketplace.serializers import ListingSerializer
+from marketplace.services.supabase_storage import upload_listing_image
 
 
 # =========================
@@ -70,6 +70,13 @@ def listings(request):
 def create_listing(request):
     data = request.data
 
+    image_url = None
+
+    uploaded_image = request.FILES.get("image")
+
+    if uploaded_image:
+        image_url = upload_listing_image(uploaded_image)
+
     listing = Listing.objects.create(
         owner=request.user,
         title=data["title"],
@@ -77,7 +84,7 @@ def create_listing(request):
         price=data["price"],
         category=data["category"],
         location=data["location"],
-        image=request.FILES.get("image"),
+        image=image_url,
     )
 
     return Response({
