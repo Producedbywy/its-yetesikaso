@@ -25,10 +25,6 @@ def listings(request):
     if slug:
         qs = qs.filter(slug=slug)
 
-    slug = request.GET.get("slug")
-    if slug:
-        qs = qs.filter(slug=slug)
-
     category = request.GET.get("category")
     if category and category != "all":
         qs = qs.filter(category__iexact=category)
@@ -81,7 +77,10 @@ def create_listing(request):
         price=data["price"],
         category=data["category"],
         location=data["location"],
-        image=request.FILES.get("image")
+        image=request.FILES.get("image"),
     )
 
-    return Response(ListingSerializer(listing).data)
+    return Response({
+        "message": "Listing created successfully",
+        "listing": ListingSerializer(listing).data,
+    })
