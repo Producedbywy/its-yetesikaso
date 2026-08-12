@@ -91,3 +91,55 @@ def create_listing(request):
         "message": "Listing created successfully",
         "listing": ListingSerializer(listing).data,
     })
+
+# =========================
+# GET / UPDATE LISTING
+# =========================
+
+@api_view(["GET", "PATCH"])
+@permission_classes([IsAuthenticated])
+def listing_detail(request, listing_id):
+    try:
+        listing = Listing.objects.get(
+            id=listing_id,
+            owner=request.user,
+        )
+    except Listing.DoesNotExist:
+        return Response(
+            {"error": "Listing not found"},
+            status=404,
+        )
+
+    if request.method == "GET":
+        return Response(
+            ListingSerializer(listing).data
+        )
+
+    data = request.data
+
+    if "title" in data:
+        listing.title = data["title"]
+
+    if "description" in data:
+        listing.description = data["description"]
+
+    if "price" in data:
+        listing.price = data["price"]
+
+    if "category" in data:
+        listing.category = data["category"]
+
+    if "location" in data:
+        listing.location = data["location"]
+
+    uploaded_image = request.FILES.get("image")
+
+    if uploaded_image:
+        listing.image = upload_listing_image(uploaded_image)
+
+    listing.save()
+
+    return Response({
+        "message": "Listing updated successfully",
+        "listing": ListingSerializer(listing).data,
+    })

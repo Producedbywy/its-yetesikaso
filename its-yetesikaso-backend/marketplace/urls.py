@@ -5,6 +5,7 @@ from .views import my_listings
 from marketplace.api.views.listing_views import (
     listings,
     create_listing,
+    listing_detail,
 )
 
 from marketplace.api.views.auth_views import (
@@ -36,6 +37,12 @@ urlpatterns = [
         "listings/create/",
         create_listing,
         name="create-listing",
+    ),
+
+    path(
+        "listings/<int:listing_id>/",
+        listing_detail,
+        name="listing-detail",
     ),
 
     path(
