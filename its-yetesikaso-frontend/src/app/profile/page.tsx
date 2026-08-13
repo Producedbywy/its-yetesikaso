@@ -13,6 +13,7 @@ import {
   getMyListings,
   getMyProfile,
   updateMyProfile,
+  upgradeAccount,
   type SellerProfile,
 } from "@/lib/api/seller"
 
@@ -26,6 +27,9 @@ export default function ProfilePage() {
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [upgrading, setUpgrading] = useState<
+    "seller" | "employer" | null
+  >(null)
 
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
@@ -58,10 +62,6 @@ export default function ProfilePage() {
           bio: profileData.bio || "",
         })
 
-        /*
-         * Listings are only relevant to sellers.
-         * Buyers do not need to load seller listings.
-         */
         if (profileData.role === "seller") {
           const listingsData = await getMyListings()
 
@@ -132,12 +132,6 @@ export default function ProfilePage() {
 
       setSuccess("Profile updated successfully.")
 
-      /*
-       * Onboarding is now complete.
-       *
-       * Sellers go to their dashboard.
-       * Buyers go to the marketplace.
-       */
       setTimeout(() => {
         if (updated.role === "seller") {
           router.push("/dashboard")
@@ -156,7 +150,50 @@ export default function ProfilePage() {
     }
   }
 
+  async function handleUpgrade(
+    role: "seller" | "employer"
+  ) {
+    try {
+      setUpgrading(role)
+      setError(null)
+      setSuccess(null)
+
+      const updated = await upgradeAccount(role)
+
+      setProfile(updated)
+
+      setSuccess(
+        role === "seller"
+          ? "Your account is now a seller."
+          : "Your account is now an employer."
+      )
+
+      if (role === "seller") {
+        const listingsData = await getMyListings()
+        setListings(listingsData.results || [])
+      } else {
+        setListings([])
+      }
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to upgrade your account"
+      )
+    } finally {
+      setUpgrading(null)
+    }
+  }
+
   const isSeller = profile?.role === "seller"
+  const isEmployer = profile?.role === "employer"
+  const isUser = profile?.role === "user"
+
+  const accountType = isSeller
+    ? "Seller"
+    : isEmployer
+      ? "Employer"
+      : "User"
 
   return (
     <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
@@ -170,13 +207,17 @@ export default function ProfilePage() {
             <h1 className="text-4xl font-bold">
               {isSeller
                 ? "Seller Profile"
-                : "Buyer Profile"}
+                : isEmployer
+                  ? "Employer Profile"
+                  : "Your Profile"}
             </h1>
 
             <p className="mt-2 text-sm text-[var(--muted)]">
               {isSeller
                 ? "Complete your seller profile so buyers know who they are dealing with."
-                : "Complete your profile before you start using Yetesikaso."}
+                : isEmployer
+                  ? "Complete your employer profile so job seekers know who they are dealing with."
+                  : "Complete your profile before you start using Yetesikaso."}
             </p>
           </div>
 
@@ -235,16 +276,82 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                {/* ROLE */}
+                {/* ACCOUNT TYPE */}
                 <div className="mb-6 rounded-2xl border border-[var(--border)] bg-[var(--background)] p-5">
                   <p className="text-sm text-[var(--muted)]">
                     Account type
                   </p>
 
                   <p className="mt-1 text-lg font-semibold">
-                    {isSeller ? "Seller" : "Buyer"}
+                    {accountType}
                   </p>
                 </div>
+
+                {/* ACCOUNT UPGRADES */}
+                {isUser && (
+                  <div className="mb-8 rounded-2xl border border-[var(--border)] bg-[var(--background)] p-6">
+                    <div className="mb-5">
+                      <h2 className="text-xl font-bold">
+                        Choose how you want to use Yetesikaso
+                      </h2>
+
+                      <p className="mt-1 text-sm text-[var(--muted)]">
+                        Your account can become a seller or employer
+                        whenever you are ready.
+                      </p>
+                    </div>
+
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
+                        <h3 className="text-lg font-semibold">
+                          Become a Seller
+                        </h3>
+
+                        <p className="mt-2 text-sm text-[var(--muted)]">
+                          Sell products and services on the
+                          marketplace and manage your listings.
+                        </p>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleUpgrade("seller")
+                          }
+                          disabled={upgrading !== null}
+                          className="mt-5 w-full rounded-xl bg-lime-400 px-5 py-3 font-medium text-black transition hover:bg-lime-300 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          {upgrading === "seller"
+                            ? "Becoming a Seller..."
+                            : "Become a Seller"}
+                        </button>
+                      </div>
+
+                      <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
+                        <h3 className="text-lg font-semibold">
+                          Become an Employer
+                        </h3>
+
+                        <p className="mt-2 text-sm text-[var(--muted)]">
+                          Post jobs and connect with people looking
+                          for opportunities.
+                        </p>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleUpgrade("employer")
+                          }
+                          disabled={upgrading !== null}
+                          className="mt-5 w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-5 py-3 font-medium transition hover:bg-[var(--card)] disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          {upgrading === "employer"
+                            ? "Becoming an Employer..."
+                            : "Become an Employer"}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* PROFILE STATUS */}
                 <div className="mb-8 flex flex-wrap gap-3">
@@ -295,7 +402,9 @@ export default function ProfilePage() {
                       placeholder={
                         isSeller
                           ? "Your seller name"
-                          : "Your display name"
+                          : isEmployer
+                            ? "Your employer name"
+                            : "Your display name"
                       }
                       className="w-full rounded-2xl border border-[var(--border)] bg-[var(--background)] px-5 py-4 outline-none transition focus:border-lime-400 disabled:opacity-50"
                     />
@@ -374,7 +483,9 @@ export default function ProfilePage() {
                       placeholder={
                         isSeller
                           ? "Tell buyers a little about yourself..."
-                          : "Tell the Yetesikaso community a little about yourself..."
+                          : isEmployer
+                            ? "Tell job seekers a little about yourself..."
+                            : "Tell the Yetesikaso community a little about yourself..."
                       }
                       className="min-h-[140px] w-full resize-y rounded-2xl border border-[var(--border)] bg-[var(--background)] px-5 py-4 outline-none transition focus:border-lime-400 disabled:opacity-50"
                     />

@@ -2,11 +2,13 @@ import { apiClient } from "@/lib/api/client"
 
 import type { Listing } from "@/types/listing"
 
+export type AccountRole = "user" | "seller" | "employer"
+
 export type SellerProfile = {
   id: number
   username: string
   email: string
-  role: "buyer" | "seller"
+  role: AccountRole
   display_name: string
   phone: string
   location: string
@@ -84,4 +86,17 @@ export async function updateMyProfile(
     method: "PATCH",
     body: JSON.stringify(data),
   })
+}
+
+// UPGRADE ACCOUNT
+export async function upgradeAccount(
+  role: "seller" | "employer"
+): Promise<SellerProfile> {
+  return apiClient<SellerProfile>(
+    "/auth/profile/upgrade/",
+    {
+      method: "POST",
+      body: JSON.stringify({ role }),
+    }
+  )
 }

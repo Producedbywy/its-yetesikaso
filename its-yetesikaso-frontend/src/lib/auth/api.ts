@@ -1,5 +1,5 @@
 const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || ''
+  process.env.NEXT_PUBLIC_API_URL || ""
 
 type ApiResponse = {
   detail?: string
@@ -44,8 +44,7 @@ export async function loginUser(
 export async function registerUser(
   username: string,
   email: string,
-  password: string,
-  role: "buyer" | "seller"
+  password: string
 ) {
   const res = await fetch(
     `${API_URL}/auth/register/`,
@@ -58,7 +57,6 @@ export async function registerUser(
         username,
         email,
         password,
-        role,
       }),
     }
   )

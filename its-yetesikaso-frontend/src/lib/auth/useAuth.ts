@@ -66,8 +66,7 @@ export function useAuth() {
   async function register(
     username: string,
     email: string,
-    password: string,
-    role: "buyer" | "seller"
+    password: string
   ) {
     try {
       setLoading(true)
@@ -76,8 +75,7 @@ export function useAuth() {
       return await registerUser(
         username,
         email,
-        password,
-        role
+        password
       )
     } catch (err: unknown) {
       const message =

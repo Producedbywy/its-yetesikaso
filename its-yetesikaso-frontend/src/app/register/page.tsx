@@ -31,6 +31,7 @@ function PasswordInput({
         type="button"
         onClick={() => setShow(!show)}
         className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500"
+        aria-label={show ? "Hide password" : "Show password"}
       >
         {show ? <EyeOff size={18} /> : <Eye size={18} />}
       </button>
@@ -45,7 +46,6 @@ export default function RegisterPage() {
   const [username, setUsername] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [role, setRole] = useState<"buyer" | "seller">("buyer")
   const [success, setSuccess] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
@@ -55,8 +55,7 @@ export default function RegisterPage() {
     const res = await register(
       username,
       email,
-      password,
-      role
+      password
     )
 
     if (res) {
@@ -64,7 +63,6 @@ export default function RegisterPage() {
       setUsername("")
       setEmail("")
       setPassword("")
-      setRole("buyer")
 
       router.push("/login")
     }
@@ -77,9 +75,14 @@ export default function RegisterPage() {
       <section className="flex min-h-[80vh] items-center py-20">
         <Container>
           <div className="mx-auto max-w-md rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
-            <h1 className="mb-6 text-4xl font-bold">
+            <h1 className="mb-3 text-4xl font-bold">
               Create Account
             </h1>
+
+            <p className="mb-8 text-sm text-[var(--muted)]">
+              Create your Yetesikaso account. You can choose to
+              become a seller or employer later.
+            </p>
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <input
@@ -104,48 +107,16 @@ export default function RegisterPage() {
                 onChange={(e) => setPassword(e.target.value)}
               />
 
-              <div>
-                <p className="mb-3 text-sm font-medium">
-                  I want to use Yetesikaso as:
+              <div className="rounded-2xl border border-[var(--border)] bg-[var(--background)] p-5">
+                <p className="font-medium">
+                  Start as a User
                 </p>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setRole("buyer")}
-                    className={`rounded-2xl border px-4 py-4 text-left transition ${
-                      role === "buyer"
-                        ? "border-lime-400 bg-lime-400/10"
-                        : "border-[var(--border)] hover:bg-[var(--background)]"
-                    }`}
-                  >
-                    <span className="block font-semibold">
-                      Buyer
-                    </span>
-
-                    <span className="mt-1 block text-sm text-[var(--muted)]">
-                      Browse and buy items
-                    </span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setRole("seller")}
-                    className={`rounded-2xl border px-4 py-4 text-left transition ${
-                      role === "seller"
-                        ? "border-lime-400 bg-lime-400/10"
-                        : "border-[var(--border)] hover:bg-[var(--background)]"
-                    }`}
-                  >
-                    <span className="block font-semibold">
-                      Seller
-                    </span>
-
-                    <span className="mt-1 block text-sm text-[var(--muted)]">
-                      List and sell items
-                    </span>
-                  </button>
-                </div>
+                <p className="mt-1 text-sm text-[var(--muted)]">
+                  Browse the marketplace and use Yetesikaso
+                  normally. You can become a Seller or Employer
+                  later from your profile.
+                </p>
               </div>
 
               {error && (
