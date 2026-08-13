@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { FormEvent, useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 
 import Navbar from "@/components/layout/navbar"
 import Footer from "@/components/layout/footer"
@@ -18,6 +19,8 @@ import {
 import type { Listing } from "@/types/listing"
 
 export default function ProfilePage() {
+  const router = useRouter()
+
   const [profile, setProfile] = useState<SellerProfile | null>(null)
   const [listings, setListings] = useState<Listing[]>([])
 
@@ -42,10 +45,7 @@ export default function ProfilePage() {
         setLoading(true)
         setError(null)
 
-        const [profileData, listingsData] = await Promise.all([
-          getMyProfile(),
-          getMyListings(),
-        ])
+        const profileData = await getMyProfile()
 
         if (cancelled) return
 
@@ -58,7 +58,19 @@ export default function ProfilePage() {
           bio: profileData.bio || "",
         })
 
-        setListings(listingsData.results || [])
+        /*
+         * Listings are only relevant to sellers.
+         * Buyers do not need to load seller listings.
+         */
+        if (profileData.role === "seller") {
+          const listingsData = await getMyListings()
+
+          if (cancelled) return
+
+          setListings(listingsData.results || [])
+        } else {
+          setListings([])
+        }
       } catch (err: unknown) {
         if (cancelled) return
 
@@ -119,6 +131,20 @@ export default function ProfilePage() {
       })
 
       setSuccess("Profile updated successfully.")
+
+      /*
+       * Onboarding is now complete.
+       *
+       * Sellers go to their dashboard.
+       * Buyers go to the marketplace.
+       */
+      setTimeout(() => {
+        if (updated.role === "seller") {
+          router.push("/dashboard")
+        } else {
+          router.push("/marketplace")
+        }
+      }, 500)
     } catch (err: unknown) {
       setError(
         err instanceof Error
@@ -130,21 +156,27 @@ export default function ProfilePage() {
     }
   }
 
+  const isSeller = profile?.role === "seller"
+
   return (
     <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
       <Navbar />
 
       <Container>
         <div className="mx-auto max-w-5xl py-10">
+
           {/* HEADER */}
           <div className="mb-8">
             <h1 className="text-4xl font-bold">
-              Seller Profile
+              {isSeller
+                ? "Seller Profile"
+                : "Buyer Profile"}
             </h1>
 
             <p className="mt-2 text-sm text-[var(--muted)]">
-              Complete your seller profile so buyers know who they are
-              dealing with.
+              {isSeller
+                ? "Complete your seller profile so buyers know who they are dealing with."
+                : "Complete your profile before you start using Yetesikaso."}
             </p>
           </div>
 
@@ -203,6 +235,17 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
+                {/* ROLE */}
+                <div className="mb-6 rounded-2xl border border-[var(--border)] bg-[var(--background)] p-5">
+                  <p className="text-sm text-[var(--muted)]">
+                    Account type
+                  </p>
+
+                  <p className="mt-1 text-lg font-semibold">
+                    {isSeller ? "Seller" : "Buyer"}
+                  </p>
+                </div>
+
                 {/* PROFILE STATUS */}
                 <div className="mb-8 flex flex-wrap gap-3">
                   <span
@@ -217,9 +260,11 @@ export default function ProfilePage() {
                       : "Profile Incomplete"}
                   </span>
 
-                  <span className="rounded-full bg-blue-100 px-4 py-2 text-sm font-medium text-blue-700">
-                    {profile?.listing_count ?? 0} Listings
-                  </span>
+                  {isSeller && (
+                    <span className="rounded-full bg-blue-100 px-4 py-2 text-sm font-medium text-blue-700">
+                      {profile?.listing_count ?? 0} Listings
+                    </span>
+                  )}
                 </div>
 
                 {/* FORM */}
@@ -245,8 +290,13 @@ export default function ProfilePage() {
                         )
                       }
                       maxLength={150}
+                      required
                       disabled={saving}
-                      placeholder="Your seller name"
+                      placeholder={
+                        isSeller
+                          ? "Your seller name"
+                          : "Your display name"
+                      }
                       className="w-full rounded-2xl border border-[var(--border)] bg-[var(--background)] px-5 py-4 outline-none transition focus:border-lime-400 disabled:opacity-50"
                     />
                   </div>
@@ -321,7 +371,11 @@ export default function ProfilePage() {
                       maxLength={1000}
                       rows={6}
                       disabled={saving}
-                      placeholder="Tell buyers a little about yourself..."
+                      placeholder={
+                        isSeller
+                          ? "Tell buyers a little about yourself..."
+                          : "Tell the Yetesikaso community a little about yourself..."
+                      }
                       className="min-h-[140px] w-full resize-y rounded-2xl border border-[var(--border)] bg-[var(--background)] px-5 py-4 outline-none transition focus:border-lime-400 disabled:opacity-50"
                     />
                   </div>
@@ -329,91 +383,98 @@ export default function ProfilePage() {
                   <div className="flex justify-end">
                     <button
                       type="submit"
-                      disabled={saving}
+                      disabled={
+                        saving ||
+                        !form.display_name.trim()
+                      }
                       className="rounded-xl bg-lime-400 px-6 py-3 font-medium text-black transition hover:bg-lime-300 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {saving
                         ? "Saving..."
-                        : "Save Profile"}
+                        : profile?.onboarding_completed
+                          ? "Save Profile"
+                          : "Complete Profile"}
                     </button>
                   </div>
                 </form>
               </section>
 
-              {/* LISTINGS */}
-              <section className="mt-10">
-                <div className="mb-6">
-                  <h2 className="text-2xl font-bold">
-                    Your Listings
-                  </h2>
+              {/* SELLER LISTINGS */}
+              {isSeller && (
+                <section className="mt-10">
+                  <div className="mb-6">
+                    <h2 className="text-2xl font-bold">
+                      Your Listings
+                    </h2>
 
-                  <p className="mt-1 text-sm text-[var(--muted)]">
-                    Listings currently associated with your seller
-                    account.
-                  </p>
-                </div>
-
-                {listings.length === 0 ? (
-                  <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-10 text-center">
-                    <h3 className="text-lg font-semibold">
-                      No listings yet
-                    </h3>
-
-                    <p className="mt-2 text-sm text-[var(--muted)]">
-                      Create your first listing to start selling.
+                    <p className="mt-1 text-sm text-[var(--muted)]">
+                      Listings currently associated with your seller
+                      account.
                     </p>
-
-                    <Link
-                      href="/dashboard/create"
-                      className="mt-5 inline-block rounded-xl bg-lime-400 px-5 py-3 font-medium text-black hover:bg-lime-300"
-                    >
-                      Create Listing
-                    </Link>
                   </div>
-                ) : (
-                  <div className="grid gap-5 md:grid-cols-2">
-                    {listings.map((listing) => (
-                      <a
-                        key={listing.id}
-                        href={`/marketplace/${listing.slug}`}
-                        className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 transition hover:-translate-y-0.5 hover:shadow-md"
-                      >
-                        <div className="flex items-start justify-between gap-4">
-                          <div>
-                            <h3 className="text-lg font-semibold">
-                              {listing.title}
-                            </h3>
 
-                            <p className="mt-1 text-sm text-[var(--muted)]">
-                              {listing.category} •{" "}
-                              {listing.location}
-                            </p>
+                  {listings.length === 0 ? (
+                    <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-10 text-center">
+                      <h3 className="text-lg font-semibold">
+                        No listings yet
+                      </h3>
+
+                      <p className="mt-2 text-sm text-[var(--muted)]">
+                        Create your first listing to start selling.
+                      </p>
+
+                      <Link
+                        href="/dashboard/create"
+                        className="mt-5 inline-block rounded-xl bg-lime-400 px-5 py-3 font-medium text-black hover:bg-lime-300"
+                      >
+                        Create Listing
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="grid gap-5 md:grid-cols-2">
+                      {listings.map((listing) => (
+                        <a
+                          key={listing.id}
+                          href={`/marketplace/${listing.slug}`}
+                          className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 transition hover:-translate-y-0.5 hover:shadow-md"
+                        >
+                          <div className="flex items-start justify-between gap-4">
+                            <div>
+                              <h3 className="text-lg font-semibold">
+                                {listing.title}
+                              </h3>
+
+                              <p className="mt-1 text-sm text-[var(--muted)]">
+                                {listing.category} •{" "}
+                                {listing.location}
+                              </p>
+                            </div>
+
+                            <span className="shrink-0 rounded-full bg-lime-100 px-3 py-1 text-xs font-medium text-lime-700">
+                              Active
+                            </span>
                           </div>
 
-                          <span className="shrink-0 rounded-full bg-lime-100 px-3 py-1 text-xs font-medium text-lime-700">
-                            Active
-                          </span>
-                        </div>
-
-                        <p className="mt-4 text-xl font-bold text-lime-500">
-                          GH₵{" "}
-                          {listing.price.toLocaleString()}
-                        </p>
-
-                        {listing.description && (
-                          <p className="mt-3 line-clamp-2 text-sm text-[var(--muted)]">
-                            {listing.description}
+                          <p className="mt-4 text-xl font-bold text-lime-500">
+                            GH₵{" "}
+                            {listing.price.toLocaleString()}
                           </p>
-                        )}
 
-                        <p className="mt-4 text-sm font-medium">
-                          View listing →
-                        </p>
-                      </a>
-                    ))}
-                  </div>
-                )}
-              </section>
+                          {listing.description && (
+                            <p className="mt-3 line-clamp-2 text-sm text-[var(--muted)]">
+                              {listing.description}
+                            </p>
+                          )}
+
+                          <p className="mt-4 text-sm font-medium">
+                            View listing →
+                          </p>
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              )}
             </>
           )}
         </div>

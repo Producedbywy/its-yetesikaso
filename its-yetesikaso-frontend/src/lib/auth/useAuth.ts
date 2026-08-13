@@ -5,6 +5,7 @@ import { useState } from "react"
 
 import { loginUser, registerUser } from "./api"
 import { setTokens, clearTokens } from "./tokens"
+import { getMyProfile } from "@/lib/api/seller"
 
 type LoginResponse = {
   access?: string
@@ -39,7 +40,15 @@ export function useAuth() {
 
       setTokens(data.access, data.refresh)
 
-      router.push("/dashboard")
+      const profile = await getMyProfile()
+
+      if (!profile.onboarding_completed) {
+        router.push("/profile")
+      } else if (profile.role === "seller") {
+        router.push("/dashboard")
+      } else {
+        router.push("/marketplace")
+      }
 
       return data
     } catch (err: unknown) {

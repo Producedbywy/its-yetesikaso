@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import Navbar from "@/components/layout/navbar"
 import Container from "@/components/layout/container"
 import { useAuth } from "@/lib/auth/useAuth"
@@ -23,7 +22,8 @@ function PasswordInput({
         value={value}
         onChange={onChange}
         placeholder="Password"
-        className="w-full rounded-2xl border px-5 py-4 pr-12 outline-none"
+        required
+        className="w-full rounded-2xl border border-[var(--border)] px-5 py-4 pr-12 outline-none"
       />
 
       <button
@@ -39,7 +39,6 @@ function PasswordInput({
 
 export default function LoginPage() {
   const { login, loading, error } = useAuth()
-  const router = useRouter()
 
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
@@ -47,11 +46,7 @@ export default function LoginPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
 
-    const res = await login(username, password)
-
-    if (res?.access) {
-      router.push("/marketplace")
-    }
+    await login(username, password)
   }
 
   return (
@@ -61,35 +56,47 @@ export default function LoginPage() {
       <section className="flex min-h-[80vh] items-center py-20">
         <Container>
           <div className="mx-auto max-w-md rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
+            <h1 className="mb-6 text-4xl font-bold">
+              Login
+            </h1>
 
-            <h1 className="mb-6 text-4xl font-bold">Login</h1>
-
-            <form onSubmit={handleSubmit} className="space-y-5">
-
+            <form
+              onSubmit={handleSubmit}
+              className="space-y-5"
+            >
               <input
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={(e) =>
+                  setUsername(e.target.value)
+                }
                 placeholder="Username"
+                required
                 className="w-full rounded-2xl border border-[var(--border)] px-5 py-4 outline-none"
               />
 
               <PasswordInput
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) =>
+                  setPassword(e.target.value)
+                }
               />
 
               {error && (
-                <p className="text-sm text-red-500">{error}</p>
+                <p className="text-sm text-red-500">
+                  {error}
+                </p>
               )}
 
               <button
+                type="submit"
                 disabled={loading}
-                className="w-full rounded-2xl bg-lime-400 px-5 py-4 font-medium text-black transition hover:bg-lime-300"
+                className="w-full rounded-2xl bg-lime-400 px-5 py-4 font-medium text-black transition hover:bg-lime-300 disabled:opacity-50"
               >
-                {loading ? "Logging in..." : "Login"}
+                {loading
+                  ? "Logging in..."
+                  : "Login"}
               </button>
             </form>
-
           </div>
         </Container>
       </section>

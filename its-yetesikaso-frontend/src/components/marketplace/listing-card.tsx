@@ -15,11 +15,18 @@ const API_BASE_URL =
 function getImageUrl(image: string | null) {
   if (!image) return null
 
-  if (image.startsWith('http://') || image.startsWith('https://')) {
+  if (
+    image.startsWith("http://") ||
+    image.startsWith("https://")
+  ) {
     return image
   }
 
-  return `${API_BASE_URL}${image}`
+  const cleanImage = image.startsWith("/")
+    ? image
+    : `/${image}`
+
+  return `${API_BASE_URL}${cleanImage}`
 }
 
 export default function ListingCard({ listing }: ListingCardProps) {
