@@ -87,6 +87,12 @@ def conversations(request):
             "-created_at"
         ).first()
 
+        unread_count = conversation.messages.filter(
+            is_read=False
+        ).exclude(
+            sender=request.user
+        ).count()
+
         results.append(
             {
                 "id": conversation.id,
@@ -107,13 +113,20 @@ def conversations(request):
                     if last_message
                     else None
                 ),
+                "unread_count": unread_count,
             }
         )
+
+    total_unread = sum(
+        conversation["unread_count"]
+        for conversation in results
+    )
 
     return Response(
         {
             "results": results,
             "total": len(results),
+            "unread_count": total_unread,
         }
     )
 
@@ -140,6 +153,14 @@ def conversation_messages(request, conversation_id):
         )
 
     if request.method == "GET":
+        conversation.messages.filter(
+            is_read=False
+        ).exclude(
+            sender=request.user
+        ).update(
+            is_read=True
+        )
+
         messages = conversation.messages.select_related(
             "sender"
         ).all()
@@ -157,6 +178,7 @@ def conversation_messages(request, conversation_id):
                         "sender": message.sender.id,
                         "sender_username": message.sender.username,
                         "body": message.body,
+                        "is_read": message.is_read,
                         "created_at": message.created_at,
                     }
                     for message in messages
@@ -176,6 +198,7 @@ def conversation_messages(request, conversation_id):
         conversation=conversation,
         sender=request.user,
         body=body,
+        is_read=False,
     )
 
     conversation.save(
@@ -189,6 +212,7 @@ def conversation_messages(request, conversation_id):
             "sender": message.sender.id,
             "sender_username": message.sender.username,
             "body": message.body,
+            "is_read": message.is_read,
             "created_at": message.created_at,
         },
         status=status.HTTP_201_CREATED,
