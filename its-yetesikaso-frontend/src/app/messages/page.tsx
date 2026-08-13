@@ -109,9 +109,17 @@ export default function MessagesPage() {
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
-                      <h2 className="truncate text-lg font-semibold">
-                        {conversation.listing_title}
-                      </h2>
+                      <div className="flex items-center gap-3">
+                        <h2 className="truncate text-lg font-semibold">
+                          {conversation.listing_title}
+                        </h2>
+
+                        {conversation.unread_count > 0 && (
+                          <span className="shrink-0 rounded-full bg-lime-400 px-2.5 py-1 text-xs font-bold text-black">
+                            {conversation.unread_count}
+                          </span>
+                        )}
+                      </div>
 
                       <p className="mt-1 text-sm text-[var(--muted)]">
                         Buyer: {conversation.buyer_username}
@@ -126,7 +134,13 @@ export default function MessagesPage() {
                   </div>
 
                   {conversation.last_message && (
-                    <p className="mt-4 truncate text-sm text-[var(--muted)]">
+                    <p
+                      className={`mt-4 truncate text-sm ${
+                        conversation.unread_count > 0
+                          ? "font-semibold text-[var(--foreground)]"
+                          : "text-[var(--muted)]"
+                      }`}
+                    >
                       {conversation.last_message}
                     </p>
                   )}

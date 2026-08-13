@@ -6,9 +6,11 @@ import { useEffect, useState } from "react"
 import Container from "./container"
 import ThemeToggle from "../shared/theme-toggle"
 import { getAccessToken, clearTokens } from "@/lib/auth/tokens"
+import { getConversations } from "@/lib/api/messages"
 
 export default function Navbar() {
   const [authenticated, setAuthenticated] = useState(false)
+  const [unreadMessages, setUnreadMessages] = useState(0)
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
@@ -20,9 +22,38 @@ export default function Navbar() {
     }
   }, [])
 
+  useEffect(() => {
+    if (!authenticated) {
+      return
+    }
+
+    let cancelled = false
+
+    async function loadUnreadMessages() {
+      try {
+        const response = await getConversations()
+
+        if (!cancelled) {
+          setUnreadMessages(response.unread_count || 0)
+        }
+      } catch {
+        if (!cancelled) {
+          setUnreadMessages(0)
+        }
+      }
+    }
+
+    void loadUnreadMessages()
+
+    return () => {
+      cancelled = true
+    }
+  }, [authenticated])
+
   function handleLogout() {
     clearTokens()
     setAuthenticated(false)
+    setUnreadMessages(0)
     window.location.href = "/"
   }
 
@@ -71,10 +102,16 @@ export default function Navbar() {
 
               <Link
                 href="/messages"
-                className="transition-opacity hover:opacity-70"
+                className="flex items-center gap-2 transition-opacity hover:opacity-70"
               >
-                Messages
-            </Link>
+                <span>Messages</span>
+
+                {unreadMessages > 0 && (
+                  <span className="flex min-w-5 items-center justify-center rounded-full bg-lime-400 px-1.5 py-0.5 text-xs font-bold text-black">
+                    {unreadMessages > 99 ? "99+" : unreadMessages}
+                  </span>
+                )}
+              </Link>
 
               <button
                 type="button"

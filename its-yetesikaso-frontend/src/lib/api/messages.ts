@@ -11,11 +11,13 @@ export type Conversation = {
   updated_at: string
   last_message: string | null
   last_message_at: string | null
+  unread_count: number
 }
 
 export type ConversationsResponse = {
   results: Conversation[]
   total: number
+  unread_count: number
 }
 
 export type Message = {
@@ -24,6 +26,7 @@ export type Message = {
   sender: number
   sender_username: string
   body: string
+  is_read: boolean
   created_at: string
 }
 
