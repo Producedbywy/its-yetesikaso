@@ -15,7 +15,11 @@ function getImageUrl(image: string | null) {
     return image
   }
 
-  return `${API_BASE_URL}${image}`
+const cleanImage = image.startsWith("/")
+  ? image
+  : `/${image}`
+
+return `${API_BASE_URL}${cleanImage}`
 }
 
 function getWhatsAppUrl(phone: string) {
