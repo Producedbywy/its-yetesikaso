@@ -5,8 +5,9 @@ from django.utils.text import slugify
 
 class SellerProfile(models.Model):
     ROLE_CHOICES = [
-        ("buyer", "Buyer"),
+        ("user", "User"),
         ("seller", "Seller"),
+        ("employer", "Employer"),
     ]
 
     user = models.OneToOneField(
@@ -18,7 +19,7 @@ class SellerProfile(models.Model):
     role = models.CharField(
         max_length=10,
         choices=ROLE_CHOICES,
-        default="seller",
+        default="user",
     )
 
     display_name = models.CharField(
@@ -72,7 +73,9 @@ class Listing(models.Model):
         related_name="listings",
     )
 
-    title = models.CharField(max_length=255)
+    title = models.CharField(
+        max_length=255,
+    )
 
     description = models.TextField()
 
@@ -187,29 +190,6 @@ class Message(models.Model):
     is_read = models.BooleanField(
         default=False,
     )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
-
-    class Meta:
-        ordering = ["created_at"]
-
-    def __str__(self):
-        return f"{self.sender.username}: {self.body[:50]}"
-    conversation = models.ForeignKey(
-        Conversation,
-        on_delete=models.CASCADE,
-        related_name="messages",
-    )
-
-    sender = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="sent_messages",
-    )
-
-    body = models.TextField()
 
     created_at = models.DateTimeField(
         auto_now_add=True,

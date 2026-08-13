@@ -16,7 +16,6 @@ def register(request):
     username = str(data.get("username", "")).strip()
     email = str(data.get("email", "")).strip()
     password = data.get("password", "")
-    role = str(data.get("role", "")).strip().lower()
 
     if not username:
         return Response(
@@ -27,12 +26,6 @@ def register(request):
     if not password:
         return Response(
             {"error": "Password is required"},
-            status=400,
-        )
-
-    if role not in {"buyer", "seller"}:
-        return Response(
-            {"error": "Role must be either buyer or seller"},
             status=400,
         )
 
@@ -51,14 +44,14 @@ def register(request):
     SellerProfile.objects.create(
         user=user,
         display_name=username,
-        role=role,
+        role="user",
     )
 
     return Response(
         {
             "message": "User created",
             "user_id": user.id,
-            "role": role,
+            "role": "user",
         },
         status=201,
     )
@@ -71,7 +64,7 @@ def get_profile(request):
         user=request.user,
         defaults={
             "display_name": request.user.username,
-            "role": "seller",
+            "role": "user",
         },
     )
 
@@ -97,7 +90,7 @@ def update_profile(request):
         user=request.user,
         defaults={
             "display_name": request.user.username,
-            "role": "seller",
+            "role": "user",
         },
     )
 
@@ -112,4 +105,53 @@ def update_profile(request):
 
     return Response(
         SellerProfileSerializer(profile).data
+    )
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def upgrade_profile(request):
+    profile, _ = SellerProfile.objects.get_or_create(
+        user=request.user,
+        defaults={
+            "display_name": request.user.username,
+            "role": "user",
+        },
+    )
+
+    requested_role = str(
+        request.data.get("role", "")
+    ).strip().lower()
+
+    if requested_role not in {"seller", "employer"}:
+        return Response(
+            {
+                "error": (
+                    "Role must be either seller or employer"
+                )
+            },
+            status=400,
+        )
+
+    if profile.role != "user":
+        return Response(
+            {
+                "error": (
+                    "Only user accounts can be upgraded"
+                )
+            },
+            status=400,
+        )
+
+    profile.role = requested_role
+    profile.save(
+        update_fields=["role", "updated_at"]
+    )
+
+    return Response(
+        {
+            "message": "Profile upgraded successfully",
+            "role": profile.role,
+        },
+        status=200,
     )

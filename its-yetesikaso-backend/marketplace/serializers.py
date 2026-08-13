@@ -36,6 +36,7 @@ class SellerProfileSerializer(serializers.ModelSerializer):
             "id",
             "username",
             "email",
+            "role",
             "listing_count",
             "created_at",
             "updated_at",

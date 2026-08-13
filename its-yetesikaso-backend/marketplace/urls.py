@@ -12,6 +12,7 @@ from marketplace.api.views.auth_views import (
     register,
     get_profile,
     update_profile,
+    upgrade_profile,
 )
 
 from marketplace.api.views.message_views import (
@@ -79,6 +80,11 @@ urlpatterns = [
         name="update-profile",
     ),
 
+    path(
+        "auth/profile/upgrade/",
+        upgrade_profile,
+        name="upgrade-profile",
+    ),
 
     # =========================
     # Messages
