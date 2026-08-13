@@ -3,11 +3,9 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 
-
-from marketplace.models import Listing
 from marketplace.serializers import ListingSerializer
 from marketplace.services.supabase_storage import upload_listing_image
-
+from marketplace.models import Listing, SellerProfile
 
 # =========================
 # PUBLIC LISTINGS
@@ -62,12 +60,23 @@ def listings(request):
     })
 
 
-# =========================
-# CREATE LISTING (SELLER)
-# =========================
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def create_listing(request):
+    try:
+        profile = request.user.seller_profile
+    except SellerProfile.DoesNotExist:
+        return Response(
+            {"error": "Seller profile not found"},
+            status=403,
+        )
+
+    if profile.role != "seller":
+        return Response(
+            {"error": "Only sellers can create listings"},
+            status=403,
+        )
+
     data = request.data
 
     image_url = None
@@ -91,12 +100,11 @@ def create_listing(request):
         "message": "Listing created successfully",
         "listing": ListingSerializer(listing).data,
     })
-
 # =========================
 # GET / UPDATE LISTING
 # =========================
 
-@api_view(["GET", "PATCH"])
+@api_view(["GET", "PATCH", "DELETE"])
 @permission_classes([IsAuthenticated])
 def listing_detail(request, listing_id):
     try:
@@ -108,6 +116,14 @@ def listing_detail(request, listing_id):
         return Response(
             {"error": "Listing not found"},
             status=404,
+        )
+
+    if request.method == "DELETE":
+        listing.delete()
+
+        return Response(
+            {"message": "Listing deleted successfully"},
+            status=200,
         )
 
     if request.method == "GET":
