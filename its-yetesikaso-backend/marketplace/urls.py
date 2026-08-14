@@ -21,6 +21,20 @@ from marketplace.api.views.message_views import (
     conversation_messages,
 )
 
+from marketplace.api.views.job_views import (
+    jobs,
+    job_detail,
+    my_jobs,
+    create_job,
+    employer_job_detail,
+)
+
+from marketplace.api.views.application_views import (
+    apply_to_job,
+    my_applications,
+    employer_applications,
+    application_detail,
+)
 
 urlpatterns = [
 
@@ -52,6 +66,68 @@ urlpatterns = [
         name="my-listings",
     ),
 
+
+    # =========================
+    # Jobs
+    # =========================
+
+    path(
+        "jobs/",
+        jobs,
+        name="jobs",
+    ),
+
+    path(
+        "jobs/create/",
+        create_job,
+        name="create-job",
+    ),
+
+    path(
+        "jobs/me/",
+        my_jobs,
+        name="my-jobs",
+    ),
+
+    path(
+        "jobs/<int:job_id>/",
+        job_detail,
+        name="job-detail",
+    ),
+
+    path(
+        "jobs/<int:job_id>/manage/",
+        employer_job_detail,
+        name="employer-job-detail",
+    ),
+
+        # =========================
+    # Applications
+    # =========================
+
+    path(
+        "jobs/<int:job_id>/apply/",
+        apply_to_job,
+        name="apply-to-job",
+    ),
+
+    path(
+        "applications/me/",
+        my_applications,
+        name="my-applications",
+    ),
+
+    path(
+        "applications/employer/",
+        employer_applications,
+        name="employer-applications",
+    ),
+
+    path(
+        "applications/<int:application_id>/",
+        application_detail,
+        name="application-detail",
+    ),
 
     # =========================
     # Auth

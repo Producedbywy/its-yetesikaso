@@ -151,7 +151,7 @@ def upgrade_profile(request):
     return Response(
         {
             "message": "Profile upgraded successfully",
-            "role": profile.role,
+            "profile": SellerProfileSerializer(profile).data,
         },
         status=200,
     )
