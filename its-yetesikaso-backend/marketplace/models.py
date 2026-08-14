@@ -276,6 +276,12 @@ class Application(models.Model):
         max_length=3000,
     )
 
+    cv = models.FileField(
+        upload_to="applications/cvs/",
+        blank=True,
+        null=True,
+    )
+
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
@@ -304,7 +310,7 @@ class Application(models.Model):
             f"{self.applicant.username} → "
             f"{self.job.title}"
         )
-
+    
 class Conversation(models.Model):
     buyer = models.ForeignKey(
         User,

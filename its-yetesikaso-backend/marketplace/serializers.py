@@ -170,7 +170,10 @@ class JobSerializer(serializers.ModelSerializer):
         )
 
     def get_salary_display(self, obj):
-        if obj.salary_min is not None and obj.salary_max is not None:
+        if (
+            obj.salary_min is not None
+            and obj.salary_max is not None
+        ):
             return (
                 f"GH₵ {obj.salary_min:,.2f}"
                 f" - "
@@ -184,7 +187,8 @@ class JobSerializer(serializers.ModelSerializer):
             return f"Up to GH₵ {obj.salary_max:,.2f}"
 
         return "Negotiable"
-    
+
+
 class ApplicationSerializer(serializers.ModelSerializer):
     applicant_username = serializers.CharField(
         source="applicant.username",
@@ -214,6 +218,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
             "applicant_name",
             "employer_username",
             "cover_note",
+            "cv",
             "status",
             "created_at",
             "updated_at",

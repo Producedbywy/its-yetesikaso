@@ -53,15 +53,54 @@ def apply_to_job(request, job_id):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    cover_note = request.data.get(
-        "cover_note",
-        "",
-    )
+    cover_note = str(
+        request.data.get("cover_note", "")
+    ).strip()
+
+    cv = request.FILES.get("cv")
+
+    if not cover_note and not cv:
+        return Response(
+            {
+                "error": (
+                    "Please provide a cover note "
+                    "or upload a CV"
+                )
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if cv:
+        allowed_types = {
+            "application/pdf",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        }
+
+        if cv.content_type not in allowed_types:
+            return Response(
+                {
+                    "error": (
+                        "CV must be a PDF, DOC, "
+                        "or DOCX file"
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if cv.size > 5 * 1024 * 1024:
+            return Response(
+                {
+                    "error": "CV must be smaller than 5MB"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
     application = Application.objects.create(
         job=job,
         applicant=request.user,
         cover_note=cover_note,
+        cv=cv,
     )
 
     return Response(
