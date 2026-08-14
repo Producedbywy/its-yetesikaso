@@ -171,7 +171,9 @@ def conversation_messages(request, conversation_id):
                 "listing": conversation.listing.id,
                 "listing_title": conversation.listing.title,
                 "buyer": conversation.buyer.id,
+                "buyer_username": conversation.buyer.username,
                 "seller": conversation.seller.id,
+                "seller_username": conversation.seller.username,
                 "results": [
                     {
                         "id": message.id,
