@@ -236,9 +236,10 @@ export default function ProfilePage() {
 
           {/* LOADING */}
           {loading && (
-            <div className="space-y-4">
-              <div className="h-64 animate-pulse rounded-3xl border border-[var(--border)] bg-[var(--card)]" />
-              <div className="h-48 animate-pulse rounded-3xl border border-[var(--border)] bg-[var(--card)]" />
+            <div className="flex min-h-[320px] items-center justify-center">
+              <p className="text-sm text-[var(--muted)]">
+                Loading your profile...
+              </p>
             </div>
           )}
 

@@ -278,8 +278,8 @@ export default function ConversationPage() {
               </h1>
 
               <p className="mt-1 text-sm text-[var(--muted)]">
-                Buyer: {conversation.buyer} · Seller:{" "}
-                {conversation.seller}
+                Buyer: {conversation.buyer_username} · Seller:{" "}
+                {conversation.seller_username}
               </p>
             </div>
 

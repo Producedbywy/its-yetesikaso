@@ -66,10 +66,10 @@ export default function MessagesPage() {
           </div>
 
           {loading && (
-            <div className="space-y-3">
-              <div className="h-24 animate-pulse rounded-2xl border border-[var(--border)] bg-[var(--card)]" />
-              <div className="h-24 animate-pulse rounded-2xl border border-[var(--border)] bg-[var(--card)]" />
-              <div className="h-24 animate-pulse rounded-2xl border border-[var(--border)] bg-[var(--card)]" />
+            <div className="flex min-h-[240px] items-center justify-center">
+              <p className="text-sm text-[var(--muted)]">
+                Loading messages...
+              </p>
             </div>
           )}
 

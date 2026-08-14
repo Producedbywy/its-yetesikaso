@@ -35,7 +35,9 @@ export type ConversationMessagesResponse = {
   listing: number
   listing_title: string
   buyer: number
+  buyer_username: string
   seller: number
+  seller_username: string
   results: Message[]
 }
 
