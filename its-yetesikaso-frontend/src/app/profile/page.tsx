@@ -2,7 +2,6 @@
 
 import Link from "next/link"
 import { FormEvent, useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
 
 import Navbar from "@/components/layout/navbar"
 import Footer from "@/components/layout/footer"
@@ -17,13 +16,14 @@ import {
   type SellerProfile,
 } from "@/lib/api/seller"
 
+import { getMyJobs, type Job } from "@/lib/api/employer"
+
 import type { Listing } from "@/types/listing"
 
 export default function ProfilePage() {
-  const router = useRouter()
-
   const [profile, setProfile] = useState<SellerProfile | null>(null)
   const [listings, setListings] = useState<Listing[]>([])
+  const [jobs, setJobs] = useState<Job[]>([])
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -68,17 +68,26 @@ export default function ProfilePage() {
           if (cancelled) return
 
           setListings(listingsData.results || [])
+          setJobs([])
+        } else if (profileData.role === "employer") {
+          const jobsData = await getMyJobs()
+
+          if (cancelled) return
+
+          setJobs(jobsData.results || [])
+          setListings([])
         } else {
           setListings([])
+          setJobs([])
         }
       } catch (err: unknown) {
-        if (cancelled) return
-
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Failed to load your profile"
-        )
+        if (!cancelled) {
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Failed to load your profile"
+          )
+        }
       } finally {
         if (!cancelled) {
           setLoading(false)
@@ -86,7 +95,7 @@ export default function ProfilePage() {
       }
     }
 
-    loadProfile()
+    void loadProfile()
 
     return () => {
       cancelled = true
@@ -131,14 +140,6 @@ export default function ProfilePage() {
       })
 
       setSuccess("Profile updated successfully.")
-
-      setTimeout(() => {
-        if (updated.role === "seller") {
-          router.push("/dashboard")
-        } else {
-          router.push("/marketplace")
-        }
-      }, 500)
     } catch (err: unknown) {
       setError(
         err instanceof Error
@@ -162,6 +163,13 @@ export default function ProfilePage() {
 
       setProfile(updated)
 
+      setForm({
+        display_name: updated.display_name || "",
+        phone: updated.phone || "",
+        location: updated.location || "",
+        bio: updated.bio || "",
+      })
+
       setSuccess(
         role === "seller"
           ? "Your account is now a seller."
@@ -170,8 +178,13 @@ export default function ProfilePage() {
 
       if (role === "seller") {
         const listingsData = await getMyListings()
+
         setListings(listingsData.results || [])
+        setJobs([])
       } else {
+        const jobsData = await getMyJobs()
+
+        setJobs(jobsData.results || [])
         setListings([])
       }
     } catch (err: unknown) {
@@ -247,6 +260,8 @@ export default function ProfilePage() {
 
               {/* PROFILE */}
               <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 md:p-8">
+
+                {/* PROFILE HEADER */}
                 <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-center">
                   <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-lime-100 text-3xl font-bold text-lime-700">
                     {(
@@ -259,10 +274,24 @@ export default function ProfilePage() {
                   </div>
 
                   <div>
-                    <h2 className="text-2xl font-bold">
-                      {profile?.display_name ||
-                        profile?.username}
-                    </h2>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <h2 className="text-2xl font-bold">
+                        {profile?.display_name ||
+                          profile?.username}
+                      </h2>
+
+                      {isEmployer && (
+                        <span className="rounded-full bg-lime-100 px-3 py-1 text-xs font-semibold text-lime-700">
+                          Employer
+                        </span>
+                      )}
+
+                      {isSeller && (
+                        <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+                          Seller
+                        </span>
+                      )}
+                    </div>
 
                     <p className="mt-1 text-sm text-[var(--muted)]">
                       @{profile?.username}
@@ -285,6 +314,24 @@ export default function ProfilePage() {
                   <p className="mt-1 text-lg font-semibold">
                     {accountType}
                   </p>
+
+                  {isEmployer && (
+                    <p className="mt-2 text-sm text-[var(--muted)]">
+                      Use your employer account to post jobs and manage candidates.
+                    </p>
+                  )}
+
+                  {isSeller && (
+                    <p className="mt-2 text-sm text-[var(--muted)]">
+                      Use your seller account to create and manage marketplace listings.
+                    </p>
+                  )}
+
+                  {isUser && (
+                    <p className="mt-2 text-sm text-[var(--muted)]">
+                      You can upgrade your account to become a seller or employer.
+                    </p>
+                  )}
                 </div>
 
                 {/* ACCOUNT UPGRADES */}
@@ -296,8 +343,7 @@ export default function ProfilePage() {
                       </h2>
 
                       <p className="mt-1 text-sm text-[var(--muted)]">
-                        Your account can become a seller or employer
-                        whenever you are ready.
+                        Your account can become a seller or employer whenever you are ready.
                       </p>
                     </div>
 
@@ -308,15 +354,12 @@ export default function ProfilePage() {
                         </h3>
 
                         <p className="mt-2 text-sm text-[var(--muted)]">
-                          Sell products and services on the
-                          marketplace and manage your listings.
+                          Sell products and services on the marketplace and manage your listings.
                         </p>
 
                         <button
                           type="button"
-                          onClick={() =>
-                            handleUpgrade("seller")
-                          }
+                          onClick={() => handleUpgrade("seller")}
                           disabled={upgrading !== null}
                           className="mt-5 w-full rounded-xl bg-lime-400 px-5 py-3 font-medium text-black transition hover:bg-lime-300 disabled:cursor-not-allowed disabled:opacity-50"
                         >
@@ -332,15 +375,12 @@ export default function ProfilePage() {
                         </h3>
 
                         <p className="mt-2 text-sm text-[var(--muted)]">
-                          Post jobs and connect with people looking
-                          for opportunities.
+                          Post jobs and connect with people looking for opportunities.
                         </p>
 
                         <button
                           type="button"
-                          onClick={() =>
-                            handleUpgrade("employer")
-                          }
+                          onClick={() => handleUpgrade("employer")}
                           disabled={upgrading !== null}
                           className="mt-5 w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-5 py-3 font-medium transition hover:bg-[var(--card)] disabled:cursor-not-allowed disabled:opacity-50"
                         >
@@ -372,19 +412,29 @@ export default function ProfilePage() {
                       {profile?.listing_count ?? 0} Listings
                     </span>
                   )}
+
+                  {isEmployer && (
+                    <span className="rounded-full bg-blue-100 px-4 py-2 text-sm font-medium text-blue-700">
+                      {jobs.length} Job Posts
+                    </span>
+                  )}
                 </div>
 
-                {/* FORM */}
+                {/* PROFILE FORM */}
                 <form
                   onSubmit={handleSubmit}
                   className="space-y-5"
                 >
+
+                  {/* NAME / COMPANY */}
                   <div>
                     <label
                       htmlFor="display_name"
                       className="mb-2 block text-sm font-medium"
                     >
-                      Display Name
+                      {isEmployer
+                        ? "Employer / Company Name"
+                        : "Display Name"}
                     </label>
 
                     <input
@@ -400,23 +450,34 @@ export default function ProfilePage() {
                       required
                       disabled={saving}
                       placeholder={
-                        isSeller
-                          ? "Your seller name"
-                          : isEmployer
-                            ? "Your employer name"
+                        isEmployer
+                          ? "e.g. ABC Company Ltd"
+                          : isSeller
+                            ? "Your seller name"
                             : "Your display name"
                       }
                       className="w-full rounded-2xl border border-[var(--border)] bg-[var(--background)] px-5 py-4 outline-none transition focus:border-lime-400 disabled:opacity-50"
                     />
+
+                    {isEmployer && (
+                      <p className="mt-2 text-sm text-[var(--muted)]">
+                        Use your registered business, company, organisation, or employer name.
+                      </p>
+                    )}
                   </div>
 
+                  {/* PHONE / LOCATION */}
                   <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+
+                    {/* PHONE */}
                     <div>
                       <label
                         htmlFor="phone"
                         className="mb-2 block text-sm font-medium"
                       >
-                        Phone
+                        {isEmployer
+                          ? "Business Phone"
+                          : "Phone"}
                       </label>
 
                       <input
@@ -430,17 +491,30 @@ export default function ProfilePage() {
                         }
                         maxLength={30}
                         disabled={saving}
-                        placeholder="e.g. +233..."
+                        placeholder={
+                          isEmployer
+                            ? "e.g. +233 24 123 4567"
+                            : "e.g. +233..."
+                        }
                         className="w-full rounded-2xl border border-[var(--border)] bg-[var(--background)] px-5 py-4 outline-none transition focus:border-lime-400 disabled:opacity-50"
                       />
+
+                      {isEmployer && (
+                        <p className="mt-2 text-sm text-[var(--muted)]">
+                          A phone number candidates can use to contact your organisation.
+                        </p>
+                      )}
                     </div>
 
+                    {/* LOCATION */}
                     <div>
                       <label
                         htmlFor="location"
                         className="mb-2 block text-sm font-medium"
                       >
-                        Location
+                        {isEmployer
+                          ? "Business / Company Location"
+                          : "Location"}
                       </label>
 
                       <input
@@ -457,15 +531,24 @@ export default function ProfilePage() {
                         placeholder="e.g. Accra, Ghana"
                         className="w-full rounded-2xl border border-[var(--border)] bg-[var(--background)] px-5 py-4 outline-none transition focus:border-lime-400 disabled:opacity-50"
                       />
+
+                      {isEmployer && (
+                        <p className="mt-2 text-sm text-[var(--muted)]">
+                          Where your company or organisation is based.
+                        </p>
+                      )}
                     </div>
                   </div>
 
+                  {/* ABOUT */}
                   <div>
                     <label
                       htmlFor="bio"
                       className="mb-2 block text-sm font-medium"
                     >
-                      About You
+                      {isEmployer
+                        ? "About the Employer"
+                        : "About You"}
                     </label>
 
                     <textarea
@@ -481,16 +564,29 @@ export default function ProfilePage() {
                       rows={6}
                       disabled={saving}
                       placeholder={
-                        isSeller
-                          ? "Tell buyers a little about yourself..."
-                          : isEmployer
-                            ? "Tell job seekers a little about yourself..."
+                        isEmployer
+                          ? "Tell job seekers about your company, organisation, industry, culture, and the type of people you are looking to hire..."
+                          : isSeller
+                            ? "Tell buyers a little about yourself..."
                             : "Tell the Yetesikaso community a little about yourself..."
                       }
                       className="min-h-[140px] w-full resize-y rounded-2xl border border-[var(--border)] bg-[var(--background)] px-5 py-4 outline-none transition focus:border-lime-400 disabled:opacity-50"
                     />
+
+                    {isEmployer && (
+                      <div className="mt-2 flex items-start justify-between gap-4">
+                        <p className="text-sm text-[var(--muted)]">
+                          Give job seekers useful context about your organisation before they apply for your jobs.
+                        </p>
+
+                        <span className="shrink-0 text-xs text-[var(--muted)]">
+                          {form.bio.length}/1000
+                        </span>
+                      </div>
+                    )}
                   </div>
 
+                  {/* SAVE */}
                   <div className="flex justify-end">
                     <button
                       type="submit"
@@ -510,6 +606,175 @@ export default function ProfilePage() {
                 </form>
               </section>
 
+              {/* EMPLOYER TOOLS */}
+              {isEmployer && (
+                <section className="mt-10">
+                  <div className="mb-6">
+                    <h2 className="text-2xl font-bold">
+                      Employer Tools
+                    </h2>
+
+                    <p className="mt-1 text-sm text-[var(--muted)]">
+                      Manage your employer account and job postings.
+                    </p>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <Link
+                      href="/employer/dashboard"
+                      className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 transition hover:-translate-y-0.5 hover:shadow-md"
+                    >
+                      <h3 className="text-lg font-semibold">
+                        Employer Dashboard
+                      </h3>
+
+                      <p className="mt-2 text-sm text-[var(--muted)]">
+                        View your employer overview and job statistics.
+                      </p>
+
+                      <p className="mt-4 text-sm font-medium text-lime-600">
+                        Open Dashboard →
+                      </p>
+                    </Link>
+
+                    <Link
+                      href="/employer/jobs/manage"
+                      className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 transition hover:-translate-y-0.5 hover:shadow-md"
+                    >
+                      <h3 className="text-lg font-semibold">
+                        Manage Jobs
+                      </h3>
+
+                      <p className="mt-2 text-sm text-[var(--muted)]">
+                        View, edit and manage your existing job posts.
+                      </p>
+
+                      <p className="mt-4 text-sm font-medium text-lime-600">
+                        Manage Jobs →
+                      </p>
+                    </Link>
+
+                    <Link
+                      href="/employer/jobs/create"
+                      className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 transition hover:-translate-y-0.5 hover:shadow-md"
+                    >
+                      <h3 className="text-lg font-semibold">
+                        Post a Job
+                      </h3>
+
+                      <p className="mt-2 text-sm text-[var(--muted)]">
+                        Create a new job posting and start finding candidates.
+                      </p>
+
+                      <p className="mt-4 text-sm font-medium text-lime-600">
+                        Post Job →
+                      </p>
+                    </Link>
+                  </div>
+                </section>
+              )}
+
+              {/* EMPLOYER JOBS */}
+              {isEmployer && (
+                <section className="mt-10">
+                  <div className="mb-6 flex items-center justify-between">
+                    <div>
+                      <h2 className="text-2xl font-bold">
+                        Your Job Posts
+                      </h2>
+
+                      <p className="mt-1 text-sm text-[var(--muted)]">
+                        Jobs currently associated with your employer account.
+                      </p>
+                    </div>
+
+                    {jobs.length > 0 && (
+                      <Link
+                        href="/employer/jobs/manage"
+                        className="text-sm font-medium text-lime-600 hover:underline"
+                      >
+                        View all
+                      </Link>
+                    )}
+                  </div>
+
+                  {jobs.length === 0 ? (
+                    <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-10 text-center">
+                      <h3 className="text-lg font-semibold">
+                        No jobs posted yet
+                      </h3>
+
+                      <p className="mt-2 text-sm text-[var(--muted)]">
+                        Post your first job to start finding candidates.
+                      </p>
+
+                      <Link
+                        href="/employer/jobs/create"
+                        className="mt-5 inline-block rounded-xl bg-lime-400 px-5 py-3 font-medium text-black hover:bg-lime-300"
+                      >
+                        Post Your First Job
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="grid gap-5 md:grid-cols-2">
+                      {jobs.map((job) => (
+                        <div
+                          key={job.id}
+                          className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 transition hover:-translate-y-0.5 hover:shadow-md"
+                        >
+                          <div className="flex items-start justify-between gap-4">
+                            <div>
+                              <p className="text-sm text-lime-600">
+                                {job.category_display}
+                              </p>
+
+                              <h3 className="mt-1 text-lg font-semibold">
+                                {job.title}
+                              </h3>
+                            </div>
+
+                            <span className="shrink-0 rounded-full bg-[var(--background)] px-3 py-1 text-xs font-medium">
+                              {job.status_display}
+                            </span>
+                          </div>
+
+                          <div className="mt-4 space-y-2 text-sm text-[var(--muted)]">
+                            <p>
+                              {job.location} •{" "}
+                              {job.workplace_type_display}
+                            </p>
+
+                            <p>
+                              {job.employment_type_display}
+                            </p>
+
+                            <p className="font-medium text-[var(--foreground)]">
+                              {job.salary_display}
+                            </p>
+                          </div>
+
+                          <div className="mt-5 flex items-center justify-between">
+                            <Link
+                              href={`/jobs/${job.id}`}
+                              className="text-sm font-medium text-[var(--muted)] hover:text-[var(--foreground)]"
+                            >
+                              View job →
+                            </Link>
+
+                            <Link
+                              href={`/employer/jobs/${job.id}/edit`}
+                              className="rounded-lg border border-[var(--border)] px-3 py-1.5 text-sm font-medium transition hover:bg-[var(--background)]"
+                            >
+                              Manage
+                            </Link>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              )}
+
               {/* SELLER LISTINGS */}
               {isSeller && (
                 <section className="mt-10">
@@ -519,8 +784,7 @@ export default function ProfilePage() {
                     </h2>
 
                     <p className="mt-1 text-sm text-[var(--muted)]">
-                      Listings currently associated with your seller
-                      account.
+                      Listings currently associated with your seller account.
                     </p>
                   </div>
 
@@ -544,7 +808,7 @@ export default function ProfilePage() {
                   ) : (
                     <div className="grid gap-5 md:grid-cols-2">
                       {listings.map((listing) => (
-                        <a
+                        <Link
                           key={listing.id}
                           href={`/marketplace/${listing.slug}`}
                           className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 transition hover:-translate-y-0.5 hover:shadow-md"
@@ -580,7 +844,7 @@ export default function ProfilePage() {
                           <p className="mt-4 text-sm font-medium">
                             View listing →
                           </p>
-                        </a>
+                        </Link>
                       ))}
                     </div>
                   )}

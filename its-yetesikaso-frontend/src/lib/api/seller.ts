@@ -92,11 +92,13 @@ export async function updateMyProfile(
 export async function upgradeAccount(
   role: "seller" | "employer"
 ): Promise<SellerProfile> {
-  return apiClient<SellerProfile>(
-    "/auth/profile/upgrade/",
-    {
-      method: "POST",
-      body: JSON.stringify({ role }),
-    }
-  )
+  const response = await apiClient<{
+    message: string
+    profile: SellerProfile
+  }>("/auth/profile/upgrade/", {
+    method: "POST",
+    body: JSON.stringify({ role }),
+  })
+
+  return response.profile
 }

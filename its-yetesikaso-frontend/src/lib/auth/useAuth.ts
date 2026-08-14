@@ -46,6 +46,8 @@ export function useAuth() {
         router.push("/profile")
       } else if (profile.role === "seller") {
         router.push("/dashboard")
+      } else if (profile.role === "employer") {
+        router.push("/employer/dashboard")
       } else {
         router.push("/marketplace")
       }

@@ -7,14 +7,18 @@ import Container from "./container"
 import ThemeToggle from "../shared/theme-toggle"
 import { getAccessToken, clearTokens } from "@/lib/auth/tokens"
 import { getConversations } from "@/lib/api/messages"
+import { getMyProfile, type AccountRole } from "@/lib/api/seller"
 
 export default function Navbar() {
   const [authenticated, setAuthenticated] = useState(false)
+  const [role, setRole] = useState<AccountRole>("user")
   const [unreadMessages, setUnreadMessages] = useState(0)
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
-      setAuthenticated(Boolean(getAccessToken()))
+      const token = getAccessToken()
+
+      setAuthenticated(Boolean(token))
     })
 
     return () => {
@@ -29,21 +33,26 @@ export default function Navbar() {
 
     let cancelled = false
 
-    async function loadUnreadMessages() {
+    async function loadUserData() {
       try {
-        const response = await getConversations()
+        const [profile, conversations] = await Promise.all([
+          getMyProfile(),
+          getConversations(),
+        ])
 
         if (!cancelled) {
-          setUnreadMessages(response.unread_count || 0)
+          setRole(profile.role)
+          setUnreadMessages(conversations.unread_count || 0)
         }
       } catch {
         if (!cancelled) {
+          setRole("user")
           setUnreadMessages(0)
         }
       }
     }
 
-    void loadUnreadMessages()
+    void loadUserData()
 
     return () => {
       cancelled = true
@@ -53,9 +62,13 @@ export default function Navbar() {
   function handleLogout() {
     clearTokens()
     setAuthenticated(false)
+    setRole("user")
     setUnreadMessages(0)
     window.location.href = "/"
   }
+
+  const isSeller = authenticated && role === "seller"
+  const isEmployer = authenticated && role === "employer"
 
   return (
     <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/90 text-gray-900 backdrop-blur dark:border-gray-800 dark:bg-gray-950/90 dark:text-white">
@@ -86,12 +99,24 @@ export default function Navbar() {
 
           {authenticated ? (
             <>
-              <Link
-                href="/dashboard"
-                className="transition-opacity hover:opacity-70"
-              >
-                Dashboard
-              </Link>
+              {/* ROLE-SPECIFIC DASHBOARD */}
+              {isSeller && (
+                <Link
+                  href="/dashboard"
+                  className="transition-opacity hover:opacity-70"
+                >
+                  Seller Dashboard
+                </Link>
+              )}
+
+              {isEmployer && (
+                <Link
+                  href="/employer/dashboard"
+                  className="transition-opacity hover:opacity-70"
+                >
+                  Employer Dashboard
+                </Link>
+              )}
 
               <Link
                 href="/profile"
@@ -141,12 +166,23 @@ export default function Navbar() {
 
           <ThemeToggle />
 
-          {authenticated && (
+          {/* SELLER-ONLY ACTION */}
+          {isSeller && (
             <Link
               href="/dashboard/create"
               className="rounded-xl bg-lime-400 px-5 py-2.5 font-medium text-black transition hover:bg-lime-300"
             >
               Post Listing
+            </Link>
+          )}
+
+          {/* EMPLOYER-ONLY ACTION */}
+          {isEmployer && (
+            <Link
+              href="/employer/jobs/create"
+              className="rounded-xl bg-lime-400 px-5 py-2.5 font-medium text-black transition hover:bg-lime-300"
+            >
+              Post Job
             </Link>
           )}
         </nav>
