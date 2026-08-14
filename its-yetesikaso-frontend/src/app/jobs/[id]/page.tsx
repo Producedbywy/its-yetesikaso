@@ -4,7 +4,7 @@ import Navbar from "@/components/layout/navbar"
 import Footer from "@/components/layout/footer"
 import MobileNav from "@/components/layout/mobile-nav"
 import Container from "@/components/layout/container"
-import { getJob } from "@/lib/api/jobs"
+import { getPublicJob } from "@/lib/api/public"
 import ApplyToJob from "@/components/jobs/ApplyToJob"
 
 type JobPageProps = {
@@ -21,7 +21,7 @@ export default async function JobDetailPage({
   let job
 
   try {
-    job = await getJob(Number(id))
+    job = await getPublicJob(Number(id))
   } catch {
     return (
       <main className="min-h-screen bg-[var(--background)] pb-20">
