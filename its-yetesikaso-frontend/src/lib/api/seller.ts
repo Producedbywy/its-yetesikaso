@@ -64,6 +64,47 @@ export async function updateListing(
   return response.listing
 }
 
+// DELETE LISTING
+export async function deleteListing(
+  id: number
+): Promise<{ message: string }> {
+  return apiClient<{ message: string }>(
+    `/listings/${id}/`,
+    {
+      method: "DELETE",
+    }
+  )
+}
+
+// GET MY FAVOURITES
+export async function getMyFavourites(): Promise<ListingsResponse> {
+  return apiClient<ListingsResponse>("/favourites/")
+}
+
+// ADD LISTING TO FAVOURITES
+export async function favouriteListing(
+  listingId: number
+): Promise<{ message: string; favourited: boolean }> {
+  return apiClient<{
+    message: string
+    favourited: boolean
+  }>(`/listings/${listingId}/favourite/`, {
+    method: "POST",
+  })
+}
+
+// REMOVE LISTING FROM FAVOURITES
+export async function unfavouriteListing(
+  listingId: number
+): Promise<{ message: string; favourited: boolean }> {
+  return apiClient<{
+    message: string
+    favourited: boolean
+  }>(`/listings/${listingId}/favourite/`, {
+    method: "DELETE",
+  })
+}
+
 // GET MY PROFILE
 export async function getMyProfile(): Promise<SellerProfile> {
   return apiClient<SellerProfile>("/auth/profile/")

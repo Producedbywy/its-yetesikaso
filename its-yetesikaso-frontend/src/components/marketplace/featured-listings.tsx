@@ -12,6 +12,8 @@ export default function FeaturedListings() {
       category: "all",
       location: "all",
       sort: "newest",
+      minPrice: "",
+      maxPrice: "",
     }),
     []
   )

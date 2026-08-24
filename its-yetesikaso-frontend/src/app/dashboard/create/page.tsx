@@ -15,11 +15,12 @@ export default function CreateListingPage() {
     title: "",
     description: "",
     price: "",
+    quantity: "1",
     category: "electronics",
     location: "",
   })
 
-  const [image, setImage] = useState<File | null>(null)
+  const [images, setImages] = useState<File[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -33,8 +34,19 @@ export default function CreateListingPage() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
 
-    if (!form.title.trim() || !form.price || !form.location.trim()) {
+    if (
+      !form.title.trim() ||
+      !form.price ||
+      !form.location.trim()
+    ) {
       setError("Please fill in all required fields")
+      return
+    }
+
+    const quantity = Number(form.quantity)
+
+    if (!Number.isInteger(quantity) || quantity < 1) {
+      setError("Quantity must be at least 1")
       return
     }
 
@@ -47,12 +59,13 @@ export default function CreateListingPage() {
       data.append("title", form.title.trim())
       data.append("description", form.description.trim())
       data.append("price", form.price)
+      data.append("quantity", String(quantity))
       data.append("category", form.category)
       data.append("location", form.location.trim())
 
-      if (image) {
-        data.append("image", image)
-      }
+      images.forEach((file) => {
+        data.append("images", file)
+      })
 
       const listing = await createListing(data)
 
@@ -136,14 +149,14 @@ export default function CreateListingPage() {
               />
             </div>
 
-            {/* PRICE + CATEGORY */}
+            {/* PRICE + QUANTITY */}
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <div>
                 <label
                   htmlFor="price"
                   className="mb-2 block text-sm font-medium"
                 >
-                  Price
+                  Price per item
                 </label>
 
                 <input
@@ -165,43 +178,73 @@ export default function CreateListingPage() {
 
               <div>
                 <label
-                  htmlFor="category"
+                  htmlFor="quantity"
                   className="mb-2 block text-sm font-medium"
                 >
-                  Category
+                  Quantity available
                 </label>
 
-                <select
-                  id="category"
-                  name="category"
-                  value={form.category}
+                <input
+                  id="quantity"
+                  name="quantity"
+                  value={form.quantity}
                   onChange={(e) =>
-                    updateField("category", e.target.value)
+                    updateField("quantity", e.target.value)
                   }
+                  type="number"
+                  min="1"
+                  step="1"
+                  required
                   disabled={loading}
                   className="w-full rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 py-4 outline-none transition focus:border-lime-400 disabled:opacity-50"
-                >
-                  <option value="electronics">
-                    Electronics
-                  </option>
+                />
 
-                  <option value="vehicles">
-                    Vehicles
-                  </option>
-
-                  <option value="property">
-                    Property
-                  </option>
-
-                  <option value="fashion">
-                    Fashion
-                  </option>
-
-                  <option value="services">
-                    Services
-                  </option>
-                </select>
+                <p className="mt-2 text-xs text-[var(--muted)]">
+                  Enter 1 for a single item or the total number
+                  available if you have multiple units.
+                </p>
               </div>
+            </div>
+
+            {/* CATEGORY */}
+            <div>
+              <label
+                htmlFor="category"
+                className="mb-2 block text-sm font-medium"
+              >
+                Category
+              </label>
+
+              <select
+                id="category"
+                name="category"
+                value={form.category}
+                onChange={(e) =>
+                  updateField("category", e.target.value)
+                }
+                disabled={loading}
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 py-4 outline-none transition focus:border-lime-400 disabled:opacity-50"
+              >
+                <option value="electronics">
+                  Electronics
+                </option>
+
+                <option value="vehicles">
+                  Vehicles
+                </option>
+
+                <option value="property">
+                  Property
+                </option>
+
+                <option value="fashion">
+                  Fashion
+                </option>
+
+                <option value="services">
+                  Services
+                </option>
+              </select>
             </div>
 
             {/* LOCATION */}
@@ -238,7 +281,7 @@ export default function CreateListingPage() {
                 Add a clear photo of the item. PNG, JPG, or WEBP.
               </p>
 
-              <ImageUploader onChange={setImage} />
+              <ImageUploader onChange={setImages} />
             </div>
 
             {/* ERROR */}

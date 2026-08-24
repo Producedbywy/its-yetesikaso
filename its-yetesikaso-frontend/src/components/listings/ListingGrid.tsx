@@ -4,29 +4,60 @@ import Image from "next/image"
 import Link from "next/link"
 import { Heart, Share2 } from "lucide-react"
 import { useState } from "react"
+
 import type { Listing } from "@/types/listing"
+import {
+  favouriteListing,
+  unfavouriteListing,
+} from "@/lib/api/favourites"
 
 interface ListingCardProps {
   listing: Listing
 }
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, '') || ''
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, "") || ""
 
 function getImageUrl(image: string | null) {
   if (!image) return null
 
-  if (image.startsWith("http://") || image.startsWith("https://")) {
+  if (
+    image.startsWith("http://") ||
+    image.startsWith("https://")
+  ) {
     return image
   }
 
   return `${API_BASE_URL}${image}`
 }
 
-export default function ListingCard({ listing }: ListingCardProps) {
-  const [saved, setSaved] = useState(false)
+export default function ListingCard({
+  listing,
+}: ListingCardProps) {
+  const [saved, setSaved] = useState(listing.is_favourited)
+  const [saving, setSaving] = useState(false)
 
   const imageSrc = getImageUrl(listing.image)
+
+  async function handleFavourite() {
+    if (saving) return
+
+    try {
+      setSaving(true)
+
+      if (saved) {
+        await unfavouriteListing(listing.id)
+        setSaved(false)
+      } else {
+        await favouriteListing(listing.id)
+        setSaved(true)
+      }
+    } catch (error) {
+      console.error("Failed to update favourite:", error)
+    } finally {
+      setSaving(false)
+    }
+  }
 
   return (
     <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm transition hover:shadow-md">
@@ -50,9 +81,15 @@ export default function ListingCard({ listing }: ListingCardProps) {
         {/* SAVE */}
         <button
           type="button"
-          onClick={() => setSaved((value) => !value)}
-          aria-label={saved ? "Remove from saved listings" : "Save listing"}
-          className="absolute right-3 top-3 rounded-full bg-white/90 p-2 shadow-sm backdrop-blur transition hover:bg-white"
+          onClick={handleFavourite}
+          disabled={saving}
+          aria-label={
+            saved
+              ? "Remove from saved listings"
+              : "Save listing"
+          }
+          aria-pressed={saved}
+          className="absolute right-3 top-3 rounded-full bg-white/90 p-2 shadow-sm backdrop-blur transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
         >
           <Heart
             className={`h-4 w-4 ${
@@ -66,7 +103,10 @@ export default function ListingCard({ listing }: ListingCardProps) {
 
       {/* CONTENT */}
       <div className="p-4">
-        <Link href={`/marketplace/${listing.slug}`} className="block">
+        <Link
+          href={`/marketplace/${listing.slug}`}
+          className="block"
+        >
           <h3 className="line-clamp-1 text-sm font-semibold">
             {listing.title}
           </h3>

@@ -1,16 +1,23 @@
-'use client'
+"use client"
 
-import Image from 'next/image'
-import Link from 'next/link'
-import { motion } from 'framer-motion'
-import type { Listing } from '@/types/listing'
+import Image from "next/image"
+import Link from "next/link"
+import { Heart } from "lucide-react"
+import { motion } from "framer-motion"
+import { useState } from "react"
+
+import type { Listing } from "@/types/listing"
+import {
+  favouriteListing,
+  unfavouriteListing,
+} from "@/lib/api/favourites"
 
 interface ListingCardProps {
   listing: Listing
 }
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, '') || ''
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, "") || ""
 
 function getImageUrl(image: string | null) {
   if (!image) return null
@@ -29,65 +36,120 @@ function getImageUrl(image: string | null) {
   return `${API_BASE_URL}${cleanImage}`
 }
 
-export default function ListingCard({ listing }: ListingCardProps) {
-const imageSrc = getImageUrl(listing.image)
+export default function ListingCard({
+  listing,
+}: ListingCardProps) {
+  const [saved, setSaved] = useState(listing.is_favourited)
+  const [saving, setSaving] = useState(false)
 
-const formattedDate = listing.created_at
-? new Date(listing.created_at).toLocaleDateString()
-: ''
+  const imageSrc = getImageUrl(listing.image)
 
-return (
-<motion.div
-whileHover={{ y: -6 }}
-transition={{ duration: 0.2 }}
->
-<Link
-href={`/marketplace/${listing.slug}`}
-className="block overflow-hidden rounded-3xl border border-[var(--border)] bg-white transition hover:shadow-xl dark:bg-[var(--card)]"
->
-{/* IMAGE */} <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-100 dark:bg-gray-900">
-{imageSrc ? ( <Image
-           src={imageSrc}
-           alt={listing.title}
-           fill
-           priority
-           sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
-           className="object-cover object-center transition duration-500 hover:scale-105"
-           unoptimized
-         />
-) : ( <div className="flex h-full items-center justify-center text-sm text-[var(--muted)]">
-No image </div>
-)} </div>
+  const formattedDate = listing.created_at
+    ? new Date(listing.created_at).toLocaleDateString()
+    : ""
 
-```
-    {/* CONTENT */}
-    <div className="space-y-3 p-5">
-      <div className="flex items-center justify-between gap-3">
-        <span className="rounded-full bg-lime-100 px-3 py-1 text-xs font-medium text-lime-700">
-          {listing.category}
-        </span>
+  async function handleFavourite(
+    event: React.MouseEvent<HTMLButtonElement>
+  ) {
+    event.preventDefault()
+    event.stopPropagation()
 
-        {formattedDate && (
-          <span className="text-sm text-[var(--muted)]">
-            {formattedDate}
-          </span>
-        )}
-      </div>
+    if (saving) return
 
-      <h3 className="text-lg font-semibold leading-snug">
-        {listing.title}
-      </h3>
+    try {
+      setSaving(true)
 
-      <p className="text-2xl font-bold">
-        GH₵ {listing.price.toLocaleString()}
-      </p>
+      if (saved) {
+        await unfavouriteListing(listing.id)
+        setSaved(false)
+      } else {
+        await favouriteListing(listing.id)
+        setSaved(true)
+      }
+    } catch (error) {
+      console.error("Failed to update favourite:", error)
+    } finally {
+      setSaving(false)
+    }
+  }
 
-      <p className="text-sm text-[var(--muted)]">
-        {listing.location}
-      </p>
-    </div>
-  </Link>
-</motion.div>
+  return (
+    <motion.div
+      whileHover={{ y: -6 }}
+      transition={{ duration: 0.2 }}
+    >
+      <Link
+        href={`/marketplace/${listing.slug}`}
+        className="block overflow-hidden rounded-3xl border border-[var(--border)] bg-white transition hover:shadow-xl dark:bg-[var(--card)]"
+      >
+        {/* IMAGE */}
+        <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-100 dark:bg-gray-900">
+          {imageSrc ? (
+            <Image
+              src={imageSrc}
+              alt={listing.title}
+              fill
+              priority
+              sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+              className="object-cover object-center transition duration-500 hover:scale-105"
+              unoptimized
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center text-sm text-[var(--muted)]">
+              No image
+            </div>
+          )}
 
-)
+          {/* SAVE BUTTON */}
+          <button
+            type="button"
+            onClick={handleFavourite}
+            disabled={saving}
+            aria-label={
+              saved
+                ? "Remove from saved listings"
+                : "Save listing"
+            }
+            aria-pressed={saved}
+            className="absolute right-3 top-3 rounded-full bg-white/90 p-2 shadow-sm transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <Heart
+              className={`h-4 w-4 ${
+                saved
+                  ? "fill-red-500 text-red-500"
+                  : "text-[var(--muted)]"
+              }`}
+            />
+          </button>
+        </div>
+
+        {/* CONTENT */}
+        <div className="space-y-3 p-5">
+          <div className="flex items-center justify-between gap-3">
+            <span className="rounded-full bg-lime-100 px-3 py-1 text-xs font-medium text-lime-700">
+              {listing.category}
+            </span>
+
+            {formattedDate && (
+              <span className="text-sm text-[var(--muted)]">
+                {formattedDate}
+              </span>
+            )}
+          </div>
+
+          <h3 className="text-lg font-semibold leading-snug">
+            {listing.title}
+          </h3>
+
+          <p className="text-2xl font-bold">
+            GH₵ {listing.price.toLocaleString()}
+          </p>
+
+          <p className="text-sm text-[var(--muted)]">
+            {listing.location}
+          </p>
+        </div>
+      </Link>
+    </motion.div>
+  )
 }

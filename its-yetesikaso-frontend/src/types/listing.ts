@@ -21,7 +21,11 @@ export type Listing = {
   category: string
   location: string
   image: string | null
+  images: string[]
+  quantity: number
+  available_quantity: number
   slug: string
   created_at: string
   seller: Seller | null
+  is_favourited: boolean
 }

@@ -14,6 +14,8 @@ export default function MarketplacePage() {
     search: "",
     category: "all",
     location: "all",
+    minPrice: "",
+    maxPrice: "",
     sort: "newest",
   })
 
@@ -25,8 +27,14 @@ export default function MarketplacePage() {
     loading = false,
   } = useListings(filters, page)
 
-  function updateFilters(newFilters: Partial<typeof filters>) {
-    setFilters((prev) => ({ ...prev, ...newFilters }))
+  function updateFilters(
+    newFilters: Partial<typeof filters>
+  ) {
+    setFilters((prev) => ({
+      ...prev,
+      ...newFilters,
+    }))
+
     setPage(1)
   }
 
@@ -35,8 +43,11 @@ export default function MarketplacePage() {
       search: "",
       category: "all",
       location: "all",
+      minPrice: "",
+      maxPrice: "",
       sort: "newest",
     })
+
     setPage(1)
   }
 
@@ -47,14 +58,15 @@ export default function MarketplacePage() {
       <MobileStickySearch
         value={filters.search}
         onChange={(search) => {
-          setPage(1)
           updateFilters({ search })
         }}
       />
 
       <MobileFilterModal
         filters={filters}
-        onApply={(newFilters) => updateFilters(newFilters)}
+        onApply={(newFilters) =>
+          updateFilters(newFilters)
+        }
       />
 
       {/* HERO */}
@@ -77,37 +89,71 @@ export default function MarketplacePage() {
                 placeholder="Search listings..."
                 value={filters.search}
                 onChange={(e) =>
-                  updateFilters({ search: e.target.value })
+                  updateFilters({
+                    search: e.target.value,
+                  })
                 }
-                className="rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 outline-none"
+                className="rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 outline-none focus:ring-2 focus:ring-lime-400"
               />
 
               <select
                 value={filters.category}
                 onChange={(e) =>
-                  updateFilters({ category: e.target.value })
+                  updateFilters({
+                    category: e.target.value,
+                  })
                 }
-                className="rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 outline-none"
+                className="rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 outline-none focus:ring-2 focus:ring-lime-400"
               >
-                <option value="all">All Categories</option>
-                <option value="electronics">Electronics</option>
-                <option value="vehicles">Vehicles</option>
-                <option value="property">Property</option>
-                <option value="fashion">Fashion</option>
-                <option value="services">Services</option>
+                <option value="all">
+                  All Categories
+                </option>
+
+                <option value="electronics">
+                  Electronics
+                </option>
+
+                <option value="vehicles">
+                  Vehicles
+                </option>
+
+                <option value="property">
+                  Property
+                </option>
+
+                <option value="fashion">
+                  Fashion
+                </option>
+
+                <option value="services">
+                  Services
+                </option>
               </select>
 
               <select
                 value={filters.location}
                 onChange={(e) =>
-                  updateFilters({ location: e.target.value })
+                  updateFilters({
+                    location: e.target.value,
+                  })
                 }
-                className="rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 outline-none"
+                className="rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 outline-none focus:ring-2 focus:ring-lime-400"
               >
-                <option value="all">All Locations</option>
-                <option value="accra">Accra</option>
-                <option value="kumasi">Kumasi</option>
-                <option value="tamale">Tamale</option>
+                <option value="all">
+                  All Locations
+                </option>
+
+                <option value="accra">
+                  Accra
+                </option>
+
+                <option value="kumasi">
+                  Kumasi
+                </option>
+
+                <option value="tamale">
+                  Tamale
+                </option>
               </select>
             </div>
           </div>
@@ -121,11 +167,23 @@ export default function MarketplacePage() {
 
             {/* SIDEBAR */}
             <aside className="hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 lg:block">
-              <h3 className="mb-6 text-lg font-semibold">
-                Filters
-              </h3>
+              <div className="mb-6 flex items-center justify-between">
+                <h3 className="text-lg font-semibold">
+                  Filters
+                </h3>
+
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="text-sm text-[var(--muted)] transition hover:text-[var(--foreground)]"
+                >
+                  Clear
+                </button>
+              </div>
 
               <div className="space-y-6">
+
+                {/* CATEGORY */}
                 <div>
                   <p className="mb-3 font-medium">
                     Category
@@ -133,61 +191,137 @@ export default function MarketplacePage() {
 
                   <div className="space-y-2 text-sm text-[var(--muted)]">
                     <button
+                      type="button"
                       onClick={() =>
-                        updateFilters({ category: "all" })
+                        updateFilters({
+                          category: "all",
+                        })
                       }
-                      className="block"
+                      className={`block transition hover:text-[var(--foreground)] ${
+                        filters.category === "all"
+                          ? "font-semibold text-[var(--foreground)]"
+                          : ""
+                      }`}
                     >
                       All Categories
                     </button>
 
                     <button
+                      type="button"
                       onClick={() =>
-                        updateFilters({ category: "electronics" })
+                        updateFilters({
+                          category: "electronics",
+                        })
                       }
-                      className="block"
+                      className={`block transition hover:text-[var(--foreground)] ${
+                        filters.category === "electronics"
+                          ? "font-semibold text-[var(--foreground)]"
+                          : ""
+                      }`}
                     >
                       Electronics
                     </button>
 
                     <button
+                      type="button"
                       onClick={() =>
-                        updateFilters({ category: "vehicles" })
+                        updateFilters({
+                          category: "vehicles",
+                        })
                       }
-                      className="block"
+                      className={`block transition hover:text-[var(--foreground)] ${
+                        filters.category === "vehicles"
+                          ? "font-semibold text-[var(--foreground)]"
+                          : ""
+                      }`}
                     >
                       Vehicles
                     </button>
 
                     <button
+                      type="button"
                       onClick={() =>
-                        updateFilters({ category: "property" })
+                        updateFilters({
+                          category: "property",
+                        })
                       }
-                      className="block"
+                      className={`block transition hover:text-[var(--foreground)] ${
+                        filters.category === "property"
+                          ? "font-semibold text-[var(--foreground)]"
+                          : ""
+                      }`}
                     >
                       Property
                     </button>
 
                     <button
+                      type="button"
                       onClick={() =>
-                        updateFilters({ category: "fashion" })
+                        updateFilters({
+                          category: "fashion",
+                        })
                       }
-                      className="block"
+                      className={`block transition hover:text-[var(--foreground)] ${
+                        filters.category === "fashion"
+                          ? "font-semibold text-[var(--foreground)]"
+                          : ""
+                      }`}
                     >
                       Fashion
                     </button>
 
                     <button
+                      type="button"
                       onClick={() =>
-                        updateFilters({ category: "services" })
+                        updateFilters({
+                          category: "services",
+                        })
                       }
-                      className="block"
+                      className={`block transition hover:text-[var(--foreground)] ${
+                        filters.category === "services"
+                          ? "font-semibold text-[var(--foreground)]"
+                          : ""
+                      }`}
                     >
                       Services
                     </button>
                   </div>
                 </div>
 
+                {/* LOCATION */}
+                <div>
+                  <p className="mb-3 font-medium">
+                    Location
+                  </p>
+
+                  <select
+                    value={filters.location}
+                    onChange={(e) =>
+                      updateFilters({
+                        location: e.target.value,
+                      })
+                    }
+                    className="w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2 outline-none focus:ring-2 focus:ring-lime-400"
+                  >
+                    <option value="all">
+                      All Locations
+                    </option>
+
+                    <option value="accra">
+                      Accra
+                    </option>
+
+                    <option value="kumasi">
+                      Kumasi
+                    </option>
+
+                    <option value="tamale">
+                      Tamale
+                    </option>
+                  </select>
+                </div>
+
+                {/* PRICE RANGE */}
                 <div>
                   <p className="mb-3 font-medium">
                     Price Range
@@ -195,22 +329,37 @@ export default function MarketplacePage() {
 
                   <input
                     type="number"
-                    placeholder="Min"
-                    className="mb-2 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2"
+                    min="0"
+                    placeholder="Min price"
+                    value={filters.minPrice}
+                    onChange={(e) =>
+                      updateFilters({
+                        minPrice: e.target.value,
+                      })
+                    }
+                    className="mb-2 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2 outline-none focus:ring-2 focus:ring-lime-400"
                   />
 
                   <input
                     type="number"
-                    placeholder="Max"
-                    className="w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2"
+                    min="0"
+                    placeholder="Max price"
+                    value={filters.maxPrice}
+                    onChange={(e) =>
+                      updateFilters({
+                        maxPrice: e.target.value,
+                      })
+                    }
+                    className="w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2 outline-none focus:ring-2 focus:ring-lime-400"
                   />
                 </div>
+
               </div>
             </aside>
 
             {/* LISTINGS */}
             <div>
-              <div className="mb-6 flex items-center justify-between">
+              <div className="mb-6 flex items-center justify-between gap-4">
                 <p className="text-[var(--muted)]">
                   Showing {total} listings
                 </p>
@@ -218,28 +367,41 @@ export default function MarketplacePage() {
                 <select
                   value={filters.sort}
                   onChange={(e) =>
-                    updateFilters({ sort: e.target.value })
+                    updateFilters({
+                      sort: e.target.value,
+                    })
                   }
                   className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2"
                 >
-                  <option value="newest">Newest First</option>
-                  <option value="low">Lowest Price</option>
-                  <option value="high">Highest Price</option>
+                  <option value="newest">
+                    Newest First
+                  </option>
+
+                  <option value="low">
+                    Lowest Price
+                  </option>
+
+                  <option value="high">
+                    Highest Price
+                  </option>
                 </select>
               </div>
 
               {/* LOADING */}
               {loading && listings.length === 0 && (
                 <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="h-80 animate-pulse rounded-3xl bg-[var(--border)]"
-                    />
-                  ))}
+                  {Array.from({ length: 6 }).map(
+                    (_, i) => (
+                      <div
+                        key={i}
+                        className="h-80 animate-pulse rounded-3xl bg-[var(--border)]"
+                      />
+                    )
+                  )}
                 </div>
               )}
 
+              {/* LISTINGS */}
               {listings.length > 0 && (
                 <div className="relative">
                   {loading && (
@@ -249,26 +411,32 @@ export default function MarketplacePage() {
                   )}
 
                   <div
-                    className={`grid gap-6 md:grid-cols-2 xl:grid-cols-3 transition-opacity ${
-                      loading ? "opacity-60" : "opacity-100"
+                    className={`grid gap-6 transition-opacity md:grid-cols-2 xl:grid-cols-3 ${
+                      loading
+                        ? "opacity-60"
+                        : "opacity-100"
                     }`}
                   >
-                    {listings.map((listing, i) => (
-                      <div
-                        key={listing.id}
-                        className="animate-fadeIn"
-                        style={{
-                          animationDelay: `${i * 40}ms`,
-                        }}
-                      >
-                        <ListingCard listing={listing} />
-                      </div>
-                    ))}
+                    {listings.map(
+                      (listing, i) => (
+                        <div
+                          key={listing.id}
+                          className="animate-fadeIn"
+                          style={{
+                            animationDelay: `${i * 40}ms`,
+                          }}
+                        >
+                          <ListingCard
+                            listing={listing}
+                          />
+                        </div>
+                      )
+                    )}
                   </div>
                 </div>
               )}
 
-              {/* EMPTY STATE */}
+              {/* ERROR */}
               {!loading && listings.length === 0 && (
                 <div className="py-24 text-center">
                   <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-[var(--border)]" />
@@ -282,8 +450,9 @@ export default function MarketplacePage() {
                   </p>
 
                   <button
+                    type="button"
                     onClick={resetFilters}
-                    className="mt-6 rounded-xl bg-black px-5 py-3 text-white"
+                    className="mt-6 rounded-xl bg-black px-5 py-3 text-white transition hover:opacity-80"
                   >
                     Reset Filters
                   </button>
@@ -294,10 +463,13 @@ export default function MarketplacePage() {
               {!loading && total > 12 && (
                 <div className="mt-10 flex items-center justify-center gap-4">
                   <button
+                    type="button"
                     className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2 disabled:opacity-40"
                     disabled={page === 1}
                     onClick={() =>
-                      setPage((p) => Math.max(1, p - 1))
+                      setPage((p) =>
+                        Math.max(1, p - 1)
+                      )
                     }
                   >
                     Previous
@@ -308,9 +480,12 @@ export default function MarketplacePage() {
                   </span>
 
                   <button
-                    className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2"
+                    type="button"
+                    className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2 disabled:opacity-40"
                     disabled={listings.length < 12}
-                    onClick={() => setPage((p) => p + 1)}
+                    onClick={() =>
+                      setPage((p) => p + 1)
+                    }
                   >
                     Next
                   </button>

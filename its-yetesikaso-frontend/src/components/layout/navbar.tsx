@@ -17,7 +17,6 @@ export default function Navbar() {
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
       const token = getAccessToken()
-
       setAuthenticated(Boolean(token))
     })
 
@@ -123,6 +122,13 @@ export default function Navbar() {
                 className="transition-opacity hover:opacity-70"
               >
                 Profile
+              </Link>
+
+              <Link
+                href="/saved"
+                className="transition-opacity hover:opacity-70"
+              >
+                Saved
               </Link>
 
               <Link

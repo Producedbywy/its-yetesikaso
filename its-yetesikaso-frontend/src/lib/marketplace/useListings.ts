@@ -7,6 +7,8 @@ export type Filters = {
   search: string
   category: string
   location: string
+  minPrice: string
+  maxPrice: string
   sort: string
 }
 
@@ -16,7 +18,7 @@ type ListingsResponse = {
 }
 
 const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || ''
+  process.env.NEXT_PUBLIC_API_URL || ""
 
 export function useListings(
   filters: Filters,
@@ -41,29 +43,62 @@ export function useListings(
         const params = new URLSearchParams()
 
         if (filters.search.trim()) {
-          params.set("search", filters.search.trim())
+          params.set(
+            "search",
+            filters.search.trim()
+          )
         }
 
         if (
           filters.category &&
           filters.category !== "all"
         ) {
-          params.set("category", filters.category)
+          params.set(
+            "category",
+            filters.category
+          )
         }
 
         if (
           filters.location &&
           filters.location !== "all"
         ) {
-          params.set("location", filters.location)
+          params.set(
+            "location",
+            filters.location
+          )
+        }
+
+        if (filters.minPrice.trim()) {
+          params.set(
+            "min_price",
+            filters.minPrice.trim()
+          )
+        }
+
+        if (filters.maxPrice.trim()) {
+          params.set(
+            "max_price",
+            filters.maxPrice.trim()
+          )
         }
 
         if (filters.sort) {
-          params.set("sort", filters.sort)
+          params.set(
+            "sort",
+            filters.sort
+          )
         }
 
-        params.set("page", String(page))
-        params.set("page_size", "12")
+        params.set(
+          "page",
+          String(page)
+        )
+
+        params.set(
+          "page_size",
+          "12"
+        )
 
         const res = await fetch(
           `${API_URL}/listings/?${params.toString()}`,
@@ -74,14 +109,18 @@ export function useListings(
         )
 
         if (!res.ok) {
-          throw new Error("Failed to fetch listings")
+          throw new Error(
+            "Failed to fetch listings"
+          )
         }
 
-        const json: ListingsResponse = await res.json()
+        const json: ListingsResponse =
+          await res.json()
 
         if (
           controller.signal.aborted ||
-          currentRequestId !== requestId.current
+          currentRequestId !==
+            requestId.current
         ) {
           return
         }
@@ -111,14 +150,18 @@ export function useListings(
       } finally {
         if (
           !controller.signal.aborted &&
-          currentRequestId === requestId.current
+          currentRequestId ===
+            requestId.current
         ) {
           setLoading(false)
         }
       }
     }
 
-    const delay = filters.search.trim() ? 300 : 0
+    const hasTextSearch =
+      filters.search.trim().length > 0
+
+    const delay = hasTextSearch ? 300 : 0
 
     const timeout = window.setTimeout(
       fetchListings,
@@ -133,6 +176,8 @@ export function useListings(
     filters.search,
     filters.category,
     filters.location,
+    filters.minPrice,
+    filters.maxPrice,
     filters.sort,
     page,
   ])

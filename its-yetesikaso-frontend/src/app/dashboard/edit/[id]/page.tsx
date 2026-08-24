@@ -32,8 +32,8 @@ export default function EditListingPage() {
     location: "",
   })
 
-  const [currentImage, setCurrentImage] = useState<string | null>(null)
-  const [newImage, setNewImage] = useState<File | null>(null)
+  const [currentImages, setCurrentImages] = useState<string[]>([])
+  const [newImages, setNewImages] = useState<File[]>([])
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -60,7 +60,16 @@ export default function EditListingPage() {
           location: data.location ?? "",
         })
 
-        setCurrentImage(data.image ?? null)
+        const images =
+          Array.isArray(data.images) && data.images.length > 0
+            ? data.images
+            : data.image
+              ? [data.image]
+              : []
+
+setCurrentImages(images)
+
+        setCurrentImages(images)
       } catch (err: unknown) {
         if (cancelled) return
 
@@ -127,8 +136,8 @@ export default function EditListingPage() {
         form.location.trim()
       )
 
-      if (newImage) {
-        data.append("image", newImage)
+      if (newImages.length > 0) {
+        data.append("image", newImages[0])
       }
 
       const listing = await updateListing(
@@ -207,43 +216,65 @@ export default function EditListingPage() {
             className="space-y-5"
           >
 
-            {/* CURRENT IMAGE */}
+            {/* CURRENT IMAGES */}
 
-            {currentImage && !newImage && (
-              <div>
-                <label className="mb-2 block text-sm font-medium">
-                  Current image
-                </label>
+            {currentImages.length > 0 &&
+              newImages.length === 0 && (
+                <div>
+                  <label className="mb-2 block text-sm font-medium">
+                    Current images
+                  </label>
 
-                <div className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]">
-                  <Image
-                    src={currentImage}
-                    alt={form.title || "Listing image"}
-                    width={800}
-                    height={600}
-                    className="aspect-[4/3] w-full object-cover"
-                    unoptimized
-                  />
+                  <div className="grid grid-cols-2 gap-3">
+                    {currentImages.map(
+                      (image, index) => (
+                        <div
+                          key={`${image}-${index}`}
+                          className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]"
+                        >
+                          <Image
+                            src={image}
+                            alt={
+                              form.title ||
+                              `Listing image ${index + 1}`
+                            }
+                            width={800}
+                            height={600}
+                            className="aspect-[4/3] w-full object-cover"
+                            unoptimized
+                          />
+
+                          {index === 0 && (
+                            <div className="absolute left-2 top-2 rounded-full bg-black/60 px-2.5 py-1 text-xs font-medium text-white">
+                              Main image
+                            </div>
+                          )}
+                        </div>
+                      )
+                    )}
+                  </div>
+
+                  <p className="mt-2 text-xs text-[var(--muted)]">
+                    Upload a new image below to replace
+                    the current main image.
+                  </p>
                 </div>
-
-                <p className="mt-2 text-xs text-[var(--muted)]">
-                  Upload a new image below if you want to
-                  replace it.
-                </p>
-              </div>
-            )}
+              )}
 
             {/* NEW IMAGE */}
 
             <div>
               <label className="mb-2 block text-sm font-medium">
-                {currentImage
-                  ? "Replace image"
+                {currentImages.length > 0
+                  ? "Replace main image"
                   : "Listing image"}
               </label>
 
               <ImageUploader
-                onChange={setNewImage}
+                single
+                onChange={(files) =>
+                  setNewImages(files)
+                }
               />
             </div>
 
@@ -333,18 +364,23 @@ export default function EditListingPage() {
                 <option value="">
                   Select category
                 </option>
+
                 <option value="electronics">
                   Electronics
                 </option>
+
                 <option value="vehicles">
                   Vehicles
                 </option>
+
                 <option value="property">
                   Property
                 </option>
+
                 <option value="fashion">
                   Fashion
                 </option>
+
                 <option value="services">
                   Services
                 </option>
@@ -371,6 +407,8 @@ export default function EditListingPage() {
                 required
               />
             </div>
+
+            {/* SAVE */}
 
             <button
               type="submit"
