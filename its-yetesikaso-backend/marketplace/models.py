@@ -98,6 +98,14 @@ class Listing(models.Model):
         null=True,
     )
 
+    quantity = models.PositiveIntegerField(
+        default=1,
+    )
+
+    available_quantity = models.PositiveIntegerField(
+        default=1,
+    )
+
     slug = models.SlugField(
         unique=True,
         blank=True,
@@ -126,6 +134,57 @@ class Listing(models.Model):
 
     def __str__(self):
         return self.title
+    
+class ListingImage(models.Model):
+    listing = models.ForeignKey(
+        Listing,
+        on_delete=models.CASCADE,
+        related_name="images",
+    )
+
+    image = models.URLField()
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"{self.listing.title} image"
+
+class Favourite(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="favourites",
+    )
+
+    listing = models.ForeignKey(
+        Listing,
+        on_delete=models.CASCADE,
+        related_name="favourited_by",
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "listing"],
+                name="unique_user_listing_favourite",
+            )
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.user.username} → "
+            f"{self.listing.title}"
+        )
 
 class Job(models.Model):
     CATEGORY_CHOICES = [

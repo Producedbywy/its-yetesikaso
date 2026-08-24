@@ -6,6 +6,7 @@ from marketplace.api.views.listing_views import (
     listings,
     create_listing,
     listing_detail,
+    mark_listing_sold,
 )
 
 from marketplace.api.views.auth_views import (
@@ -36,6 +37,10 @@ from marketplace.api.views.application_views import (
     application_detail,
 )
 
+from marketplace.api.views.favourite_views import (
+    my_favourites,
+    favourite_listing,
+)
 urlpatterns = [
 
     # =========================
@@ -61,11 +66,33 @@ urlpatterns = [
     ),
 
     path(
+        "listings/<int:listing_id>/sold/",
+        mark_listing_sold,
+        name="mark-listing-sold",
+    ),
+
+    path(
         "listings/me/",
         my_listings,
         name="my-listings",
     ),
 
+
+        # =========================
+    # Favourites
+    # =========================
+
+    path(
+        "favourites/",
+        my_favourites,
+        name="my-favourites",
+    ),
+
+    path(
+        "listings/<int:listing_id>/favourite/",
+        favourite_listing,
+        name="favourite-listing",
+    ),
 
     # =========================
     # Jobs

@@ -1,6 +1,13 @@
 from rest_framework import serializers
 
-from .models import Application, Job, Listing, SellerProfile
+from .models import (
+    Application,
+    Favourite,
+    Job,
+    Listing,
+    ListingImage,
+    SellerProfile,
+)
 
 
 class SellerProfileSerializer(serializers.ModelSerializer):
@@ -54,6 +61,8 @@ class SellerProfileSerializer(serializers.ModelSerializer):
 
 class ListingSerializer(serializers.ModelSerializer):
     seller = serializers.SerializerMethodField()
+    is_favourited = serializers.SerializerMethodField()
+    images = serializers.SerializerMethodField()
 
     class Meta:
         model = Listing
@@ -66,15 +75,22 @@ class ListingSerializer(serializers.ModelSerializer):
             "category",
             "location",
             "image",
+            "images",
+            "quantity",
+            "available_quantity",
             "slug",
             "created_at",
             "seller",
+            "is_favourited",
         ]
         read_only_fields = [
             "owner",
             "created_at",
             "slug",
             "seller",
+            "is_favourited",
+            "images",
+            "available_quantity",
         ]
 
     def get_seller(self, obj):
@@ -85,7 +101,23 @@ class ListingSerializer(serializers.ModelSerializer):
 
         return SellerProfileSerializer(profile).data
 
+    def get_is_favourited(self, obj):
+        request = self.context.get("request")
 
+        if not request or not request.user.is_authenticated:
+            return False
+
+        return Favourite.objects.filter(
+            user=request.user,
+            listing=obj,
+        ).exists()
+
+    def get_images(self, obj):
+        return [
+            image.image
+            for image in obj.images.all()
+        ]
+    
 class JobSerializer(serializers.ModelSerializer):
     employer_username = serializers.CharField(
         source="employer.username",
