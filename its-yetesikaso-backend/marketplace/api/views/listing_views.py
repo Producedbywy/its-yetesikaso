@@ -42,10 +42,15 @@ def listings(request):
     search = request.GET.get("search", "").strip()
 
     if search:
-        qs = qs.filter(
-            Q(title__icontains=search)
-            | Q(description__icontains=search)
-        )
+        search_terms = search.split()
+
+        for term in search_terms:
+            qs = qs.filter(
+                Q(title__icontains=term)
+                | Q(description__icontains=term)
+                | Q(category__icontains=term)
+                | Q(location__icontains=term)
+            )
 
     # SLUG
     slug = request.GET.get("slug")
