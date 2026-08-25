@@ -134,7 +134,7 @@ class Listing(models.Model):
 
     def __str__(self):
         return self.title
-    
+
 class ListingImage(models.Model):
     listing = models.ForeignKey(
         Listing,
@@ -184,6 +184,58 @@ class Favourite(models.Model):
         return (
             f"{self.user.username} → "
             f"{self.listing.title}"
+        )
+
+class ListingReport(models.Model):
+    REASON_CHOICES = [
+        ("scam_fraud", "Scam / Fraud"),
+        ("prohibited_item", "Prohibited Item"),
+        ("spam", "Spam"),
+        ("wrong_category", "Wrong Category"),
+        ("duplicate", "Duplicate"),
+        ("other", "Other"),
+    ]
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="listing_reports",
+    )
+
+    listing = models.ForeignKey(
+        Listing,
+        on_delete=models.CASCADE,
+        related_name="reports",
+    )
+
+    reason = models.CharField(
+        max_length=30,
+        choices=REASON_CHOICES,
+    )
+
+    details = models.TextField(
+        blank=True,
+        max_length=1000,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "listing"],
+                name="unique_user_listing_report",
+            )
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.user.username} → "
+            f"{self.listing.title} "
+            f"({self.get_reason_display()})"
         )
 
 class Job(models.Model):
@@ -369,7 +421,7 @@ class Application(models.Model):
             f"{self.applicant.username} → "
             f"{self.job.title}"
         )
-    
+
 class Conversation(models.Model):
     buyer = models.ForeignKey(
         User,

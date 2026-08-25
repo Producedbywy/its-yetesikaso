@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Listing, SellerProfile
+from .models import Listing, ListingReport, SellerProfile
 
 
 @admin.register(Listing)
@@ -23,6 +23,39 @@ class ListingAdmin(admin.ModelAdmin):
     list_filter = (
         "category",
         "location",
+    )
+
+@admin.register(ListingReport)
+class ListingReportAdmin(admin.ModelAdmin):
+    list_display = (
+        "listing",
+        "user",
+        "reason",
+        "created_at",
+    )
+
+    search_fields = (
+        "listing__title",
+        "user__username",
+        "user__email",
+        "details",
+    )
+
+    list_filter = (
+        "reason",
+        "created_at",
+    )
+
+    readonly_fields = (
+        "listing",
+        "user",
+        "reason",
+        "details",
+        "created_at",
+    )
+
+    ordering = (
+        "-created_at",
     )
 
 

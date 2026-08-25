@@ -41,6 +41,12 @@ from marketplace.api.views.favourite_views import (
     my_favourites,
     favourite_listing,
 )
+
+from marketplace.api.views.report_views import (
+    report_listing,
+)
+
+
 urlpatterns = [
 
     # =========================
@@ -72,13 +78,18 @@ urlpatterns = [
     ),
 
     path(
+        "listings/<int:listing_id>/report/",
+        report_listing,
+        name="report-listing",
+    ),
+
+    path(
         "listings/me/",
         my_listings,
         name="my-listings",
     ),
 
-
-        # =========================
+    # =========================
     # Favourites
     # =========================
 
@@ -128,7 +139,7 @@ urlpatterns = [
         name="employer-job-detail",
     ),
 
-        # =========================
+    # =========================
     # Applications
     # =========================
 
@@ -165,7 +176,6 @@ urlpatterns = [
         register,
         name="register",
     ),
-
 
     # =========================
     # Seller Profile

@@ -6,6 +6,7 @@ from .models import (
     Job,
     Listing,
     ListingImage,
+    ListingReport,
     SellerProfile,
 )
 
@@ -114,7 +115,49 @@ class ListingSerializer(serializers.ModelSerializer):
             image.image
             for image in obj.images.all()
         ]
-    
+
+class ListingReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ListingReport
+        fields = [
+            "id",
+            "listing",
+            "reason",
+            "details",
+            "created_at",
+        ]
+        read_only_fields = [
+            "id",
+            "listing",
+            "created_at",
+        ]
+
+    def validate(self, attrs):
+        request = self.context["request"]
+        listing = self.context["listing"]
+
+        if ListingReport.objects.filter(
+            user=request.user,
+            listing=listing,
+        ).exists():
+            raise serializers.ValidationError(
+                "You have already reported this listing."
+            )
+
+        if (
+            attrs.get("reason") == "other"
+            and not attrs.get("details", "").strip()
+        ):
+            raise serializers.ValidationError(
+                {
+                    "details": (
+                        "Please provide details when selecting Other."
+                    )
+                }
+            )
+
+        return attrs
+
 class JobSerializer(serializers.ModelSerializer):
     employer_username = serializers.CharField(
         source="employer.username",
