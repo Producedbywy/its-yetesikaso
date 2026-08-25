@@ -67,8 +67,6 @@ export default function EditListingPage() {
               ? [data.image]
               : []
 
-setCurrentImages(images)
-
         setCurrentImages(images)
       } catch (err: unknown) {
         if (cancelled) return
@@ -136,9 +134,11 @@ setCurrentImages(images)
         form.location.trim()
       )
 
-      if (newImages.length > 0) {
-        data.append("image", newImages[0])
-      }
+      // If new images were selected, replace the
+      // entire existing gallery with the new gallery.
+      newImages.forEach((file) => {
+        data.append("images", file)
+      })
 
       const listing = await updateListing(
         Number(id),
@@ -201,7 +201,7 @@ setCurrentImages(images)
             </h1>
 
             <p className="mt-2 text-sm text-[var(--muted)]">
-              Update the details of your listing.
+              Update the details and images of your listing.
             </p>
           </div>
 
@@ -218,60 +218,59 @@ setCurrentImages(images)
 
             {/* CURRENT IMAGES */}
 
-            {currentImages.length > 0 &&
-              newImages.length === 0 && (
-                <div>
-                  <label className="mb-2 block text-sm font-medium">
-                    Current images
-                  </label>
+            {currentImages.length > 0 && (
+              <div>
+                <label className="mb-2 block text-sm font-medium">
+                  Current images
+                </label>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    {currentImages.map(
-                      (image, index) => (
-                        <div
-                          key={`${image}-${index}`}
-                          className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]"
-                        >
-                          <Image
-                            src={image}
-                            alt={
-                              form.title ||
-                              `Listing image ${index + 1}`
-                            }
-                            width={800}
-                            height={600}
-                            className="aspect-[4/3] w-full object-cover"
-                            unoptimized
-                          />
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  {currentImages.map(
+                    (image, index) => (
+                      <div
+                        key={`${image}-${index}`}
+                        className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]"
+                      >
+                        <Image
+                          src={image}
+                          alt={
+                            form.title ||
+                            `Listing image ${index + 1}`
+                          }
+                          width={800}
+                          height={600}
+                          className="aspect-[4/3] w-full object-cover"
+                          unoptimized
+                        />
 
-                          {index === 0 && (
-                            <div className="absolute left-2 top-2 rounded-full bg-black/60 px-2.5 py-1 text-xs font-medium text-white">
-                              Main image
-                            </div>
-                          )}
-                        </div>
-                      )
-                    )}
-                  </div>
-
-                  <p className="mt-2 text-xs text-[var(--muted)]">
-                    Upload a new image below to replace
-                    the current main image.
-                  </p>
+                        {index === 0 && (
+                          <div className="absolute left-2 top-2 rounded-full bg-black/60 px-2.5 py-1 text-xs font-medium text-white">
+                            Main image
+                          </div>
+                        )}
+                      </div>
+                    )
+                  )}
                 </div>
-              )}
 
-            {/* NEW IMAGE */}
+                <p className="mt-2 text-xs text-[var(--muted)]">
+                  Selecting new images below will replace the
+                  current gallery. The first new image becomes
+                  the main image.
+                </p>
+              </div>
+            )}
+
+            {/* IMAGE GALLERY */}
 
             <div>
               <label className="mb-2 block text-sm font-medium">
                 {currentImages.length > 0
-                  ? "Replace main image"
-                  : "Listing image"}
+                  ? "Replace listing images"
+                  : "Listing images"}
               </label>
 
               <ImageUploader
-                single
                 onChange={(files) =>
                   setNewImages(files)
                 }
