@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import Exists, OuterRef, Q
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -7,7 +7,25 @@ from rest_framework import status
 
 from marketplace.serializers import ListingSerializer
 from marketplace.services.supabase_storage import upload_listing_image
-from marketplace.models import Listing, ListingImage, SellerProfile
+from marketplace.models import (
+    Favourite,
+    Listing,
+    ListingImage,
+    SellerProfile,
+)
+
+def annotate_favourite_status(queryset, request):
+    if not request.user.is_authenticated:
+        return queryset
+
+    favourite_exists = Favourite.objects.filter(
+        user=request.user,
+        listing=OuterRef("pk"),
+    )
+
+    return queryset.annotate(
+        _is_favourited=Exists(favourite_exists)
+    )
 
 
 # =========================
@@ -19,7 +37,7 @@ def listings(request):
     qs = Listing.objects.filter(
         available_quantity__gt=0
     )
-
+    qs = annotate_favourite_status(qs, request)
     # SEARCH
     search = request.GET.get("search", "").strip()
 
@@ -195,12 +213,16 @@ def create_listing(request):
 @api_view(["GET", "PATCH", "DELETE"])
 @permission_classes([IsAuthenticated])
 def listing_detail(request, listing_id):
-    try:
-        listing = Listing.objects.get(
+
+    listing = annotate_favourite_status(
+        Listing.objects.filter(
             id=listing_id,
             owner=request.user,
-        )
-    except Listing.DoesNotExist:
+        ),
+        request,
+    ).first()
+
+    if not listing:
         return Response(
             {"error": "Listing not found"},
             status=404,

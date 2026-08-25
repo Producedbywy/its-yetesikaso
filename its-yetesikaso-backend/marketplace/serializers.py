@@ -107,10 +107,7 @@ class ListingSerializer(serializers.ModelSerializer):
         if not request or not request.user.is_authenticated:
             return False
 
-        return Favourite.objects.filter(
-            user=request.user,
-            listing=obj,
-        ).exists()
+        return getattr(obj, "_is_favourited", False)
 
     def get_images(self, obj):
         return [
