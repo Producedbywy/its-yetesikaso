@@ -59,6 +59,39 @@ class SellerProfileSerializer(serializers.ModelSerializer):
     def get_job_count(self, obj):
         return obj.user.jobs.count()
 
+class PublicSellerProfileSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(
+        source="user.username",
+        read_only=True,
+    )
+
+    listing_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SellerProfile
+        fields = [
+            "id",
+            "username",
+            "display_name",
+            "location",
+            "bio",
+            "listing_count",
+            "created_at",
+        ]
+        read_only_fields = [
+            "id",
+            "username",
+            "display_name",
+            "location",
+            "bio",
+            "listing_count",
+            "created_at",
+        ]
+
+    def get_listing_count(self, obj):
+        return obj.user.listings.filter(
+            available_quantity__gt=0
+        ).count()
 
 class ListingSerializer(serializers.ModelSerializer):
     seller = serializers.SerializerMethodField()

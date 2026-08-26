@@ -14,6 +14,7 @@ from marketplace.api.views.auth_views import (
     get_profile,
     update_profile,
     upgrade_profile,
+    public_seller_profile,
 )
 
 from marketplace.api.views.message_views import (
@@ -197,6 +198,12 @@ urlpatterns = [
         "auth/profile/upgrade/",
         upgrade_profile,
         name="upgrade-profile",
+    ),
+
+    path(
+        "sellers/<str:username>/",
+        public_seller_profile,
+        name="public-seller-profile",
     ),
 
     # =========================

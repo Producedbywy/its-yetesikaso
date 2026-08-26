@@ -4,8 +4,12 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from marketplace.models import SellerProfile
-from marketplace.serializers import SellerProfileSerializer
+from marketplace.models import Listing, SellerProfile
+from marketplace.serializers import (
+    SellerProfileSerializer,
+    PublicSellerProfileSerializer,
+    ListingSerializer,
+)
 
 
 @api_view(["POST"])
@@ -154,4 +158,45 @@ def upgrade_profile(request):
             "profile": SellerProfileSerializer(profile).data,
         },
         status=200,
+    )
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def public_seller_profile(request, username):
+    try:
+        profile = (
+            SellerProfile.objects
+            .select_related("user")
+            .get(
+                user__username__iexact=username,
+                role="seller",
+            )
+        )
+    except SellerProfile.DoesNotExist:
+        return Response(
+            {"error": "Seller not found"},
+            status=404,
+        )
+
+    listings = (
+        Listing.objects
+        .filter(
+            owner=profile.user,
+            available_quantity__gt=0,
+        )
+        .select_related("owner")
+        .prefetch_related("images")
+        .order_by("-created_at")
+    )
+
+    return Response(
+        {
+            "seller": PublicSellerProfileSerializer(profile).data,
+            "listings": ListingSerializer(
+                listings,
+                many=True,
+                context={"request": request},
+            ).data,
+        }
     )
