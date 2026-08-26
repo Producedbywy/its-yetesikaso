@@ -10,7 +10,10 @@ export async function apiClient<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const token = getAccessToken()
+  const token =
+    typeof window !== "undefined"
+      ? getAccessToken()
+      : null
 
   const isFormData = options.body instanceof FormData
 
@@ -28,8 +31,11 @@ export async function apiClient<T>(
   })
 
   if (res.status === 401) {
-    clearTokens()
-    window.location.href = "/login"
+    if (typeof window !== "undefined") {
+      clearTokens()
+      window.location.href = "/login"
+    }
+
     throw new Error("Session expired")
   }
 

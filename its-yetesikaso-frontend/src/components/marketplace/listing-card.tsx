@@ -36,6 +36,16 @@ function getImageUrl(image: string | null) {
   return `${API_BASE_URL}${cleanImage}`
 }
 
+function formatListingDate(dateString: string) {
+  if (!dateString) return ""
+
+  const date = new Date(dateString)
+
+  if (Number.isNaN(date.getTime())) return ""
+
+  return date.toLocaleDateString("en-GB")
+}
+
 export default function ListingCard({
   listing,
 }: ListingCardProps) {
@@ -44,9 +54,7 @@ export default function ListingCard({
 
   const imageSrc = getImageUrl(listing.image)
 
-  const formattedDate = listing.created_at
-    ? new Date(listing.created_at).toLocaleDateString()
-    : ""
+  const formattedDate = formatListingDate(listing.created_at)
 
   async function handleFavourite(
     event: React.MouseEvent<HTMLButtonElement>

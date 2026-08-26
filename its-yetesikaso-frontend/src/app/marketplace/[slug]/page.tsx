@@ -4,6 +4,7 @@ import Footer from '@/components/layout/footer'
 import Container from '@/components/layout/container'
 import type { Listing } from '@/types/listing'
 import ContactSellerButton from '@/components/marketplace/contact-seller-button'
+import ReportListingButton from '@/components/marketplace/report-listing-button'
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, '') || ''
@@ -137,7 +138,16 @@ export default async function ListingDetailPage({
 
                   <div>
                     <h3 className="font-semibold">
-                      {seller?.display_name || 'Seller'}
+                      {seller?.username ? (
+                        <a
+                          href={`/sellers/${encodeURIComponent(seller.username)}`}
+                          className="transition hover:text-lime-700"
+                        >
+                          {seller.display_name || seller.username}
+                        </a>
+                      ) : (
+                        "Seller"
+                      )}
                     </h3>
 
                     <p className="text-sm text-[var(--muted)]">
@@ -167,6 +177,10 @@ export default async function ListingDetailPage({
                       WhatsApp Unavailable
                     </button>
                   )}
+                </div>
+
+                <div className="mt-4">
+                  <ReportListingButton listingId={listing.id} />
                 </div>
 
                 <div className="mt-7 rounded-xl bg-[var(--background)] p-4">

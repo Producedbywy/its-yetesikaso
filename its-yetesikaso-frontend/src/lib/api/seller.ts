@@ -19,6 +19,21 @@ export type SellerProfile = {
   updated_at: string
 }
 
+export type PublicSellerProfile = {
+  id: number
+  username: string
+  display_name: string
+  location: string
+  bio: string
+  listing_count: number
+  created_at: string
+}
+
+export type PublicSellerResponse = {
+  seller: PublicSellerProfile
+  listings: Listing[]
+}
+
 export type ListingsResponse = {
   results: Listing[]
   total?: number
@@ -26,6 +41,43 @@ export type ListingsResponse = {
   page_size?: number
   has_next?: boolean
   has_prev?: boolean
+}
+
+// GET PUBLIC SELLER PROFILE
+//
+// This endpoint is public and must also work during
+// Next.js server rendering, so it intentionally does
+// not use apiClient() because apiClient() reads localStorage.
+export async function getPublicSellerProfile(
+  username: string
+): Promise<PublicSellerResponse> {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL
+
+  if (!API_URL) {
+    throw new Error("NEXT_PUBLIC_API_URL is not configured")
+  }
+
+  const encodedUsername = encodeURIComponent(username)
+
+  const response = await fetch(
+    `${API_URL}/sellers/${encodedUsername}/`,
+    {
+      method: "GET",
+      cache: "no-store",
+    }
+  )
+
+  const data = await response.json().catch(() => ({}))
+
+  if (!response.ok) {
+    throw new Error(
+      data?.detail ||
+        data?.error ||
+        "Failed to load seller profile"
+    )
+  }
+
+  return data
 }
 
 // GET MY LISTINGS
