@@ -21,6 +21,8 @@ DEBUG = False
 
 ALLOWED_HOSTS = [
     "its-yetesikaso-production.up.railway.app",
+    "www.yetesikaso.com",
+    "yetesikaso.com",
     "localhost",
     "127.0.0.1",
 ]
@@ -143,6 +145,8 @@ STATIC_URL = "static/"
 
 CSRF_TRUSTED_ORIGINS = [
     "https://its-yetesikaso.vercel.app",
+    "https://www.yetesikaso.com",
+    "https://yetesikaso.com",
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
