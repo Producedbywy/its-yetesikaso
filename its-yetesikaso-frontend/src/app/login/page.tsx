@@ -5,6 +5,7 @@ import Navbar from "@/components/layout/navbar"
 import Container from "@/components/layout/container"
 import { useAuth } from "@/lib/auth/useAuth"
 import { Eye, EyeOff } from "lucide-react"
+import Link from "next/link"
 
 function PasswordInput({
   value,
@@ -80,6 +81,15 @@ export default function LoginPage() {
                   setPassword(e.target.value)
                 }
               />
+
+              <div className="text-right">
+                <Link
+                  href="/forgot-password"
+                  className="text-sm font-medium text-gray-600 underline-offset-4 hover:underline"
+                >
+                  Forgot password?
+                </Link>
+              </div>
 
               {error && (
                 <p className="text-sm text-red-500">
