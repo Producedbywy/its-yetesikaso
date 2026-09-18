@@ -95,6 +95,21 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 # =========================
+# EMAIL / PASSWORD RESET
+# =========================
+
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
+RESEND_FROM_EMAIL = os.environ.get(
+    "RESEND_FROM_EMAIL",
+    "Yetesikaso <noreply@yetesikaso.com>",
+)
+
+FRONTEND_URL = os.environ.get(
+    "FRONTEND_URL",
+    "https://yetesikaso.com",
+)
+
+# =========================
 # DATABASE
 # =========================
 

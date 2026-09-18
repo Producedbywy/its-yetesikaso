@@ -11,6 +11,8 @@ from marketplace.api.views.listing_views import (
 
 from marketplace.api.views.auth_views import (
     register,
+    password_reset_request,
+    password_reset_confirm,
     get_profile,
     update_profile,
     upgrade_profile,
@@ -176,6 +178,18 @@ urlpatterns = [
         "auth/register/",
         register,
         name="register",
+    ),
+
+    path(
+        "auth/password-reset/",
+        password_reset_request,
+        name="password-reset-request",
+    ),
+
+    path(
+        "auth/password-reset/confirm/",
+        password_reset_confirm,
+        name="password-reset-confirm",
     ),
 
     # =========================
