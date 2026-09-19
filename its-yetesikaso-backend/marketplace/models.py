@@ -238,6 +238,114 @@ class ListingReport(models.Model):
             f"({self.get_reason_display()})"
         )
 
+class Transaction(models.Model):
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("confirmed", "Confirmed"),
+        ("completed", "Completed"),
+        ("cancelled", "Cancelled"),
+    ]
+
+    buyer = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="purchases",
+    )
+
+    seller = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="sales",
+    )
+
+    listing = models.ForeignKey(
+        Listing,
+        on_delete=models.CASCADE,
+        related_name="transactions",
+    )
+
+    quantity = models.PositiveIntegerField()
+
+    unit_price = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+    )
+
+    total_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending",
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    completed_at = models.DateTimeField(
+        blank=True,
+        null=True,
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return (
+            f"{self.buyer.username} → "
+            f"{self.seller.username} "
+            f"({self.listing.title})"
+        )
+
+class Review(models.Model):
+    transaction = models.OneToOneField(
+        Transaction,
+        on_delete=models.CASCADE,
+        related_name="review",
+    )
+
+    buyer = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="reviews_given",
+    )
+
+    seller = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="reviews_received",
+    )
+
+    listing = models.ForeignKey(
+        Listing,
+        on_delete=models.CASCADE,
+        related_name="reviews",
+    )
+
+    rating = models.PositiveSmallIntegerField()
+
+    comment = models.TextField(
+        blank=True,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return (
+            f"{self.buyer.username} → "
+            f"{self.seller.username} "
+            f"({self.rating}/5)"
+        )
+
 class Job(models.Model):
     CATEGORY_CHOICES = [
         ("technology", "Technology"),

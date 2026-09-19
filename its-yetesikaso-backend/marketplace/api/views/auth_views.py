@@ -28,7 +28,7 @@ from rest_framework.permissions import (
 )
 from rest_framework.response import Response
 
-from marketplace.models import Listing, SellerProfile
+from marketplace.models import Listing, Review, SellerProfile
 from marketplace.serializers import (
     SellerProfileSerializer,
     PublicSellerProfileSerializer,
@@ -429,6 +429,33 @@ def public_seller_profile(request, username):
         .order_by("-created_at")
     )
 
+    reviews = (
+        Review.objects
+        .filter(
+            seller=profile.user,
+            transaction__status="completed",
+        )
+        .select_related(
+            "buyer",
+            "listing",
+        )
+        .order_by("-created_at")
+    )
+
+    reviews_data = [
+        {
+            "id": review.id,
+            "buyer_username": review.buyer.username,
+            "listing": review.listing.id,
+            "listing_title": review.listing.title,
+            "rating": review.rating,
+            "comment": review.comment,
+            "created_at": review.created_at,
+            "verified_purchase": True,
+        }
+        for review in reviews
+    ]
+
     return Response(
         {
             "seller": PublicSellerProfileSerializer(profile).data,
@@ -437,5 +464,6 @@ def public_seller_profile(request, username):
                 many=True,
                 context={"request": request},
             ).data,
+            "reviews": reviews_data,
         }
     )

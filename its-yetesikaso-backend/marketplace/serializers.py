@@ -1,3 +1,4 @@
+from django.db.models import Avg, Count
 from rest_framework import serializers
 
 from .models import (
@@ -7,6 +8,7 @@ from .models import (
     Listing,
     ListingImage,
     ListingReport,
+    Review,
     SellerProfile,
 )
 
@@ -66,6 +68,8 @@ class PublicSellerProfileSerializer(serializers.ModelSerializer):
     )
 
     listing_count = serializers.SerializerMethodField()
+    average_rating = serializers.SerializerMethodField()
+    review_count = serializers.SerializerMethodField()
 
     class Meta:
         model = SellerProfile
@@ -76,6 +80,8 @@ class PublicSellerProfileSerializer(serializers.ModelSerializer):
             "location",
             "bio",
             "listing_count",
+            "average_rating",
+            "review_count",
             "created_at",
         ]
         read_only_fields = [
@@ -85,6 +91,8 @@ class PublicSellerProfileSerializer(serializers.ModelSerializer):
             "location",
             "bio",
             "listing_count",
+            "average_rating",
+            "review_count",
             "created_at",
         ]
 
@@ -92,6 +100,27 @@ class PublicSellerProfileSerializer(serializers.ModelSerializer):
         return obj.user.listings.filter(
             available_quantity__gt=0
         ).count()
+
+    def get_average_rating(self, obj):
+        result = Review.objects.filter(
+            seller=obj.user,
+            transaction__status="completed",
+        ).aggregate(
+            average=Avg("rating"),
+        )
+
+        if result["average"] is None:
+            return None
+
+        return round(float(result["average"]), 1)
+
+    def get_review_count(self, obj):
+        return Review.objects.filter(
+            seller=obj.user,
+            transaction__status="completed",
+        ).aggregate(
+            count=Count("id"),
+        )["count"]
 
 class ListingSerializer(serializers.ModelSerializer):
     seller = serializers.SerializerMethodField()

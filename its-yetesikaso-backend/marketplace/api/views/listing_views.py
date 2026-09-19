@@ -12,7 +12,10 @@ from marketplace.models import (
     Listing,
     ListingImage,
     SellerProfile,
+    Transaction,
+    Review,
 )
+from django.utils import timezone
 
 def annotate_favourite_status(queryset, request):
     if not request.user.is_authenticated:
@@ -382,3 +385,540 @@ def mark_listing_sold(request, listing_id):
             context={"request": request},
         ).data,
     })
+
+# =========================
+# CREATE TRANSACTION
+# =========================
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def create_transaction(request):
+    try:
+        listing_id = int(request.data.get("listing_id"))
+        quantity = int(request.data.get("quantity", 1))
+    except (TypeError, ValueError):
+        return Response(
+            {"error": "Listing and quantity must be valid numbers"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if quantity < 1:
+        return Response(
+            {"error": "Quantity must be at least 1"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    with transaction.atomic():
+        try:
+            listing = (
+                Listing.objects
+                .select_for_update()
+                .get(id=listing_id)
+            )
+        except Listing.DoesNotExist:
+            return Response(
+                {"error": "Listing not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if listing.owner == request.user:
+            return Response(
+                {"error": "You cannot purchase your own listing"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if listing.available_quantity <= 0:
+            return Response(
+                {"error": "This listing is sold out"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if quantity > listing.available_quantity:
+            return Response(
+                {
+                    "error": (
+                        f"Only {listing.available_quantity} "
+                        f"unit(s) remain available"
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        unit_price = listing.price
+        total_amount = unit_price * quantity
+
+        transaction_record = Transaction.objects.create(
+            buyer=request.user,
+            seller=listing.owner,
+            listing=listing,
+            quantity=quantity,
+            unit_price=unit_price,
+            total_amount=total_amount,
+            status="pending",
+        )
+
+        listing.available_quantity -= quantity
+        listing.save(
+            update_fields=["available_quantity"]
+        )
+
+    return Response(
+        {
+            "message": "Transaction created successfully",
+            "transaction": {
+                "id": transaction_record.id,
+                "buyer": transaction_record.buyer.id,
+                "seller": transaction_record.seller.id,
+                "listing": transaction_record.listing.id,
+                "quantity": transaction_record.quantity,
+                "unit_price": str(
+                    transaction_record.unit_price
+                ),
+                "total_amount": str(
+                    transaction_record.total_amount
+                ),
+                "status": transaction_record.status,
+                "created_at": transaction_record.created_at,
+                "completed_at": transaction_record.completed_at,
+            },
+        },
+        status=status.HTTP_201_CREATED,
+    )
+
+# =========================
+# CONFIRM TRANSACTION
+# =========================
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def confirm_transaction(request, transaction_id):
+    with transaction.atomic():
+        try:
+            transaction_record = (
+                Transaction.objects
+                .select_for_update()
+                .select_related("listing", "buyer", "seller")
+                .get(id=transaction_id)
+            )
+        except Transaction.DoesNotExist:
+            return Response(
+                {"error": "Transaction not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if request.user != transaction_record.seller:
+            return Response(
+                {"error": "Only the seller can confirm this transaction"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if transaction_record.status != "pending":
+            return Response(
+                {
+                    "error": (
+                        "Only pending transactions "
+                        "can be confirmed"
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        transaction_record.status = "confirmed"
+        transaction_record.save(
+            update_fields=["status"]
+        )
+
+    return Response(
+        {
+            "message": "Transaction confirmed successfully",
+            "transaction": {
+                "id": transaction_record.id,
+                "buyer": transaction_record.buyer.id,
+                "seller": transaction_record.seller.id,
+                "listing": transaction_record.listing.id,
+                "quantity": transaction_record.quantity,
+                "unit_price": str(
+                    transaction_record.unit_price
+                ),
+                "total_amount": str(
+                    transaction_record.total_amount
+                ),
+                "status": transaction_record.status,
+                "created_at": transaction_record.created_at,
+                "completed_at": transaction_record.completed_at,
+            },
+        },
+        status=status.HTTP_200_OK,
+    )
+
+# =========================
+# COMPLETE TRANSACTION
+# =========================
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def complete_transaction(request, transaction_id):
+    with transaction.atomic():
+        try:
+            transaction_record = (
+                Transaction.objects
+                .select_for_update()
+                .select_related("listing", "buyer", "seller")
+                .get(id=transaction_id)
+            )
+        except Transaction.DoesNotExist:
+            return Response(
+                {"error": "Transaction not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if request.user != transaction_record.buyer:
+            return Response(
+                {"error": "Only the buyer can complete this transaction"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if transaction_record.status != "confirmed":
+            return Response(
+                {
+                    "error": (
+                        "Only confirmed transactions "
+                        "can be completed"
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        transaction_record.status = "completed"
+        transaction_record.completed_at = timezone.now()
+        transaction_record.save(
+            update_fields=[
+                "status",
+                "completed_at",
+            ]
+        )
+
+    return Response(
+        {
+            "message": "Transaction completed successfully",
+            "transaction": {
+                "id": transaction_record.id,
+                "buyer": transaction_record.buyer.id,
+                "seller": transaction_record.seller.id,
+                "listing": transaction_record.listing.id,
+                "quantity": transaction_record.quantity,
+                "unit_price": str(
+                    transaction_record.unit_price
+                ),
+                "total_amount": str(
+                    transaction_record.total_amount
+                ),
+                "status": transaction_record.status,
+                "created_at": transaction_record.created_at,
+                "completed_at": transaction_record.completed_at,
+            },
+        },
+        status=status.HTTP_200_OK,
+    )
+
+# =========================
+# CANCEL TRANSACTION
+# =========================
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def cancel_transaction(request, transaction_id):
+    with transaction.atomic():
+        try:
+            transaction_record = (
+                Transaction.objects
+                .select_for_update()
+                .select_related("listing", "buyer", "seller")
+                .get(id=transaction_id)
+            )
+        except Transaction.DoesNotExist:
+            return Response(
+                {"error": "Transaction not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if request.user not in (
+            transaction_record.buyer,
+            transaction_record.seller,
+        ):
+            return Response(
+                {
+                    "error": (
+                        "Only the buyer or seller can "
+                        "cancel this transaction"
+                    )
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if transaction_record.status != "pending":
+            return Response(
+                {
+                    "error": (
+                        "Only pending transactions "
+                        "can be cancelled"
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        listing = (
+            Listing.objects
+            .select_for_update()
+            .get(id=transaction_record.listing_id)
+        )
+
+        listing.available_quantity += transaction_record.quantity
+        listing.save(
+            update_fields=["available_quantity"]
+        )
+
+        transaction_record.status = "cancelled"
+        transaction_record.save(
+            update_fields=["status"]
+        )
+
+    return Response(
+        {
+            "message": "Transaction cancelled successfully",
+            "transaction": {
+                "id": transaction_record.id,
+                "buyer": transaction_record.buyer.id,
+                "seller": transaction_record.seller.id,
+                "listing": transaction_record.listing.id,
+                "quantity": transaction_record.quantity,
+                "unit_price": str(
+                    transaction_record.unit_price
+                ),
+                "total_amount": str(
+                    transaction_record.total_amount
+                ),
+                "status": transaction_record.status,
+                "created_at": transaction_record.created_at,
+                "completed_at": transaction_record.completed_at,
+            },
+            "available_quantity": listing.available_quantity,
+        },
+        status=status.HTTP_200_OK,
+    )
+
+# =========================
+# LIST MY TRANSACTIONS
+# =========================
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def my_transactions(request):
+    transaction_records = (
+        Transaction.objects
+        .filter(
+            Q(buyer=request.user) | Q(seller=request.user)
+        )
+        .select_related(
+            "buyer",
+            "seller",
+            "listing",
+        )
+        .order_by("-created_at")
+    )
+
+    transactions_data = []
+
+    for transaction_record in transaction_records:
+        transactions_data.append(
+            {
+                "id": transaction_record.id,
+                "buyer": transaction_record.buyer.id,
+                "buyer_username": transaction_record.buyer.username,
+                "seller": transaction_record.seller.id,
+                "seller_username": transaction_record.seller.username,
+                "listing": transaction_record.listing.id,
+                "listing_title": transaction_record.listing.title,
+                "quantity": transaction_record.quantity,
+                "unit_price": str(
+                    transaction_record.unit_price
+                ),
+                "total_amount": str(
+                    transaction_record.total_amount
+                ),
+                "status": transaction_record.status,
+                "created_at": transaction_record.created_at,
+                "completed_at": transaction_record.completed_at,
+            }
+        )
+
+    return Response(
+        {
+            "transactions": transactions_data,
+        },
+        status=status.HTTP_200_OK,
+    )
+
+# =========================
+# TRANSACTION DETAIL
+# =========================
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def transaction_detail(request, transaction_id):
+    try:
+        transaction_record = (
+            Transaction.objects
+            .select_related(
+                "buyer",
+                "seller",
+                "listing",
+            )
+            .get(id=transaction_id)
+        )
+    except Transaction.DoesNotExist:
+        return Response(
+            {"error": "Transaction not found"},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    if request.user not in (
+        transaction_record.buyer,
+        transaction_record.seller,
+    ):
+        return Response(
+            {
+                "error": (
+                    "You do not have access to this transaction"
+                )
+            },
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    return Response(
+        {
+            "transaction": {
+                "id": transaction_record.id,
+                "buyer": transaction_record.buyer.id,
+                "buyer_username": transaction_record.buyer.username,
+                "seller": transaction_record.seller.id,
+                "seller_username": transaction_record.seller.username,
+                "listing": transaction_record.listing.id,
+                "listing_title": transaction_record.listing.title,
+                "quantity": transaction_record.quantity,
+                "unit_price": str(
+                    transaction_record.unit_price
+                ),
+                "total_amount": str(
+                    transaction_record.total_amount
+                ),
+                "status": transaction_record.status,
+                "created_at": transaction_record.created_at,
+                "completed_at": transaction_record.completed_at,
+            }
+        },
+        status=status.HTTP_200_OK,
+    )
+
+# =========================
+# CREATE REVIEW
+# =========================
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def create_review(request, transaction_id):
+    try:
+        transaction_record = (
+            Transaction.objects
+            .select_related(
+                "buyer",
+                "seller",
+                "listing",
+            )
+            .get(id=transaction_id)
+        )
+    except Transaction.DoesNotExist:
+        return Response(
+            {"error": "Transaction not found"},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    if request.user != transaction_record.buyer:
+        return Response(
+            {
+                "error": (
+                    "Only the buyer can review "
+                    "this transaction"
+                )
+            },
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    if transaction_record.status != "completed":
+        return Response(
+            {
+                "error": (
+                    "Only completed transactions "
+                    "can be reviewed"
+                )
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if hasattr(transaction_record, "review"):
+        return Response(
+            {
+                "error": (
+                    "This transaction has already "
+                    "been reviewed"
+                )
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    try:
+        rating = int(request.data.get("rating"))
+    except (TypeError, ValueError):
+        return Response(
+            {"error": "Rating must be a number from 1 to 5"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if rating < 1 or rating > 5:
+        return Response(
+            {"error": "Rating must be between 1 and 5"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    comment = str(
+        request.data.get("comment", "")
+    ).strip()
+
+    review = Review.objects.create(
+        transaction=transaction_record,
+        buyer=transaction_record.buyer,
+        seller=transaction_record.seller,
+        listing=transaction_record.listing,
+        rating=rating,
+        comment=comment,
+    )
+
+    return Response(
+        {
+            "message": "Review created successfully",
+            "review": {
+                "id": review.id,
+                "transaction": review.transaction_id,
+                "buyer": review.buyer.id,
+                "buyer_username": review.buyer.username,
+                "seller": review.seller.id,
+                "seller_username": review.seller.username,
+                "listing": review.listing.id,
+                "listing_title": review.listing.title,
+                "rating": review.rating,
+                "comment": review.comment,
+                "created_at": review.created_at,
+            },
+        },
+        status=status.HTTP_201_CREATED,
+    )
