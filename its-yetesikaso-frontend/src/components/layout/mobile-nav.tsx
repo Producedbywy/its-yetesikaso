@@ -10,6 +10,7 @@ import {
   Briefcase,
   User,
   MessageSquare,
+  Receipt,
   LayoutDashboard,
   PlusCircle,
   LogIn,
@@ -179,6 +180,15 @@ export default function MobileNav() {
                   >
                     <MessageSquare size={20} />
                     Messages
+                  </Link>
+
+                  <Link
+                    href="/transactions"
+                    onClick={closeMenu}
+                    className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100 dark:hover:bg-gray-900"
+                  >
+                    <Receipt size={20} />
+                    Transactions
                   </Link>
                 </div>
 

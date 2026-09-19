@@ -27,7 +27,13 @@ export default async function PublicSellerProfilePage({
     notFound()
   }
 
-  const { seller, listings } = data
+  const { seller, listings, reviews } = data
+
+  const averageRating =
+    reviews.length > 0
+      ? reviews.reduce((sum, review) => sum + review.rating, 0) /
+        reviews.length
+      : 0
 
   const initial =
     seller.display_name?.charAt(0).toUpperCase() ||
@@ -111,8 +117,96 @@ export default async function PublicSellerProfilePage({
               </div>
             </div>
 
+            {/* REVIEWS */}
+            <div className="mb-12">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold">
+                  Reviews
+                </h2>
+
+                {reviews.length > 0 && (
+                  <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-[var(--muted)]">
+                    <span className="font-semibold text-[var(--foreground)]">
+                      ⭐ {averageRating.toFixed(1)} / 5
+                    </span>
+
+                    <span>
+                      {reviews.length}{" "}
+                      {reviews.length === 1
+                        ? "review"
+                        : "reviews"}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {reviews.length > 0 ? (
+                <div className="space-y-4">
+                  {reviews.map((review) => (
+                    <div
+                      key={review.id}
+                      className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-6"
+                    >
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <p className="font-semibold">
+                            {review.buyer_username}
+                          </p>
+
+                          <p className="mt-1 text-sm text-[var(--muted)]">
+                            Purchased: {review.listing_title}
+                          </p>
+                        </div>
+
+                        <div className="shrink-0 text-sm">
+                          <span className="font-semibold">
+                            {"⭐".repeat(review.rating)}
+                          </span>
+                        </div>
+                      </div>
+
+                      {review.comment && (
+                        <p className="mt-4 leading-7 text-[var(--muted)]">
+                          {review.comment}
+                        </p>
+                      )}
+
+                      <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-[var(--muted)]">
+                        {review.verified_purchase && (
+                          <span className="rounded-full bg-lime-100 px-3 py-1 font-medium text-lime-700">
+                            ✓ Verified purchase
+                          </span>
+                        )}
+
+                        <span>
+                          {new Date(
+                            review.created_at
+                          ).toLocaleDateString("en-GH", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] px-6 py-10 text-center">
+                  <p className="font-medium">
+                    No reviews yet
+                  </p>
+
+                  <p className="mt-2 text-sm text-[var(--muted)]">
+                    Reviews from completed purchases will appear here.
+                  </p>
+                </div>
+              )}
+            </div>
+
             {/* LISTINGS */}
             <div>
+
               <div className="mb-6 flex items-end justify-between gap-4">
                 <div>
                   <h2 className="text-2xl font-bold">

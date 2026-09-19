@@ -5,6 +5,7 @@ import Container from '@/components/layout/container'
 import type { Listing } from '@/types/listing'
 import ContactSellerButton from '@/components/marketplace/contact-seller-button'
 import ReportListingButton from '@/components/marketplace/report-listing-button'
+import BuyListingButton from '@/components/marketplace/buy-listing-button'
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, '') || ''
@@ -157,7 +158,12 @@ export default async function ListingDetailPage({
                 </div>
 
                 <div className="space-y-3">
-                  <ContactSellerButton listingId={listing.id} />
+                  <BuyListingButton
+                    listingId={listing.id}
+                    availableQuantity={listing.available_quantity}
+                  />
+
+                <ContactSellerButton listingId={listing.id} />
 
                   {seller?.phone ? (
                     <a

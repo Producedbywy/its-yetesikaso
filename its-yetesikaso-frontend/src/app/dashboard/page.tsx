@@ -8,6 +8,9 @@ import Container from "@/components/layout/container"
 import {
   getMyListings,
   deleteListing,
+  getMyProfile,
+  getPublicSellerProfile,
+  type SellerReview,
 } from "@/lib/api/seller"
 import { apiClient } from "@/lib/api/client"
 import type { Listing } from "@/types/listing"
@@ -16,6 +19,7 @@ export default function DashboardPage() {
   const [listings, setListings] = useState<Listing[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const [sellingId, setSellingId] = useState<number | null>(null)
   const [deletingId, setDeletingId] = useState<number | null>(null)
 
@@ -24,6 +28,10 @@ export default function DashboardPage() {
   >({})
 
   const [error, setError] = useState<string | null>(null)
+
+  const [reviews, setReviews] = useState<SellerReview[]>([])
+  const [reviewsLoading, setReviewsLoading] = useState(true)
+  const [reviewsError, setReviewsError] = useState<string | null>(null)
 
   async function loadListings(isRefresh = false) {
     try {
@@ -49,7 +57,31 @@ export default function DashboardPage() {
     }
   }
 
+  async function loadReviews() {
+    try {
+      setReviewsLoading(true)
+      setReviewsError(null)
+
+      const profile = await getMyProfile()
+      const response = await getPublicSellerProfile(
+        profile.username
+      )
+
+      setReviews(response.reviews || [])
+    } catch (err: unknown) {
+      setReviewsError(
+        err instanceof Error
+          ? err.message
+          : "Failed to load reviews"
+      )
+    } finally {
+      setReviewsLoading(false)
+    }
+  }
+
   useEffect(() => {
+    setMounted(true)
+
     let cancelled = false
 
     async function loadInitialListings() {
@@ -76,6 +108,7 @@ export default function DashboardPage() {
     }
 
     loadInitialListings()
+    loadReviews()
 
     return () => {
       cancelled = true
@@ -195,6 +228,14 @@ export default function DashboardPage() {
     }
   }
 
+  const averageRating =
+    reviews.length > 0
+      ? reviews.reduce(
+          (sum, review) => sum + review.rating,
+          0
+        ) / reviews.length
+      : 0
+
   return (
     <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
       <Navbar />
@@ -218,11 +259,19 @@ export default function DashboardPage() {
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                onClick={() => loadListings(true)}
-                disabled={refreshing || loading}
+                onClick={() => {
+                  loadListings(true)
+                  loadReviews()
+                }}
+                disabled={
+                  !mounted ||
+                  refreshing ||
+                  loading ||
+                  reviewsLoading
+                }
                 className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-sm font-medium hover:opacity-80 disabled:opacity-50"
               >
-                {refreshing
+                {mounted && (refreshing || reviewsLoading)
                   ? "Refreshing..."
                   : "Refresh"}
               </button>
@@ -274,7 +323,7 @@ export default function DashboardPage() {
 
           {/* LISTINGS */}
           {!loading && listings.length > 0 && (
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="mb-10 grid gap-6 md:grid-cols-2">
               {listings.map((item) => {
                 const availableQuantity =
                   item.available_quantity
@@ -477,6 +526,125 @@ export default function DashboardPage() {
               })}
             </div>
           )}
+
+          {/* REVIEWS */}
+          <section className="mb-10">
+            <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h2 className="text-2xl font-bold">
+                  Reviews
+                </h2>
+
+                <p className="mt-1 text-sm text-[var(--muted)]">
+                  Reviews from buyers who have completed purchases from you.
+                </p>
+              </div>
+
+              {!reviewsLoading && reviews.length > 0 && (
+                <div className="flex items-center gap-3 text-sm">
+                  <span className="font-semibold">
+                    ⭐ {averageRating.toFixed(1)} / 5
+                  </span>
+
+                  <span className="text-[var(--muted)]">
+                    {reviews.length}{" "}
+                    {reviews.length === 1
+                      ? "review"
+                      : "reviews"}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {reviewsLoading && (
+              <div className="space-y-3">
+                <div className="h-28 animate-pulse rounded-2xl border border-[var(--border)] bg-[var(--card)]" />
+                <div className="h-28 animate-pulse rounded-2xl border border-[var(--border)] bg-[var(--card)]" />
+              </div>
+            )}
+
+            {!reviewsLoading && reviewsError && (
+              <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-600">
+                {reviewsError}
+              </div>
+            )}
+
+            {!reviewsLoading &&
+              !reviewsError &&
+              reviews.length === 0 && (
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
+                  <p className="font-medium">
+                    No reviews yet
+                  </p>
+
+                  <p className="mt-1 text-sm text-[var(--muted)]">
+                    Completed buyer transactions can leave reviews for your listings.
+                  </p>
+                </div>
+              )}
+
+            {!reviewsLoading &&
+              !reviewsError &&
+              reviews.length > 0 && (
+                <div className="space-y-4">
+                  {reviews.map((review) => (
+                    <div
+                      key={review.id}
+                      className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5"
+                    >
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <p className="font-semibold">
+                            {review.buyer_username}
+                          </p>
+
+                          <p className="mt-1 text-sm text-[var(--muted)]">
+                            Purchased:{" "}
+                            {review.listing_title}
+                          </p>
+                        </div>
+
+                        <div className="text-left sm:text-right">
+                          <div
+                            className="text-sm"
+                            aria-label={`${review.rating} out of 5 stars`}
+                          >
+                            {"⭐".repeat(review.rating)}
+                          </div>
+
+                          <p className="mt-1 text-xs text-[var(--muted)]">
+                            {new Date(
+                              review.created_at
+                            ).toLocaleDateString(
+                              "en-GB",
+                              {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                              }
+                            )}
+                          </p>
+                        </div>
+                      </div>
+
+                      {review.comment && (
+                        <p className="mt-4 text-sm leading-6 text-[var(--foreground)]">
+                          {review.comment}
+                        </p>
+                      )}
+
+                      {review.verified_purchase && (
+                        <div className="mt-4">
+                          <span className="inline-flex items-center rounded-full bg-lime-100 px-3 py-1 text-xs font-semibold text-lime-700">
+                            ✓ Verified purchase
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+          </section>
 
         </div>
       </Container>

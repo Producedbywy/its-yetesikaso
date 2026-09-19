@@ -26,12 +26,26 @@ export type PublicSellerProfile = {
   location: string
   bio: string
   listing_count: number
+  average_rating: number
+  review_count: number
   created_at: string
+}
+
+export type SellerReview = {
+  id: number
+  buyer_username: string
+  listing: number
+  listing_title: string
+  rating: number
+  comment: string
+  created_at: string
+  verified_purchase: boolean
 }
 
 export type PublicSellerResponse = {
   seller: PublicSellerProfile
   listings: Listing[]
+  reviews: SellerReview[]
 }
 
 export type ListingsResponse = {
