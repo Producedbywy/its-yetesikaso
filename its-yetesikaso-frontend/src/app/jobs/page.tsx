@@ -5,7 +5,6 @@ import Link from "next/link"
 
 import Navbar from "@/components/layout/navbar"
 import Footer from "@/components/layout/footer"
-import MobileNav from "@/components/layout/mobile-nav"
 import Container from "@/components/layout/container"
 import { getJobs } from "@/lib/api/jobs"
 import type { Job } from "@/types/job"
@@ -392,7 +391,6 @@ export default function JobsPage() {
       </section>
 
       <Footer />
-      <MobileNav />
     </main>
   )
 }

@@ -5,7 +5,6 @@ import Link from "next/link"
 
 import Navbar from "@/components/layout/navbar"
 import Footer from "@/components/layout/footer"
-import MobileNav from "@/components/layout/mobile-nav"
 import Container from "@/components/layout/container"
 
 import {
@@ -341,7 +340,6 @@ export default function EmployerApplicationsPage() {
       </section>
 
       <Footer />
-      <MobileNav />
     </main>
   )
 }

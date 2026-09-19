@@ -1,6 +1,5 @@
 import Navbar from '@/components/layout/navbar'
 import Footer from '@/components/layout/footer'
-import MobileNav from '@/components/layout/mobile-nav'
 
 import Hero from '@/components/marketplace/hero'
 import Categories from '@/components/marketplace/categories'
@@ -25,7 +24,6 @@ export default function HomePage() {
 
       <Footer />
 
-      <MobileNav />
     </main>
   )
 }

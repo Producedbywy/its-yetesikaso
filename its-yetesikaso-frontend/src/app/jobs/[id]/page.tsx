@@ -2,7 +2,6 @@ import Link from "next/link"
 
 import Navbar from "@/components/layout/navbar"
 import Footer from "@/components/layout/footer"
-import MobileNav from "@/components/layout/mobile-nav"
 import Container from "@/components/layout/container"
 import { getPublicJob } from "@/lib/api/public"
 import ApplyToJob from "@/components/jobs/ApplyToJob"
@@ -47,8 +46,7 @@ export default async function JobDetailPage({
         </Container>
 
         <Footer />
-        <MobileNav />
-      </main>
+        </main>
     )
   }
 
@@ -200,7 +198,6 @@ export default async function JobDetailPage({
       </section>
 
       <Footer />
-      <MobileNav />
     </main>
   )
 }

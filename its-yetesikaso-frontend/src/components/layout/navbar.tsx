@@ -70,7 +70,7 @@ export default function Navbar() {
   const isEmployer = authenticated && role === "employer"
 
   return (
-    <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/90 text-gray-900 backdrop-blur dark:border-gray-800 dark:bg-gray-950/90 dark:text-white">
+    <header className="sticky top-0 z-50 hidden border-b border-gray-200 bg-white/90 text-gray-900 backdrop-blur dark:border-gray-800 dark:bg-gray-950/90 dark:text-white md:block">
       <Container className="flex items-center justify-between py-4">
         {/* LOGO */}
         <Link

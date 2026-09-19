@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useEffect, useState } from "react"
+import { usePathname } from "next/navigation"
 import {
   Menu,
   X,
@@ -9,6 +10,7 @@ import {
   Search,
   Briefcase,
   User,
+  Bookmark,
   MessageSquare,
   Receipt,
   LayoutDashboard,
@@ -28,10 +30,17 @@ import {
   type AccountRole,
 } from "@/lib/api/seller"
 
+import {
+  getConversations,
+} from "@/lib/api/messages"
+
 export default function MobileNav() {
+  const pathname = usePathname()
+
   const [open, setOpen] = useState(false)
   const [authenticated, setAuthenticated] = useState(false)
   const [role, setRole] = useState<AccountRole>("user")
+  const [unreadMessages, setUnreadMessages] = useState(0)
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
@@ -43,7 +52,7 @@ export default function MobileNav() {
     return () => {
       window.cancelAnimationFrame(frame)
     }
-  }, [])
+  }, [pathname])
 
   useEffect(() => {
     if (!authenticated) {
@@ -52,21 +61,26 @@ export default function MobileNav() {
 
     let cancelled = false
 
-    async function loadProfile() {
+    async function loadUserData() {
       try {
-        const profile = await getMyProfile()
+        const [profile, conversations] = await Promise.all([
+          getMyProfile(),
+          getConversations(),
+        ])
 
         if (!cancelled) {
           setRole(profile.role)
+          setUnreadMessages(conversations.unread_count || 0)
         }
       } catch {
         if (!cancelled) {
           setRole("user")
+          setUnreadMessages(0)
         }
       }
     }
 
-    void loadProfile()
+    void loadUserData()
 
     return () => {
       cancelled = true
@@ -81,6 +95,7 @@ export default function MobileNav() {
     clearTokens()
     setAuthenticated(false)
     setRole("user")
+    setUnreadMessages(0)
     setOpen(false)
     window.location.href = "/"
   }
@@ -94,7 +109,7 @@ export default function MobileNav() {
   return (
     <>
       {/* MOBILE HEADER */}
-      <div className="sticky top-0 z-50 border-b border-gray-200 bg-white/90 backdrop-blur dark:border-gray-800 dark:bg-gray-950/90 md:hidden">
+      <div className="fixed inset-x-0 top-0 z-50 border-b border-gray-200 bg-white/90 backdrop-blur dark:border-gray-800 dark:bg-gray-950/90 md:hidden">
         <div className="flex items-center justify-between px-4 py-4">
           <Link
             href="/"
@@ -174,12 +189,31 @@ export default function MobileNav() {
                   </Link>
 
                   <Link
-                    href="/messages"
+                    href="/saved"
                     onClick={closeMenu}
                     className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100 dark:hover:bg-gray-900"
                   >
-                    <MessageSquare size={20} />
-                    Messages
+                    <Bookmark size={20} />
+                    Saved
+                  </Link>
+
+                  <Link
+                    href="/messages"
+                    onClick={closeMenu}
+                    className="flex items-center justify-between rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100 dark:hover:bg-gray-900"
+                  >
+                    <span className="flex items-center gap-3">
+                      <MessageSquare size={20} />
+                      Messages
+                    </span>
+
+                    {unreadMessages > 0 && (
+                      <span className="flex min-w-5 items-center justify-center rounded-full bg-lime-400 px-1.5 py-0.5 text-xs font-bold text-black">
+                        {unreadMessages > 99
+                          ? "99+"
+                          : unreadMessages}
+                      </span>
+                    )}
                   </Link>
 
                   <Link
@@ -268,7 +302,7 @@ export default function MobileNav() {
               </>
             )}
 
-            {/* LOGGED OUT */}
+            {/* LOGGED-OUT */}
             {!authenticated && (
               <>
                 <div className="my-5 border-t border-gray-200 dark:border-gray-800" />

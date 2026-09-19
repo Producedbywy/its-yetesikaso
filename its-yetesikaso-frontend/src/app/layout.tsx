@@ -1,10 +1,10 @@
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
-import MobileNavDrawer from "@/components/MobileNavDrawer"
 
 import "./globals.css"
 
 import ThemeProvider from "@/components/providers/theme-provider"
+import MobileNav from "@/components/layout/mobile-nav"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,9 +35,8 @@ export default function RootLayout({
       <body className="min-h-full">
         <ThemeProvider>
           {children}
+          <MobileNav />
         </ThemeProvider>
-
-        <MobileNavDrawer />
       </body>
     </html>
   )
