@@ -7,272 +7,391 @@ import Navbar from "@/components/layout/navbar"
 import Footer from "@/components/layout/footer"
 import Container from "@/components/layout/container"
 import {
-  getConversationMessages,
-  sendMessage,
-  type ConversationMessagesResponse,
+getConversationMessages,
+sendMessage,
+type ConversationMessagesResponse,
 } from "@/lib/api/messages"
+import {
+getBlockStatus,
+blockUser,
+unblockUser,
+} from "@/lib/api/blocks"
+import { getMyProfile } from "@/lib/api/seller"
 
 type ConversationState = {
-  conversation: ConversationMessagesResponse | null
-  loading: boolean
-  error: string | null
+conversation: ConversationMessagesResponse | null
+loading: boolean
+error: string | null
 }
 
 type ConversationAction =
-  | { type: "LOAD_START" }
-  | {
-      type: "LOAD_SUCCESS"
-      payload: ConversationMessagesResponse
-    }
-  | {
-      type: "LOAD_ERROR"
-      payload: string
-    }
+| { type: "LOAD_START" }
+| {
+type: "LOAD_SUCCESS"
+payload: ConversationMessagesResponse
+}
+| {
+type: "LOAD_ERROR"
+payload: string
+}
 
 const initialConversationState: ConversationState = {
-  conversation: null,
-  loading: true,
-  error: null,
+conversation: null,
+loading: true,
+error: null,
 }
 
 function conversationReducer(
-  state: ConversationState,
-  action: ConversationAction
+state: ConversationState,
+action: ConversationAction
 ): ConversationState {
-  switch (action.type) {
-    case "LOAD_START":
-      return {
-        ...state,
-        loading: true,
-        error: null,
-      }
+switch (action.type) {
+case "LOAD_START":
+return {
+...state,
+loading: true,
+error: null,
+}
 
-    case "LOAD_SUCCESS":
-      return {
-        conversation: action.payload,
-        loading: false,
-        error: null,
-      }
-
-    case "LOAD_ERROR":
-      return {
-        ...state,
-        loading: false,
-        error: action.payload,
-      }
-
-    default:
-      return state
+case "LOAD_SUCCESS":
+  return {
+    conversation: action.payload,
+    loading: false,
+    error: null,
   }
+
+case "LOAD_ERROR":
+  return {
+    ...state,
+    loading: false,
+    error: action.payload,
+  }
+
+default:
+  return state
+
+}
 }
 
 export default function ConversationPage() {
-  const params = useParams()
-  const router = useRouter()
+const params = useParams()
+const router = useRouter()
 
-  const conversationId = Number(params.id)
+const conversationId = Number(params.id)
 
-  const isValidConversationId =
-    Number.isInteger(conversationId) && conversationId > 0
+const isValidConversationId =
+Number.isInteger(conversationId) && conversationId > 0
 
-  const [state, dispatch] = useReducer(
-    conversationReducer,
-    initialConversationState
+const [state, dispatch] = useReducer(
+conversationReducer,
+initialConversationState
+)
+
+const [message, setMessage] = useState("")
+const [sending, setSending] = useState(false)
+const [currentUserId, setCurrentUserId] = useState<number | null>(null)
+const [blocked, setBlocked] = useState(false)
+const [blockLoading, setBlockLoading] = useState(false)
+const [blockError, setBlockError] = useState<string | null>(null)
+
+useEffect(() => {
+if (!isValidConversationId) {
+return
+}
+
+let cancelled = false
+
+async function fetchConversation(
+  showLoading = false
+) {
+  if (showLoading) {
+    dispatch({ type: "LOAD_START" })
+  }
+
+  try {
+    const data =
+      await getConversationMessages(conversationId)
+
+    if (cancelled) {
+      return
+    }
+
+    dispatch({
+      type: "LOAD_SUCCESS",
+      payload: data,
+    })
+  } catch (err: unknown) {
+    if (cancelled) {
+      return
+    }
+
+    dispatch({
+      type: "LOAD_ERROR",
+      payload:
+        err instanceof Error
+          ? err.message
+          : "Unable to load conversation",
+    })
+  }
+}
+
+void fetchConversation(true)
+
+const interval = window.setInterval(() => {
+  void fetchConversation(false)
+}, 5000)
+
+return () => {
+  cancelled = true
+  window.clearInterval(interval)
+}
+
+}, [conversationId, isValidConversationId])
+
+useEffect(() => {
+if (!isValidConversationId) {
+return
+}
+
+let cancelled = false
+
+async function loadBlockState() {
+  try {
+    const profile = await getMyProfile()
+
+    if (cancelled) {
+      return
+    }
+
+    setCurrentUserId(profile.id)
+
+    const conversationData =
+      await getConversationMessages(conversationId)
+
+    if (cancelled) {
+      return
+    }
+
+    const otherUserId =
+      conversationData.buyer === profile.id
+        ? conversationData.seller
+        : conversationData.buyer
+
+    const blockStatus =
+      await getBlockStatus(otherUserId)
+
+    if (cancelled) {
+      return
+    }
+
+    setBlocked(blockStatus.blocked)
+  } catch {
+    if (!cancelled) {
+      setCurrentUserId(null)
+    }
+  }
+}
+
+void loadBlockState()
+
+return () => {
+  cancelled = true
+}
+
+}, [conversationId, isValidConversationId])
+
+async function handleBlockToggle() {
+if (
+!state.conversation ||
+currentUserId === null ||
+blockLoading
+) {
+return
+}
+
+const otherUserId =
+  state.conversation.buyer === currentUserId
+    ? state.conversation.seller
+    : state.conversation.buyer
+
+const action = blocked ? "unblock" : "block"
+
+const confirmed = window.confirm(
+  blocked
+    ? "Unblock this user so you can message each other again?"
+    : "Block this user? You will not be able to send new messages to each other."
+)
+
+if (!confirmed) {
+  return
+}
+
+try {
+  setBlockLoading(true)
+  setBlockError(null)
+
+  if (action === "block") {
+    await blockUser(otherUserId)
+    setBlocked(true)
+  } else {
+    await unblockUser(otherUserId)
+    setBlocked(false)
+  }
+} catch (err: unknown) {
+  setBlockError(
+    err instanceof Error
+      ? err.message
+      : `Unable to ${action} user`
+  )
+} finally {
+  setBlockLoading(false)
+}
+
+}
+
+async function handleSubmit(
+event: FormEvent<HTMLFormElement>
+) {
+event.preventDefault()
+
+const trimmedMessage = message.trim()
+
+if (
+  !trimmedMessage ||
+  sending ||
+  blocked ||
+  !isValidConversationId
+) {
+  return
+}
+
+try {
+  setSending(true)
+
+  await sendMessage(
+    conversationId,
+    trimmedMessage
   )
 
-  const [message, setMessage] = useState("")
-  const [sending, setSending] = useState(false)
+  setMessage("")
 
-  useEffect(() => {
-    if (!isValidConversationId) {
-      return
-    }
+  const data =
+    await getConversationMessages(conversationId)
 
-    let cancelled = false
+  dispatch({
+    type: "LOAD_SUCCESS",
+    payload: data,
+  })
+} catch (err: unknown) {
+  dispatch({
+    type: "LOAD_ERROR",
+    payload:
+      err instanceof Error
+        ? err.message
+        : "Unable to send message",
+  })
+} finally {
+  setSending(false)
+}
 
-    async function fetchConversation(
-      showLoading = false
-    ) {
-      if (showLoading) {
-        dispatch({ type: "LOAD_START" })
-      }
+}
 
-      try {
-        const data =
-          await getConversationMessages(conversationId)
+if (!isValidConversationId) {
+return ( <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)]"> <Navbar />
 
-        if (cancelled) {
-          return
-        }
+    <Container>
+      <div className="py-20 text-center">
+        <h1 className="mb-3 text-2xl font-bold">
+          Invalid conversation
+        </h1>
 
-        dispatch({
-          type: "LOAD_SUCCESS",
-          payload: data,
-        })
-      } catch (err: unknown) {
-        if (cancelled) {
-          return
-        }
+        <p className="text-[var(--muted)]">
+          The conversation link is not valid.
+        </p>
+      </div>
+    </Container>
 
-        dispatch({
-          type: "LOAD_ERROR",
-          payload:
-            err instanceof Error
-              ? err.message
-              : "Unable to load conversation",
-        })
-      }
-    }
+    <Footer />
+  </main>
+)
 
-    void fetchConversation(true)
+}
 
-    const interval = window.setInterval(() => {
-      void fetchConversation(false)
-    }, 5000)
+if (state.loading) {
+return ( <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)]"> <Navbar />
 
-    return () => {
-      cancelled = true
-      window.clearInterval(interval)
-    }
-  }, [conversationId, isValidConversationId])
+    <Container>
+      <div className="py-20 text-center">
+        <p className="text-[var(--muted)]">
+          Loading conversation...
+        </p>
+      </div>
+    </Container>
 
-  async function handleSubmit(
-    event: FormEvent<HTMLFormElement>
-  ) {
-    event.preventDefault()
+    <Footer />
+  </main>
+)
 
-    const trimmedMessage = message.trim()
+}
 
-    if (
-      !trimmedMessage ||
-      sending ||
-      !isValidConversationId
-    ) {
-      return
-    }
+if (state.error && !state.conversation) {
+return ( <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)]"> <Navbar />
 
-    try {
-      setSending(true)
+    <Container>
+      <div className="mx-auto max-w-2xl py-20 text-center">
+        <h1 className="mb-3 text-2xl font-bold">
+          Unable to open conversation
+        </h1>
 
-      await sendMessage(
-        conversationId,
-        trimmedMessage
-      )
+        <p className="mb-6 text-[var(--muted)]">
+          {state.error}
+        </p>
 
-      setMessage("")
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="rounded-xl bg-lime-400 px-5 py-3 font-medium text-black transition hover:bg-lime-300"
+        >
+          Go Back
+        </button>
+      </div>
+    </Container>
 
-      const data =
-        await getConversationMessages(conversationId)
+    <Footer />
+  </main>
+)
 
-      dispatch({
-        type: "LOAD_SUCCESS",
-        payload: data,
-      })
-    } catch (err: unknown) {
-      dispatch({
-        type: "LOAD_ERROR",
-        payload:
-          err instanceof Error
-            ? err.message
-            : "Unable to send message",
-      })
-    } finally {
-      setSending(false)
-    }
-  }
+}
 
-  if (!isValidConversationId) {
-    return (
-      <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
-        <Navbar />
+if (!state.conversation) {
+return null
+}
 
-        <Container>
-          <div className="py-20 text-center">
-            <h1 className="mb-3 text-2xl font-bold">
-              Invalid conversation
-            </h1>
+const conversation = state.conversation
 
-            <p className="text-[var(--muted)]">
-              The conversation link is not valid.
-            </p>
-          </div>
-        </Container>
+const otherUserId =
+currentUserId !== null
+? conversation.buyer === currentUserId
+? conversation.seller
+: conversation.buyer
+: null
 
-        <Footer />
-      </main>
-    )
-  }
+return ( <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)]"> <Navbar />
 
-  if (state.loading) {
-    return (
-      <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
-        <Navbar />
+  <section className="py-6 sm:py-8">
+    <Container>
+      <div className="mx-auto flex max-w-4xl flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]">
+        <div className="border-b border-[var(--border)] p-5 sm:p-6">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="mb-4 text-sm text-[var(--muted)] transition hover:text-[var(--foreground)]"
+          >
+            ← Back
+          </button>
 
-        <Container>
-          <div className="py-20 text-center">
-            <p className="text-[var(--muted)]">
-              Loading conversation...
-            </p>
-          </div>
-        </Container>
-
-        <Footer />
-      </main>
-    )
-  }
-
-  if (state.error && !state.conversation) {
-    return (
-      <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
-        <Navbar />
-
-        <Container>
-          <div className="mx-auto max-w-2xl py-20 text-center">
-            <h1 className="mb-3 text-2xl font-bold">
-              Unable to open conversation
-            </h1>
-
-            <p className="mb-6 text-[var(--muted)]">
-              {state.error}
-            </p>
-
-            <button
-              type="button"
-              onClick={() => router.back()}
-              className="rounded-xl bg-lime-400 px-5 py-3 font-medium text-black transition hover:bg-lime-300"
-            >
-              Go Back
-            </button>
-          </div>
-        </Container>
-
-        <Footer />
-      </main>
-    )
-  }
-
-  if (!state.conversation) {
-    return null
-  }
-
-  const conversation = state.conversation
-
-  return (
-    <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
-      <Navbar />
-
-      <section className="py-6 sm:py-8">
-        <Container>
-          <div className="mx-auto flex max-w-4xl flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]">
-            <div className="border-b border-[var(--border)] p-5 sm:p-6">
-              <button
-                type="button"
-                onClick={() => router.back()}
-                className="mb-4 text-sm text-[var(--muted)] transition hover:text-[var(--foreground)]"
-              >
-                ← Back
-              </button>
-
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
               <h1 className="text-xl font-bold sm:text-2xl">
                 {conversation.listing_title}
               </h1>
@@ -283,77 +402,119 @@ export default function ConversationPage() {
               </p>
             </div>
 
-            <div className="min-h-[420px] space-y-4 overflow-y-auto p-5 sm:p-6">
-              {conversation.results.length === 0 ? (
-                <div className="flex min-h-[350px] items-center justify-center text-center">
-                  <p className="text-[var(--muted)]">
-                    No messages yet. Start the conversation below.
+            {otherUserId !== null && (
+              <button
+                type="button"
+                onClick={handleBlockToggle}
+                disabled={blockLoading}
+                className="rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-medium transition hover:bg-[var(--background)] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {blockLoading
+                  ? "Updating..."
+                  : blocked
+                    ? "Unblock user"
+                    : "Block user"}
+              </button>
+            )}
+          </div>
+
+          {blocked && (
+            <div className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--background)] px-4 py-3">
+              <p className="text-sm text-[var(--muted)]">
+                This user is blocked. You cannot send new messages to each other.
+              </p>
+            </div>
+          )}
+
+          {blockError && (
+            <div className="mt-4">
+              <p className="text-sm text-red-600">
+                {blockError}
+              </p>
+            </div>
+          )}
+        </div>
+
+        <div className="min-h-[420px] space-y-4 overflow-y-auto p-5 sm:p-6">
+          {conversation.results.length === 0 ? (
+            <div className="flex min-h-[350px] items-center justify-center text-center">
+              <p className="text-[var(--muted)]">
+                No messages yet. Start the conversation below.
+              </p>
+            </div>
+          ) : (
+            conversation.results.map((item) => (
+              <div
+                key={item.id}
+                className="rounded-xl border border-[var(--border)] bg-[var(--background)] p-4"
+              >
+                <div className="mb-1 flex items-center justify-between gap-4">
+                  <p className="font-semibold">
+                    {item.sender_username}
+                  </p>
+
+                  <p className="text-xs text-[var(--muted)]">
+                    {new Date(
+                      item.created_at
+                    ).toLocaleString()}
                   </p>
                 </div>
-              ) : (
-                conversation.results.map((item) => (
-                  <div
-                    key={item.id}
-                    className="rounded-xl border border-[var(--border)] bg-[var(--background)] p-4"
-                  >
-                    <div className="mb-1 flex items-center justify-between gap-4">
-                      <p className="font-semibold">
-                        {item.sender_username}
-                      </p>
 
-                      <p className="text-xs text-[var(--muted)]">
-                        {new Date(
-                          item.created_at
-                        ).toLocaleString()}
-                      </p>
-                    </div>
-
-                    <p className="whitespace-pre-wrap leading-6 text-[var(--muted)]">
-                      {item.body}
-                    </p>
-                  </div>
-                ))
-              )}
-            </div>
-
-            {state.error && (
-              <div className="border-t border-[var(--border)] px-5 py-3 sm:px-6">
-                <p className="text-sm text-red-600">
-                  {state.error}
+                <p className="whitespace-pre-wrap leading-6 text-[var(--muted)]">
+                  {item.body}
                 </p>
               </div>
-            )}
+            ))
+          )}
+        </div>
 
-            <form
-              onSubmit={handleSubmit}
-              className="border-t border-[var(--border)] p-5 sm:p-6"
-            >
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <textarea
-                  value={message}
-                  onChange={(event) =>
-                    setMessage(event.target.value)
-                  }
-                  placeholder="Write a message..."
-                  rows={3}
-                  disabled={sending}
-                  className="min-h-[90px] flex-1 resize-none rounded-xl border border-[var(--border)] bg-[var(--background)] px-4 py-3 text-sm outline-none transition placeholder:text-[var(--muted)] focus:border-lime-400 disabled:cursor-not-allowed disabled:opacity-50"
-                />
-
-                <button
-                  type="submit"
-                  disabled={!message.trim() || sending}
-                  className="rounded-xl bg-lime-400 px-6 py-3 font-medium text-black transition hover:bg-lime-300 disabled:cursor-not-allowed disabled:opacity-50 sm:self-end"
-                >
-                  {sending ? "Sending..." : "Send"}
-                </button>
-              </div>
-            </form>
+        {state.error && (
+          <div className="border-t border-[var(--border)] px-5 py-3 sm:px-6">
+            <p className="text-sm text-red-600">
+              {state.error}
+            </p>
           </div>
-        </Container>
-      </section>
+        )}
 
-      <Footer />
-    </main>
-  )
+        <form
+          onSubmit={handleSubmit}
+          className="border-t border-[var(--border)] p-5 sm:p-6"
+        >
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <textarea
+              value={message}
+              onChange={(event) =>
+                setMessage(event.target.value)
+              }
+              placeholder={
+                blocked
+                  ? "Messaging is unavailable while this user is blocked."
+                  : "Write a message..."
+              }
+              rows={3}
+              disabled={sending || blocked}
+              className="min-h-[90px] flex-1 resize-none rounded-xl border border-[var(--border)] bg-[var(--background)] px-4 py-3 text-sm outline-none transition placeholder:text-[var(--muted)] focus:border-lime-400 disabled:cursor-not-allowed disabled:opacity-50"
+            />
+
+            <button
+              type="submit"
+              disabled={
+                !message.trim() ||
+                sending ||
+                blocked
+              }
+              className="rounded-xl bg-lime-400 px-6 py-3 font-medium text-black transition hover:bg-lime-300 disabled:cursor-not-allowed disabled:opacity-50 sm:self-end"
+            >
+              {sending ? "Sending..." : "Send"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </Container>
+  </section>
+
+  <Footer />
+</main>
+
+)
 }
