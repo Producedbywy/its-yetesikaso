@@ -162,11 +162,15 @@ CSRF_TRUSTED_ORIGINS = [
     "https://its-yetesikaso.vercel.app",
     "https://www.yetesikaso.com",
     "https://yetesikaso.com",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
 ]
 
 CORS_ALLOWED_ORIGINS = [
     "https://www.yetesikaso.com",
     "https://yetesikaso.com",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
 ]
 
 # =========================
