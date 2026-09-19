@@ -56,6 +56,10 @@ from marketplace.api.views.report_views import (
     report_listing,
 )
 
+from marketplace.api.views.block_views import (
+    user_block,
+)
+
 
 urlpatterns = [
 
@@ -267,6 +271,12 @@ urlpatterns = [
         "sellers/<str:username>/",
         public_seller_profile,
         name="public-seller-profile",
+    ),
+
+    path(
+        "users/<int:user_id>/block/",
+        user_block,
+        name="user-block",
     ),
 
     # =========================

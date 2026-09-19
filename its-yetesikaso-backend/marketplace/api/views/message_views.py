@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 
-from marketplace.models import Conversation, Message, Listing
+from marketplace.models import Conversation, Message, Listing, UserBlock
 
 
 # =========================
@@ -30,6 +30,15 @@ def create_conversation(request):
         return Response(
             {"error": "You cannot message yourself about your own listing"},
             status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if UserBlock.objects.filter(
+        blocker__in=[request.user, listing.owner],
+        blocked_user__in=[request.user, listing.owner],
+    ).exists():
+        return Response(
+            {"error": "Messaging is unavailable between these users"},
+            status=status.HTTP_403_FORBIDDEN,
         )
 
     conversation, created = Conversation.objects.get_or_create(
@@ -149,6 +158,21 @@ def conversation_messages(request, conversation_id):
     ):
         return Response(
             {"error": "You do not have access to this conversation"},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    other_user = (
+        conversation.seller
+        if conversation.buyer == request.user
+        else conversation.buyer
+    )
+
+    if request.method == "POST" and UserBlock.objects.filter(
+        blocker__in=[request.user, other_user],
+        blocked_user__in=[request.user, other_user],
+    ).exists():
+        return Response(
+            {"error": "Messaging is unavailable between these users"},
             status=status.HTTP_403_FORBIDDEN,
         )
 
