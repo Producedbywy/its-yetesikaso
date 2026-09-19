@@ -12,10 +12,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY
 # =========================
 
-SECRET_KEY = os.environ.get(
-    "DJANGO_SECRET_KEY",
-    "k9_rc$n@*_rp$y_kmeaeinixk25#p5+yj50m=jgv3i4xww^t0=",
-)
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
+
+if not SECRET_KEY:
+    SECRET_KEY = "local-development-only-not-for-production"
 
 DEBUG = False
 
@@ -164,7 +164,10 @@ CSRF_TRUSTED_ORIGINS = [
     "https://yetesikaso.com",
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    "https://www.yetesikaso.com",
+    "https://yetesikaso.com",
+]
 
 # =========================
 # DRF
