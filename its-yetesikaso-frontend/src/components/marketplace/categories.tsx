@@ -1,83 +1,148 @@
-import Container from '@/components/layout/container'
-import {
-  Smartphone,
-  Car,
-  Home,
-  Briefcase,
-  Shirt,
-  Wrench
-} from 'lucide-react'
+"use client"
+
+import { useMemo, useState } from "react"
+
+import Container from "@/components/layout/container"
+import ListingCard from "@/components/marketplace/listing-card"
+import { useListings } from "@/lib/marketplace/useListings"
 
 const categories = [
-  {
-    title: 'Electronics',
-    icon: Smartphone,
-    count: '1,240 Listings'
-  },
-  {
-    title: 'Vehicles',
-    icon: Car,
-    count: '860 Listings'
-  },
-  {
-    title: 'Property',
-    icon: Home,
-    count: '430 Listings'
-  },
-  {
-    title: 'Jobs',
-    icon: Briefcase,
-    count: '120 Jobs'
-  },
-  {
-    title: 'Fashion',
-    icon: Shirt,
-    count: '620 Listings'
-  },
-  {
-    title: 'Services',
-    icon: Wrench,
-    count: '300 Providers'
-  }
+  { label: "All Categories", value: "all" },
+  { label: "Electronics", value: "electronics" },
+  { label: "Vehicles", value: "vehicles" },
+  { label: "Property", value: "property" },
+  { label: "Fashion", value: "fashion" },
+  { label: "Services", value: "services" },
 ]
 
 export default function Categories() {
+  const [category, setCategory] = useState("all")
+
+  const filters = useMemo(
+    () => ({
+      search: "",
+      category,
+      location: "all",
+      minPrice: "",
+      maxPrice: "",
+      sort: "newest",
+    }),
+    [category]
+  )
+
+  const {
+    data: listings = [],
+    loading,
+  } = useListings(filters, 1)
+
   return (
-    <section className="py-20 text-gray-900 dark:text-white">
+    <section className="py-12 md:py-16">
       <Container>
-        <div className="mb-12">
-          <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-lime-600">
+        <div className="mb-8">
+          <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-lime-600">
             Explore
           </p>
 
-          <h2 className="text-4xl font-bold text-[var(--foreground)] md:text-5xl">
-            Browse Categories
+          <h2 className="text-3xl font-bold text-[var(--foreground)] md:text-4xl">
+            Browse Listings
           </h2>
+
+          <p className="mt-3 max-w-2xl text-[var(--muted)]">
+            Explore what is available across the marketplace and browse by
+            category.
+          </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {categories.map((category) => {
-            const Icon = category.icon
+        <div className="grid gap-8 lg:grid-cols-[240px_minmax(0,1fr)]">
+          {/* CATEGORY SIDEBAR */}
+          <aside className="lg:sticky lg:top-6 lg:self-start">
+            <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
+              <h3 className="mb-4 text-base font-semibold">
+                Categories
+              </h3>
 
-            return (
-              <div
-                key={category.title}
-                className="group cursor-pointer rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 transition duration-300 hover:-translate-y-1 hover:border-lime-300 hover:shadow-xl"
-              >
-                <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-lime-100 text-lime-700 transition group-hover:scale-110">
-                  <Icon size={30} />
+              <div className="space-y-1">
+                {categories.map((item) => {
+                  const active = category === item.value
+
+                  return (
+                    <button
+                      key={item.value}
+                      type="button"
+                      onClick={() => setCategory(item.value)}
+                      className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm transition ${
+                        active
+                          ? "bg-lime-400 font-semibold text-black"
+                          : "text-[var(--muted)] hover:bg-[var(--background)] hover:text-[var(--foreground)]"
+                      }`}
+                    >
+                      <span>{item.label}</span>
+
+                      {active && (
+                        <span className="text-xs">
+                          →
+                        </span>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          </aside>
+
+          {/* LISTINGS */}
+          <div className="min-w-0">
+            {loading && listings.length === 0 && (
+              <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <div
+                    key={index}
+                    className="h-80 animate-pulse rounded-2xl bg-[var(--border)]"
+                  />
+                ))}
+              </div>
+            )}
+
+            {!loading && listings.length > 0 && (
+              <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                {listings.slice(0, 6).map((listing) => (
+                  <ListingCard
+                    key={listing.id}
+                    listing={listing}
+                  />
+                ))}
+              </div>
+            )}
+
+            {loading && listings.length > 0 && (
+              <div className="relative">
+                <div className="absolute right-2 top-2 z-10 rounded-full bg-[var(--card)] px-3 py-1 text-xs text-[var(--muted)] shadow-sm">
+                  Updating…
                 </div>
 
-                <h3 className="mb-2 text-2xl font-bold">
-                  {category.title}
-                </h3>
+                <div className="grid gap-5 opacity-60 sm:grid-cols-2 xl:grid-cols-3">
+                  {listings.slice(0, 6).map((listing) => (
+                    <ListingCard
+                      key={listing.id}
+                      listing={listing}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
 
-                <p className="text-[var(--muted)]">
-                  {category.count}
+            {!loading && listings.length === 0 && (
+              <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] py-16 text-center">
+                <p className="text-lg font-medium">
+                  No listings in this category yet.
+                </p>
+
+                <p className="mt-2 text-sm text-[var(--muted)]">
+                  Try another category.
                 </p>
               </div>
-            )
-          })}
+            )}
+          </div>
         </div>
       </Container>
     </section>

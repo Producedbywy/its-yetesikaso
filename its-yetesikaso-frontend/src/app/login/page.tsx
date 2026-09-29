@@ -31,6 +31,7 @@ function PasswordInput({
         type="button"
         onClick={() => setShow(!show)}
         className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500"
+        aria-label={show ? "Hide password" : "Show password"}
       >
         {show ? <EyeOff size={18} /> : <Eye size={18} />}
       </button>
@@ -47,7 +48,14 @@ export default function LoginPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
 
-    await login(username, password)
+    const returnTo =
+      typeof window !== "undefined"
+        ? new URLSearchParams(window.location.search).get(
+            "returnTo"
+          ) || undefined
+        : undefined
+
+    await login(username, password, returnTo)
   }
 
   return (

@@ -64,7 +64,18 @@ export default function RegisterPage() {
       setEmail("")
       setPassword("")
 
-      router.push("/login")
+      const returnTo =
+        typeof window !== "undefined"
+          ? new URLSearchParams(window.location.search).get(
+              "returnTo"
+            )
+          : null
+
+      const loginUrl = returnTo
+        ? `/login?returnTo=${encodeURIComponent(returnTo)}`
+        : "/login"
+
+      router.push(loginUrl)
     }
   }
 

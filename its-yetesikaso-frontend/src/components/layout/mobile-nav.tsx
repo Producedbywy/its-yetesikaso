@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { usePathname } from "next/navigation"
@@ -109,14 +110,22 @@ export default function MobileNav() {
   return (
     <>
       {/* MOBILE HEADER */}
-      <div className="fixed inset-x-0 top-0 z-50 border-b border-gray-200 bg-white/90 backdrop-blur dark:border-gray-800 dark:bg-gray-950/90 md:hidden">
-        <div className="flex items-center justify-between px-4 py-4">
+      <div className="fixed inset-x-0 top-0 z-50 border-b border-gray-200 bg-white dark:border-gray-200 dark:bg-white md:hidden">
+        <div className="flex h-20 items-center justify-center px-4">
           <Link
             href="/"
             onClick={closeMenu}
-            className="text-xl font-bold text-gray-900 dark:text-white"
+            className="relative block h-16 w-16"
+            aria-label="Yetesikaso home"
           >
-            Its Yetesikaso
+            <Image
+              src="/images/Yetesikaso New Logo.png"
+              alt="Yetesikaso"
+              fill
+              sizes="64px"
+              className="object-contain"
+              priority
+            />
           </Link>
 
           <button
@@ -128,7 +137,7 @@ export default function MobileNav() {
                 : "Open navigation menu"
             }
             aria-expanded={open}
-            className="rounded-xl border border-gray-200 p-2 text-gray-900 transition hover:bg-gray-100 dark:border-gray-800 dark:text-white dark:hover:bg-gray-900"
+            className="absolute right-4 rounded-xl border border-gray-200 p-2 text-gray-900 transition hover:bg-gray-100"
           >
             {open ? (
               <X size={24} />
@@ -141,14 +150,14 @@ export default function MobileNav() {
 
       {/* MOBILE MENU */}
       {open && (
-        <div className="fixed inset-0 top-[65px] z-40 overflow-y-auto bg-white dark:bg-gray-950 md:hidden">
+        <div className="fixed inset-0 top-20 z-40 overflow-y-auto bg-white md:hidden">
           <nav className="px-4 py-6">
             {/* GENERAL */}
             <div className="space-y-1">
               <Link
                 href="/"
                 onClick={closeMenu}
-                className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100 dark:hover:bg-gray-900"
+                className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100"
               >
                 <Home size={20} />
                 Home
@@ -157,7 +166,7 @@ export default function MobileNav() {
               <Link
                 href="/marketplace"
                 onClick={closeMenu}
-                className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100 dark:hover:bg-gray-900"
+                className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100"
               >
                 <Search size={20} />
                 Marketplace
@@ -166,7 +175,7 @@ export default function MobileNav() {
               <Link
                 href="/jobs"
                 onClick={closeMenu}
-                className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100 dark:hover:bg-gray-900"
+                className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100"
               >
                 <Briefcase size={20} />
                 Jobs
@@ -176,13 +185,13 @@ export default function MobileNav() {
             {/* LOGGED-IN */}
             {authenticated && (
               <>
-                <div className="my-5 border-t border-gray-200 dark:border-gray-800" />
+                <div className="my-5 border-t border-gray-200" />
 
                 <div className="space-y-1">
                   <Link
                     href="/profile"
                     onClick={closeMenu}
-                    className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100 dark:hover:bg-gray-900"
+                    className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100"
                   >
                     <User size={20} />
                     Profile
@@ -191,7 +200,7 @@ export default function MobileNav() {
                   <Link
                     href="/saved"
                     onClick={closeMenu}
-                    className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100 dark:hover:bg-gray-900"
+                    className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100"
                   >
                     <Bookmark size={20} />
                     Saved
@@ -200,7 +209,7 @@ export default function MobileNav() {
                   <Link
                     href="/messages"
                     onClick={closeMenu}
-                    className="flex items-center justify-between rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100 dark:hover:bg-gray-900"
+                    className="flex items-center justify-between rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100"
                   >
                     <span className="flex items-center gap-3">
                       <MessageSquare size={20} />
@@ -219,7 +228,7 @@ export default function MobileNav() {
                   <Link
                     href="/transactions"
                     onClick={closeMenu}
-                    className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100 dark:hover:bg-gray-900"
+                    className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100"
                   >
                     <Receipt size={20} />
                     Transactions
@@ -229,7 +238,7 @@ export default function MobileNav() {
                 {/* SELLER */}
                 {isSeller && (
                   <>
-                    <div className="my-5 border-t border-gray-200 dark:border-gray-800" />
+                    <div className="my-5 border-t border-gray-200" />
 
                     <p className="mb-2 px-4 text-xs font-semibold uppercase tracking-wide text-gray-500">
                       Seller
@@ -239,7 +248,7 @@ export default function MobileNav() {
                       <Link
                         href="/dashboard"
                         onClick={closeMenu}
-                        className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100 dark:hover:bg-gray-900"
+                        className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100"
                       >
                         <LayoutDashboard size={20} />
                         Seller Dashboard
@@ -248,7 +257,7 @@ export default function MobileNav() {
                       <Link
                         href="/dashboard/create"
                         onClick={closeMenu}
-                        className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100 dark:hover:bg-gray-900"
+                        className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100"
                       >
                         <PlusCircle size={20} />
                         Post Listing
@@ -260,7 +269,7 @@ export default function MobileNav() {
                 {/* EMPLOYER */}
                 {isEmployer && (
                   <>
-                    <div className="my-5 border-t border-gray-200 dark:border-gray-800" />
+                    <div className="my-5 border-t border-gray-200" />
 
                     <p className="mb-2 px-4 text-xs font-semibold uppercase tracking-wide text-gray-500">
                       Employer
@@ -270,7 +279,7 @@ export default function MobileNav() {
                       <Link
                         href="/employer/dashboard"
                         onClick={closeMenu}
-                        className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100 dark:hover:bg-gray-900"
+                        className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100"
                       >
                         <LayoutDashboard size={20} />
                         Employer Dashboard
@@ -279,7 +288,7 @@ export default function MobileNav() {
                       <Link
                         href="/employer/jobs/create"
                         onClick={closeMenu}
-                        className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100 dark:hover:bg-gray-900"
+                        className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100"
                       >
                         <PlusCircle size={20} />
                         Post Job
@@ -289,12 +298,12 @@ export default function MobileNav() {
                 )}
 
                 {/* ACCOUNT */}
-                <div className="my-5 border-t border-gray-200 dark:border-gray-800" />
+                <div className="my-5 border-t border-gray-200" />
 
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="flex w-full items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100 dark:hover:bg-gray-900"
+                  className="flex w-full items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100"
                 >
                   <LogOut size={20} />
                   Logout
@@ -305,13 +314,13 @@ export default function MobileNav() {
             {/* LOGGED-OUT */}
             {!authenticated && (
               <>
-                <div className="my-5 border-t border-gray-200 dark:border-gray-800" />
+                <div className="my-5 border-t border-gray-200" />
 
                 <div className="space-y-1">
                   <Link
                     href="/login"
                     onClick={closeMenu}
-                    className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100 dark:hover:bg-gray-900"
+                    className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100"
                   >
                     <LogIn size={20} />
                     Login
@@ -320,7 +329,7 @@ export default function MobileNav() {
                   <Link
                     href="/register"
                     onClick={closeMenu}
-                    className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100 dark:hover:bg-gray-900"
+                    className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100"
                   >
                     <UserPlus size={20} />
                     Register

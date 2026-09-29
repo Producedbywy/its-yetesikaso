@@ -13,6 +13,18 @@ type LoginResponse = {
   [key: string]: unknown
 }
 
+function getSafeReturnTo(returnTo?: string) {
+  if (
+    !returnTo ||
+    !returnTo.startsWith("/") ||
+    returnTo.startsWith("//")
+  ) {
+    return null
+  }
+
+  return returnTo
+}
+
 export function useAuth() {
   const router = useRouter()
 
@@ -21,7 +33,8 @@ export function useAuth() {
 
   async function login(
     username: string,
-    password: string
+    password: string,
+    returnTo?: string
   ) {
     try {
       setLoading(true)
@@ -41,8 +54,11 @@ export function useAuth() {
       setTokens(data.access, data.refresh)
 
       const profile = await getMyProfile()
+      const safeReturnTo = getSafeReturnTo(returnTo)
 
-      if (!profile.onboarding_completed) {
+      if (safeReturnTo) {
+        router.push(safeReturnTo)
+      } else if (!profile.onboarding_completed) {
         router.push("/profile")
       } else if (profile.role === "seller") {
         router.push("/dashboard")

@@ -1,10 +1,10 @@
 "use client"
 
+import Image from "next/image"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 
 import Container from "./container"
-import ThemeToggle from "../shared/theme-toggle"
 import { getAccessToken, clearTokens } from "@/lib/auth/tokens"
 import { getConversations } from "@/lib/api/messages"
 import { getMyProfile, type AccountRole } from "@/lib/api/seller"
@@ -70,18 +70,28 @@ export default function Navbar() {
   const isEmployer = authenticated && role === "employer"
 
   return (
-    <header className="sticky top-0 z-50 hidden border-b border-gray-200 bg-white/90 text-gray-900 backdrop-blur dark:border-gray-800 dark:bg-gray-950/90 dark:text-white md:block">
-      <Container className="flex items-center justify-between py-4">
+      <header className="hidden border-b border-gray-200 bg-white text-gray-900 md:block">
+       <Container className="py-2">
         {/* LOGO */}
-        <Link
-          href="/"
-          className="text-xl font-bold"
-        >
-          Its Yetesikaso
-        </Link>
+        <div className="flex justify-center">
+          <Link
+            href="/"
+            className="relative block h-40 w-40"
+            aria-label="Yetesikaso home"
+          >
+            <Image
+              src="/images/Yetesikaso New Logo.png"
+              alt="Yetesikaso"
+              fill
+              sizes="160px"
+              className="scale-125 object-contain"
+              priority
+            />
+          </Link>
+        </div>
 
         {/* NAVIGATION */}
-        <nav className="hidden items-center gap-6 md:flex">
+        <nav className="-mt-3 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm">
           <Link
             href="/marketplace"
             className="transition-opacity hover:opacity-70"
@@ -98,7 +108,6 @@ export default function Navbar() {
 
           {authenticated ? (
             <>
-              {/* ROLE-SPECIFIC DASHBOARD */}
               {isSeller && (
                 <Link
                   href="/dashboard"
@@ -174,12 +183,16 @@ export default function Navbar() {
               >
                 Register
               </Link>
+
+              <Link
+                href="/dashboard/create"
+                className="rounded-xl bg-lime-400 px-5 py-2.5 font-medium text-black transition hover:bg-lime-300"
+              >
+                Post Listing
+              </Link>
             </>
           )}
 
-          <ThemeToggle />
-
-          {/* SELLER-ONLY ACTION */}
           {isSeller && (
             <Link
               href="/dashboard/create"
@@ -189,7 +202,6 @@ export default function Navbar() {
             </Link>
           )}
 
-          {/* EMPLOYER-ONLY ACTION */}
           {isEmployer && (
             <Link
               href="/employer/jobs/create"

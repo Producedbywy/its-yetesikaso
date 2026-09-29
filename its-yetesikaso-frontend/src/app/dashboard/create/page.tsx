@@ -1,37 +1,90 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 
 import Navbar from "@/components/layout/navbar"
 import Container from "@/components/layout/container"
 import ImageUploader from "@/components/upload/ImageUploader"
-import { createListing } from "@/lib/api/seller"
+import {
+  createListing,
+  getMyProfile,
+  upgradeAccount,
+} from "@/lib/api/seller"
+import { getAccessToken } from "@/lib/auth/tokens"
+
+type ListingDraft = {
+  title: string
+  description: string
+  price: string
+  quantity: string
+  category: string
+  location: string
+}
+
+const DRAFT_KEY = "yetesikaso_listing_draft"
+
+const defaultForm: ListingDraft = {
+  title: "",
+  description: "",
+  price: "",
+  quantity: "1",
+  category: "electronics",
+  location: "",
+}
 
 export default function CreateListingPage() {
   const router = useRouter()
 
-  const [form, setForm] = useState({
-    title: "",
-    description: "",
-    price: "",
-    quantity: "1",
-    category: "electronics",
-    location: "",
-  })
-
+  const [form, setForm] = useState<ListingDraft>(defaultForm)
   const [images, setImages] = useState<File[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [restoredDraft, setRestoredDraft] = useState(false)
 
-  function updateField(field: string, value: string) {
+  useEffect(() => {
+    try {
+      const savedDraft = sessionStorage.getItem(DRAFT_KEY)
+
+      if (savedDraft) {
+        const parsed = JSON.parse(savedDraft) as Partial<ListingDraft>
+
+        setForm({
+          ...defaultForm,
+          ...parsed,
+        })
+      }
+    } catch {
+      sessionStorage.removeItem(DRAFT_KEY)
+    } finally {
+      setRestoredDraft(true)
+    }
+  }, [])
+
+  function updateField(
+    field: keyof ListingDraft,
+    value: string
+  ) {
     setForm((prev) => ({
       ...prev,
       [field]: value,
     }))
   }
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  function saveDraft() {
+    sessionStorage.setItem(
+      DRAFT_KEY,
+      JSON.stringify(form)
+    )
+  }
+
+  function clearDraft() {
+    sessionStorage.removeItem(DRAFT_KEY)
+  }
+
+  async function handleSubmit(
+    e: React.FormEvent<HTMLFormElement>
+  ) {
     e.preventDefault()
 
     if (
@@ -50,9 +103,33 @@ export default function CreateListingPage() {
       return
     }
 
+    const token = getAccessToken()
+
+    if (!token) {
+      saveDraft()
+
+      router.push(
+        `/login?returnTo=${encodeURIComponent(
+          "/dashboard/create"
+        )}`
+      )
+
+      return
+    }
+
     try {
       setLoading(true)
       setError(null)
+
+      const profile = await getMyProfile()
+
+      if (profile.role === "user") {
+        await upgradeAccount("seller")
+      } else if (profile.role !== "seller") {
+        throw new Error(
+          "This account cannot create marketplace listings."
+        )
+      }
 
       const data = new FormData()
 
@@ -68,6 +145,8 @@ export default function CreateListingPage() {
       })
 
       const listing = await createListing(data)
+
+      clearDraft()
 
       router.push(`/marketplace/${listing.slug}`)
     } catch (err: unknown) {
@@ -95,6 +174,16 @@ export default function CreateListingPage() {
             <p className="mt-2 text-sm text-[var(--muted)]">
               Add your item to the marketplace.
             </p>
+
+            {restoredDraft &&
+              form.title.trim() !== "" &&
+              typeof window !== "undefined" &&
+              sessionStorage.getItem(DRAFT_KEY) && (
+                <p className="mt-3 text-sm text-[var(--muted)]">
+                  Your listing details are saved while you complete
+                  account setup.
+                </p>
+              )}
           </div>
 
           <form
@@ -301,7 +390,7 @@ export default function CreateListingPage() {
               className="w-full rounded-2xl bg-lime-400 px-5 py-4 font-medium text-black transition hover:bg-lime-300 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading
-                ? "Creating listing..."
+                ? "Preparing listing..."
                 : "Create Listing"}
             </button>
           </form>

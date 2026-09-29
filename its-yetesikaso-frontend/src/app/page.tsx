@@ -3,8 +3,8 @@ import Footer from '@/components/layout/footer'
 
 import Hero from '@/components/marketplace/hero'
 import Categories from '@/components/marketplace/categories'
-import FeaturedListings from '@/components/marketplace/featured-listings'
-import Stats from '@/components/marketplace/stats'
+import AdBanner from "@/components/marketplace/ad-banner"
+import MoreListings from "@/components/marketplace/more-listings"
 import CtaBanner from '@/components/marketplace/cta-banner'
 
 export default function HomePage() {
@@ -16,9 +16,11 @@ export default function HomePage() {
 
       <Categories />
 
-      <FeaturedListings />
+      <AdBanner />
 
-      <Stats />
+      <MoreListings />
+
+      <AdBanner large />
 
       <CtaBanner />
 
