@@ -24,12 +24,6 @@ const cleanImage = image.startsWith("/")
 return `${API_BASE_URL}${cleanImage}`
 }
 
-function getWhatsAppUrl(phone: string) {
-  const cleanedPhone = phone.replace(/\D/g, '')
-
-  return `https://wa.me/${cleanedPhone}`
-}
-
 async function getListing(slug: string): Promise<Listing | null> {
   const res = await fetch(
     `${API_BASE_URL}/api/listings/?slug=${encodeURIComponent(slug)}`,
@@ -164,25 +158,6 @@ export default async function ListingDetailPage({
                   />
 
                 <ContactSellerButton listingId={listing.id} />
-
-                  {seller?.phone ? (
-                    <a
-                      href={getWhatsAppUrl(seller.phone)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block w-full rounded-xl border border-[var(--border)] px-5 py-3 text-center font-medium transition hover:bg-[var(--background)]"
-                    >
-                      WhatsApp Seller
-                    </a>
-                  ) : (
-                    <button
-                      type="button"
-                      disabled
-                      className="w-full rounded-xl border border-[var(--border)] px-5 py-3 font-medium opacity-50"
-                    >
-                      WhatsApp Unavailable
-                    </button>
-                  )}
                 </div>
 
                 <div className="mt-4">
