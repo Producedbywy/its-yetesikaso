@@ -19,7 +19,28 @@ export default function MoreListings() {
     []
   )
 
-  const { data: listings = [], loading } = useListings(filters, 2)
+  const pageOne = useListings(filters, 1)
+  const pageTwo = useListings(filters, 2)
+  const pageThree = useListings(filters, 3)
+
+  const loading =
+    pageOne.loading ||
+    pageTwo.loading ||
+    pageThree.loading
+
+  const listings = useMemo(() => {
+    const combined = [
+      ...pageOne.data,
+      ...pageTwo.data,
+      ...pageThree.data,
+    ]
+
+    const uniqueListings = Array.from(
+      new Map(combined.map((listing) => [listing.id, listing])).values()
+    )
+
+    return uniqueListings.slice(6, 12)
+  }, [pageOne.data, pageTwo.data, pageThree.data])
 
   return (
     <section className="py-12 md:py-16">
@@ -52,7 +73,7 @@ export default function MoreListings() {
 
         {!loading && listings.length > 0 && (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {listings.slice(0, 6).map((listing) => (
+            {listings.map((listing) => (
               <ListingCard key={listing.id} listing={listing} />
             ))}
           </div>
