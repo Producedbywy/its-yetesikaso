@@ -1,9 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 
-import { createTransaction } from "@/lib/api/transactions"
+import { addToCart } from "@/lib/api/cart"
 
 type BuyListingButtonProps = {
   listingId: number
@@ -14,30 +13,31 @@ export default function BuyListingButton({
   listingId,
   availableQuantity,
 }: BuyListingButtonProps) {
-  const router = useRouter()
-
   const [quantity, setQuantity] = useState(1)
   const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const soldOut = availableQuantity <= 0
 
-  async function handleBuy() {
+  async function handleAddToCart() {
     try {
       setLoading(true)
+      setMessage(null)
       setError(null)
 
-      const response = await createTransaction(
-        listingId,
-        quantity
-      )
+      await addToCart(listingId, quantity)
 
-      router.push(`/transactions/${response.transaction.id}`)
+      setMessage(
+        quantity === 1
+          ? "Added to cart."
+          : `${quantity} items added to cart.`
+      )
     } catch (err: unknown) {
       setError(
         err instanceof Error
           ? err.message
-          : "Unable to start purchase"
+          : "Unable to add item to cart"
       )
     } finally {
       setLoading(false)
@@ -84,12 +84,18 @@ export default function BuyListingButton({
 
       <button
         type="button"
-        onClick={handleBuy}
+        onClick={handleAddToCart}
         disabled={loading}
         className="w-full rounded-xl bg-lime-400 px-5 py-3 font-medium text-black transition hover:bg-lime-300 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {loading ? "Starting purchase..." : "Buy Now"}
+        {loading ? "Adding to cart..." : "Add to Cart"}
       </button>
+
+      {message && (
+        <p className="mt-2 text-sm text-green-700">
+          {message}
+        </p>
+      )}
 
       {error && (
         <p className="mt-2 text-sm text-red-600">
