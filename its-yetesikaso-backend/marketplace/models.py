@@ -269,6 +269,364 @@ class ListingReport(models.Model):
             f"({self.get_reason_display()})"
         )
 
+class Cart(models.Model):
+    buyer = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="cart",
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    def __str__(self):
+        return f"Cart for {self.buyer.username}"
+
+
+class CartItem(models.Model):
+    cart = models.ForeignKey(
+        Cart,
+        on_delete=models.CASCADE,
+        related_name="items",
+    )
+
+    listing = models.ForeignKey(
+        Listing,
+        on_delete=models.CASCADE,
+        related_name="cart_items",
+    )
+
+    quantity = models.PositiveIntegerField()
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["cart", "listing"],
+                name="unique_cart_listing",
+            ),
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.cart.buyer.username} → "
+            f"{self.listing.title} x{self.quantity}"
+        )
+
+
+class Order(models.Model):
+    PAYMENT_STATUS_CHOICES = [
+        ("unpaid", "Unpaid"),
+        ("paid", "Paid"),
+        ("failed", "Failed"),
+        ("refunded", "Refunded"),
+    ]
+
+    FULFILMENT_STATUS_CHOICES = [
+        ("awaiting_payment", "Awaiting Payment"),
+        ("paid", "Paid"),
+        ("dispatched", "Dispatched"),
+        ("completed", "Completed"),
+        ("cancelled", "Cancelled"),
+        ("expired", "Expired"),
+    ]
+
+    buyer = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="orders",
+    )
+
+    order_reference = models.CharField(
+        max_length=100,
+        unique=True,
+    )
+
+    total_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+    )
+
+    payment_status = models.CharField(
+        max_length=20,
+        choices=PAYMENT_STATUS_CHOICES,
+        default="unpaid",
+    )
+
+    fulfilment_status = models.CharField(
+        max_length=30,
+        choices=FULFILMENT_STATUS_CHOICES,
+        default="awaiting_payment",
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    paid_at = models.DateTimeField(
+        blank=True,
+        null=True,
+    )
+
+    completed_at = models.DateTimeField(
+        blank=True,
+        null=True,
+    )
+
+    cancelled_at = models.DateTimeField(
+        blank=True,
+        null=True,
+    )
+
+    expires_at = models.DateTimeField(
+        blank=True,
+        null=True,
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(
+                fields=["buyer", "-created_at"],
+                name="order_buyer_created_idx",
+            ),
+            models.Index(
+                fields=["payment_status"],
+                name="order_payment_status_idx",
+            ),
+            models.Index(
+                fields=["fulfilment_status"],
+                name="order_fulfilment_status_idx",
+            ),
+            models.Index(
+                fields=["expires_at"],
+                name="order_expires_at_idx",
+            ),
+        ]
+
+    def __str__(self):
+        return self.order_reference
+
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        related_name="items",
+    )
+
+    listing = models.ForeignKey(
+        Listing,
+        on_delete=models.PROTECT,
+        related_name="order_items",
+    )
+
+    seller = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name="order_items",
+    )
+
+    quantity = models.PositiveIntegerField()
+
+    unit_price = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+    )
+
+    total_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        ordering = ["created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["order", "listing"],
+                name="unique_order_listing",
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=["seller", "-created_at"],
+                name="orderitem_seller_created_idx",
+            ),
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.order.order_reference} → "
+            f"{self.listing.title} x{self.quantity}"
+        )
+
+
+class InventoryReservation(models.Model):
+    STATUS_CHOICES = [
+        ("active", "Active"),
+        ("committed", "Committed"),
+        ("released", "Released"),
+        ("expired", "Expired"),
+    ]
+
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        related_name="reservations",
+    )
+
+    order_item = models.ForeignKey(
+        OrderItem,
+        on_delete=models.CASCADE,
+        related_name="reservations",
+    )
+
+    listing = models.ForeignKey(
+        Listing,
+        on_delete=models.PROTECT,
+        related_name="inventory_reservations",
+    )
+
+    quantity = models.PositiveIntegerField()
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="active",
+    )
+
+    expires_at = models.DateTimeField()
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    released_at = models.DateTimeField(
+        blank=True,
+        null=True,
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["order_item"],
+                condition=models.Q(status="active"),
+                name="unique_active_order_item_reservation",
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=["status", "expires_at"],
+                name="reservation_status_expiry_idx",
+            ),
+            models.Index(
+                fields=["listing", "status"],
+                name="reservation_listing_status_idx",
+            ),
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.listing.title} x{self.quantity} "
+            f"({self.status})"
+        )
+
+
+class Payment(models.Model):
+    PROVIDER_CHOICES = [
+        ("paystack", "Paystack"),
+    ]
+
+    STATUS_CHOICES = [
+        ("initiated", "Initiated"),
+        ("pending", "Pending"),
+        ("successful", "Successful"),
+        ("failed", "Failed"),
+        ("abandoned", "Abandoned"),
+        ("refunded", "Refunded"),
+    ]
+
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.PROTECT,
+        related_name="payments",
+    )
+
+    provider = models.CharField(
+        max_length=30,
+        choices=PROVIDER_CHOICES,
+        default="paystack",
+    )
+
+    reference = models.CharField(
+        max_length=150,
+        unique=True,
+    )
+
+    amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+    )
+
+    currency = models.CharField(
+        max_length=10,
+        default="GHS",
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="initiated",
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    paid_at = models.DateTimeField(
+        blank=True,
+        null=True,
+    )
+
+    verified_at = models.DateTimeField(
+        blank=True,
+        null=True,
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(
+                fields=["order", "-created_at"],
+                name="payment_order_created_idx",
+            ),
+            models.Index(
+                fields=["status"],
+                name="payment_status_idx",
+            ),
+        ]
+
+    def __str__(self):
+        return self.reference
+
 class Transaction(models.Model):
     STATUS_CHOICES = [
         ("pending", "Pending"),

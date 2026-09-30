@@ -60,6 +60,14 @@ from marketplace.api.views.block_views import (
     user_block,
 )
 
+from marketplace.api.views.cart_views import (
+    my_cart,
+    add_to_cart,
+    update_cart_item,
+    remove_from_cart,
+    clear_cart,
+    checkout_cart,
+)
 
 urlpatterns = [
 
@@ -159,6 +167,46 @@ urlpatterns = [
         "listings/<int:listing_id>/favourite/",
         favourite_listing,
         name="favourite-listing",
+    ),
+
+    # =========================
+    # Cart
+    # =========================
+
+    path(
+        "cart/",
+        my_cart,
+        name="my-cart",
+    ),
+
+    path(
+        "cart/add/",
+        add_to_cart,
+        name="add-to-cart",
+    ),
+
+    path(
+        "cart/items/<int:cart_item_id>/",
+        update_cart_item,
+        name="update-cart-item",
+    ),
+
+    path(
+        "cart/items/<int:cart_item_id>/remove/",
+        remove_from_cart,
+        name="remove-from-cart",
+    ),
+
+    path(
+        "cart/clear/",
+        clear_cart,
+        name="clear-cart",
+    ),
+
+    path(
+        "cart/checkout/",
+        checkout_cart,
+        name="checkout-cart",
     ),
 
     # =========================
