@@ -422,6 +422,13 @@ class Order(models.Model):
 
 
 class OrderItem(models.Model):
+    FULFILMENT_STATUS_CHOICES = [
+        ("paid", "Paid"),
+        ("dispatched", "Dispatched"),
+        ("completed", "Completed"),
+        ("cancelled", "Cancelled"),
+    ]
+
     order = models.ForeignKey(
         Order,
         on_delete=models.CASCADE,
@@ -452,6 +459,22 @@ class OrderItem(models.Model):
         decimal_places=2,
     )
 
+    fulfilment_status = models.CharField(
+        max_length=20,
+        choices=FULFILMENT_STATUS_CHOICES,
+        default="paid",
+    )
+
+    dispatched_at = models.DateTimeField(
+        blank=True,
+        null=True,
+    )
+
+    completed_at = models.DateTimeField(
+        blank=True,
+        null=True,
+    )
+
     created_at = models.DateTimeField(
         auto_now_add=True,
     )
@@ -469,6 +492,14 @@ class OrderItem(models.Model):
                 fields=["seller", "-created_at"],
                 name="orderitem_seller_created_idx",
             ),
+            models.Index(
+                fields=["fulfilment_status"],
+                name="orderitem_fulfil_status_idx",
+            ),
+            models.Index(
+                fields=["dispatched_at"],
+                name="orderitem_dispatched_at_idx",
+            ),
         ]
 
     def __str__(self):
@@ -476,7 +507,6 @@ class OrderItem(models.Model):
             f"{self.order.order_reference} → "
             f"{self.listing.title} x{self.quantity}"
         )
-
 
 class InventoryReservation(models.Model):
     STATUS_CHOICES = [

@@ -78,6 +78,11 @@ from marketplace.api.views.webhook_views import (
     paystack_webhook,
 )
 
+from marketplace.api.views.fulfilment_views import (
+    seller_order_items,
+    dispatch_order_item,
+)
+
 from marketplace.api.views.order_views import (
     my_orders,
     order_detail,
@@ -255,6 +260,18 @@ urlpatterns = [
         "orders/<str:order_reference>/",
         order_detail,
         name="order-detail",
+    ),
+
+    path(
+        "seller/orders/",
+        seller_order_items,
+        name="seller-order-items",
+    ),
+
+    path(
+        "seller/orders/<int:order_item_id>/dispatch/",
+        dispatch_order_item,
+        name="dispatch-order-item",
     ),
 
     # =========================
