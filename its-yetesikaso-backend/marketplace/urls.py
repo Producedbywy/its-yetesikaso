@@ -81,6 +81,7 @@ from marketplace.api.views.webhook_views import (
 from marketplace.api.views.fulfilment_views import (
     seller_order_items,
     dispatch_order_item,
+    confirm_delivery,
 )
 
 from marketplace.api.views.order_views import (
@@ -272,6 +273,12 @@ urlpatterns = [
         "seller/orders/<int:order_item_id>/dispatch/",
         dispatch_order_item,
         name="dispatch-order-item",
+    ),
+
+    path(
+        "orders/items/<int:order_item_id>/confirm-delivery/",
+        confirm_delivery,
+        name="confirm-delivery",
     ),
 
     # =========================

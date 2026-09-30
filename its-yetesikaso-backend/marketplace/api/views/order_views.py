@@ -19,6 +19,9 @@ def serialize_order_item(order_item):
         "quantity": order_item.quantity,
         "unit_price": str(order_item.unit_price),
         "total_amount": str(order_item.total_amount),
+        "fulfilment_status": order_item.fulfilment_status,
+        "dispatched_at": order_item.dispatched_at,
+        "completed_at": order_item.completed_at,
         "created_at": order_item.created_at,
     }
 
