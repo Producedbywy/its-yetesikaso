@@ -111,11 +111,11 @@ export default function MobileNav() {
     <>
       {/* MOBILE HEADER */}
       <div className="fixed inset-x-0 top-0 z-50 border-b border-gray-200 bg-white dark:border-gray-200 dark:bg-white md:hidden">
-        <div className="flex h-20 items-center justify-center px-4">
+        <div className="flex h-28 items-center justify-center px-4">
           <Link
             href="/"
             onClick={closeMenu}
-            className="relative block h-16 w-16"
+            className="relative block h-24 w-24"
             aria-label="Yetesikaso home"
           >
             <Image
@@ -123,7 +123,7 @@ export default function MobileNav() {
               alt="Yetesikaso"
               fill
               sizes="64px"
-              className="object-contain"
+              className="scale-125 object-contain"
               priority
             />
           </Link>
