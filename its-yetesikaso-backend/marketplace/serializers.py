@@ -104,7 +104,7 @@ class PublicSellerProfileSerializer(serializers.ModelSerializer):
     def get_average_rating(self, obj):
         result = Review.objects.filter(
             seller=obj.user,
-            transaction__status="completed",
+            order_item__fulfilment_status="completed",
         ).aggregate(
             average=Avg("rating"),
         )
@@ -117,7 +117,7 @@ class PublicSellerProfileSerializer(serializers.ModelSerializer):
     def get_review_count(self, obj):
         return Review.objects.filter(
             seller=obj.user,
-            transaction__status="completed",
+            order_item__fulfilment_status="completed",
         ).aggregate(
             count=Count("id"),
         )["count"]

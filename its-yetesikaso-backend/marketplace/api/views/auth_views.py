@@ -433,7 +433,7 @@ def public_seller_profile(request, username):
         Review.objects
         .filter(
             seller=profile.user,
-            transaction__status="completed",
+            order_item__fulfilment_status="completed",
         )
         .select_related(
             "buyer",

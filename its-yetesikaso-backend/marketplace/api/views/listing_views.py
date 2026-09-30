@@ -14,6 +14,7 @@ from marketplace.models import (
     SellerProfile,
     Transaction,
     Review,
+    OrderItem,
 )
 from django.utils import timezone
 
@@ -909,6 +910,120 @@ def create_review(request, transaction_id):
             "review": {
                 "id": review.id,
                 "transaction": review.transaction_id,
+                "buyer": review.buyer.id,
+                "buyer_username": review.buyer.username,
+                "seller": review.seller.id,
+                "seller_username": review.seller.username,
+                "listing": review.listing.id,
+                "listing_title": review.listing.title,
+                "rating": review.rating,
+                "comment": review.comment,
+                "created_at": review.created_at,
+            },
+        },
+        status=status.HTTP_201_CREATED,
+    )
+
+# =========================
+# CREATE ORDER ITEM REVIEW
+# =========================
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def create_order_item_review(request, order_item_id):
+    try:
+        order_item = (
+            OrderItem.objects
+            .select_related(
+                "order",
+                "order__buyer",
+                "seller",
+                "listing",
+            )
+            .get(id=order_item_id)
+        )
+    except OrderItem.DoesNotExist:
+        return Response(
+            {"error": "Order item not found"},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    if request.user != order_item.order.buyer:
+        return Response(
+            {
+                "error": (
+                    "Only the buyer can review "
+                    "this order item"
+                )
+            },
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    if order_item.order.payment_status != "paid":
+        return Response(
+            {
+                "error": (
+                    "Only paid orders can be reviewed"
+                )
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if order_item.fulfilment_status != "completed":
+        return Response(
+            {
+                "error": (
+                    "Only completed purchases "
+                    "can be reviewed"
+                )
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if hasattr(order_item, "review"):
+        return Response(
+            {
+                "error": (
+                    "This purchase has already "
+                    "been reviewed"
+                )
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    try:
+        rating = int(request.data.get("rating"))
+    except (TypeError, ValueError):
+        return Response(
+            {"error": "Rating must be a number from 1 to 5"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if rating < 1 or rating > 5:
+        return Response(
+            {"error": "Rating must be between 1 and 5"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    comment = str(
+        request.data.get("comment", "")
+    ).strip()
+
+    review = Review.objects.create(
+        order_item=order_item,
+        buyer=order_item.order.buyer,
+        seller=order_item.seller,
+        listing=order_item.listing,
+        rating=rating,
+        comment=comment,
+    )
+
+    return Response(
+        {
+            "message": "Review created successfully",
+            "review": {
+                "id": review.id,
+                "order_item": review.order_item_id,
                 "buyer": review.buyer.id,
                 "buyer_username": review.buyer.username,
                 "seller": review.seller.id,

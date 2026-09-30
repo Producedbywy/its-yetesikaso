@@ -725,6 +725,16 @@ class Review(models.Model):
         Transaction,
         on_delete=models.CASCADE,
         related_name="review",
+        null=True,
+        blank=True,
+    )
+
+    order_item = models.OneToOneField(
+        "OrderItem",
+        on_delete=models.CASCADE,
+        related_name="review",
+        null=True,
+        blank=True,
     )
 
     buyer = models.ForeignKey(
@@ -762,7 +772,7 @@ class Review(models.Model):
         return (
             f"{self.buyer.username} → "
             f"{self.seller.username} "
-            f"({self.rating}/5)"
+            f"({self.listing.title})"
         )
 
 class Job(models.Model):

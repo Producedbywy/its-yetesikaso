@@ -14,6 +14,7 @@ from marketplace.api.views.listing_views import (
     my_transactions,
     transaction_detail,
     create_review,
+    create_order_item_review,
 )
 
 from marketplace.api.views.auth_views import (
@@ -171,6 +172,12 @@ urlpatterns = [
         "transactions/<int:transaction_id>/review/",
         create_review,
         name="create-review",
+    ),
+
+    path(
+        "orders/items/<int:order_item_id>/review/",
+        create_order_item_review,
+        name="create-order-item-review",
     ),
 
     # =========================
