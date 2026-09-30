@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 
 import { verifyPayment } from "@/lib/api/payments"
@@ -11,7 +11,7 @@ type PaymentState =
   | "success"
   | "failed"
 
-export default function PaymentCallbackPage() {
+function PaymentCallbackContent() {
   const searchParams = useSearchParams()
   const reference = searchParams.get("reference")
 
@@ -148,5 +148,27 @@ export default function PaymentCallbackPage() {
         )}
       </div>
     </main>
+  )
+}
+
+export default function PaymentCallbackPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="mx-auto max-w-2xl px-4 py-16 text-center sm:px-6 lg:px-8">
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-8">
+            <h1 className="text-2xl font-semibold">
+              Verifying Payment
+            </h1>
+
+            <p className="mt-3 text-[var(--muted)]">
+              Verifying your payment...
+            </p>
+          </div>
+        </main>
+      }
+    >
+      <PaymentCallbackContent />
+    </Suspense>
   )
 }
