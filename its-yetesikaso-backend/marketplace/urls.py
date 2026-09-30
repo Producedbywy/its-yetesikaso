@@ -69,6 +69,10 @@ from marketplace.api.views.cart_views import (
     checkout_cart,
 )
 
+from marketplace.api.views.payment_views import (
+    initialize_payment,
+)
+
 urlpatterns = [
 
     # =========================
@@ -207,6 +211,12 @@ urlpatterns = [
         "cart/checkout/",
         checkout_cart,
         name="checkout-cart",
+    ),
+
+    path(
+        "payments/initialize/",
+        initialize_payment,
+        name="initialize-payment",
     ),
 
     # =========================
