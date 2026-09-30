@@ -74,6 +74,11 @@ from marketplace.api.views.payment_views import (
     verify_payment,
 )
 
+from marketplace.api.views.order_views import (
+    my_orders,
+    order_detail,
+)
+
 urlpatterns = [
 
     # =========================
@@ -224,6 +229,22 @@ urlpatterns = [
         "payments/verify/",
         verify_payment,
         name="verify-payment",
+    ),
+
+    # =========================
+    # Orders
+    # =========================
+
+    path(
+        "orders/",
+        my_orders,
+        name="my-orders",
+    ),
+
+    path(
+        "orders/<str:order_reference>/",
+        order_detail,
+        name="order-detail",
     ),
 
     # =========================
