@@ -4,11 +4,17 @@ export type OrderItem = {
   id: number
   listing: number
   listing_title: string
+  listing_slug: string
+  listing_image: string | null
   seller: number
   seller_username: string
   quantity: number
   unit_price: string
   total_amount: string
+  fulfilment_status: string
+  dispatched_at: string | null
+  completed_at: string | null
+  created_at: string
 }
 
 export type Order = {
@@ -20,7 +26,8 @@ export type Order = {
   created_at: string
   paid_at: string | null
   completed_at: string | null
-  expires_at: string
+  cancelled_at: string | null
+  expires_at: string | null
   items: OrderItem[]
 }
 
@@ -41,5 +48,16 @@ export async function getOrder(
 ): Promise<OrderResponse> {
   return apiClient<OrderResponse>(
     `/orders/${encodeURIComponent(orderReference)}/`
+  )
+}
+
+export async function confirmDelivery(
+  orderItemId: number
+): Promise<{ order_item: OrderItem }> {
+  return apiClient<{ order_item: OrderItem }>(
+    `/orders/items/${orderItemId}/confirm-delivery/`,
+    {
+      method: "POST",
+    }
   )
 }

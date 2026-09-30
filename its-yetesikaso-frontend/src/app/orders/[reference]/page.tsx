@@ -8,6 +8,7 @@ import Navbar from "@/components/layout/navbar"
 import Footer from "@/components/layout/footer"
 import Container from "@/components/layout/container"
 import {
+  confirmDelivery,
   getOrder,
   type Order,
 } from "@/lib/api/orders"
@@ -41,7 +42,9 @@ function getPaymentStatusLabel(status: Order["payment_status"]) {
   }
 }
 
-function getFulfilmentStatusLabel(status: Order["fulfilment_status"]) {
+function getFulfilmentStatusLabel(
+  status: Order["fulfilment_status"]
+) {
   switch (status) {
     case "paid":
       return "Paid"
@@ -59,6 +62,23 @@ function getFulfilmentStatusLabel(status: Order["fulfilment_status"]) {
   }
 }
 
+function getOrderItemStatusLabel(
+  status: string
+) {
+  switch (status) {
+    case "paid":
+      return "Paid"
+    case "dispatched":
+      return "Dispatched"
+    case "completed":
+      return "Completed"
+    case "cancelled":
+      return "Cancelled"
+    default:
+      return status
+  }
+}
+
 export default function OrderDetailPage() {
   const params = useParams<{ reference: string }>()
   const reference = params.reference
@@ -66,14 +86,44 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState<Order | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [confirmingItemId, setConfirmingItemId] =
+    useState<number | null>(null)
+  const [confirmError, setConfirmError] =
+    useState<string | null>(null)
+
+  async function loadOrder() {
+    if (!reference) {
+      setError("Order reference is missing")
+      setLoading(false)
+      return
+    }
+
+    try {
+      setLoading(true)
+      setError(null)
+
+      const response = await getOrder(reference)
+      setOrder(response.order)
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unable to load order"
+      )
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
     let cancelled = false
 
-    async function loadOrder() {
+    async function loadInitialOrder() {
       if (!reference) {
-        setError("Order reference is missing")
-        setLoading(false)
+        if (!cancelled) {
+          setError("Order reference is missing")
+          setLoading(false)
+        }
         return
       }
 
@@ -101,12 +151,30 @@ export default function OrderDetailPage() {
       }
     }
 
-    void loadOrder()
+    void loadInitialOrder()
 
     return () => {
       cancelled = true
     }
   }, [reference])
+
+  async function handleConfirmDelivery(orderItemId: number) {
+    try {
+      setConfirmingItemId(orderItemId)
+      setConfirmError(null)
+
+      await confirmDelivery(orderItemId)
+      await loadOrder()
+    } catch (err: unknown) {
+      setConfirmError(
+        err instanceof Error
+          ? err.message
+          : "Unable to confirm delivery"
+      )
+    } finally {
+      setConfirmingItemId(null)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
@@ -182,6 +250,12 @@ export default function OrderDetailPage() {
                 </div>
               </div>
 
+              {confirmError && (
+                <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+                  {confirmError}
+                </div>
+              )}
+
               <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
                 <section className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
                   <h2 className="text-lg font-semibold">
@@ -213,10 +287,54 @@ export default function OrderDetailPage() {
                             </p>
                           </div>
 
-                          <p className="shrink-0 font-semibold sm:text-right">
-                            {formatAmount(item.total_amount)}
-                          </p>
+                          <div className="shrink-0 sm:text-right">
+                            <p className="font-semibold">
+                              {formatAmount(item.total_amount)}
+                            </p>
+
+                            <span className="mt-2 inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold dark:bg-gray-800">
+                              {getOrderItemStatusLabel(
+                                item.fulfilment_status
+                              )}
+                            </span>
+                          </div>
                         </div>
+
+                        {item.dispatched_at && (
+                          <p className="mt-3 text-sm text-[var(--muted-foreground)]">
+                            Dispatched{" "}
+                            {formatDate(item.dispatched_at)}
+                          </p>
+                        )}
+
+                        {item.completed_at && (
+                          <p className="mt-1 text-sm text-[var(--muted-foreground)]">
+                            Completed{" "}
+                            {formatDate(item.completed_at)}
+                          </p>
+                        )}
+
+                        {item.fulfilment_status ===
+                          "dispatched" && (
+                          <div className="mt-4">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                void handleConfirmDelivery(
+                                  item.id
+                                )
+                              }
+                              disabled={
+                                confirmingItemId === item.id
+                              }
+                              className="rounded-xl bg-lime-400 px-5 py-3 text-sm font-semibold text-black transition hover:bg-lime-300 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              {confirmingItemId === item.id
+                                ? "Confirming..."
+                                : "Confirm Delivery"}
+                            </button>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -276,6 +394,13 @@ export default function OrderDetailPage() {
                   {order.paid_at && (
                     <p className="mt-4 text-sm text-[var(--muted-foreground)]">
                       Paid {formatDate(order.paid_at)}
+                    </p>
+                  )}
+
+                  {order.completed_at && (
+                    <p className="mt-1 text-sm text-[var(--muted-foreground)]">
+                      Completed{" "}
+                      {formatDate(order.completed_at)}
                     </p>
                   )}
 
