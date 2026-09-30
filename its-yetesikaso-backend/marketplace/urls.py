@@ -74,6 +74,10 @@ from marketplace.api.views.payment_views import (
     verify_payment,
 )
 
+from marketplace.api.views.webhook_views import (
+    paystack_webhook,
+)
+
 from marketplace.api.views.order_views import (
     my_orders,
     order_detail,
@@ -229,6 +233,12 @@ urlpatterns = [
         "payments/verify/",
         verify_payment,
         name="verify-payment",
+    ),
+
+    path(
+        "payments/webhook/",
+        paystack_webhook,
+        name="paystack-webhook",
     ),
 
     # =========================

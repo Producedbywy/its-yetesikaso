@@ -14,6 +14,7 @@ from rest_framework.response import Response
 
 from marketplace.models import (
     InventoryReservation,
+    Listing,
     Order,
     Payment,
 )
@@ -26,6 +27,146 @@ PAYSTACK_INITIALIZE_URL = (
 PAYSTACK_VERIFY_URL = (
     "https://api.paystack.co/transaction/verify"
 )
+
+
+class PaymentCompletionError(Exception):
+    pass
+
+
+def _complete_successful_payment(payment_id):
+    with transaction.atomic():
+        payment = (
+            Payment.objects
+            .select_for_update()
+            .select_related("order")
+            .get(pk=payment_id)
+        )
+
+        order = (
+            Order.objects
+            .select_for_update()
+            .get(pk=payment.order_id)
+        )
+
+        if (
+            payment.status == "successful"
+            and order.payment_status == "paid"
+        ):
+            return payment, order, False
+
+        if order.payment_status == "paid":
+            raise PaymentCompletionError(
+                "This order has already been paid"
+            )
+
+        if order.fulfilment_status != "awaiting_payment":
+            raise PaymentCompletionError(
+                "This order is not awaiting payment"
+            )
+
+        now = timezone.now()
+
+        if order.expires_at and order.expires_at <= now:
+            active_reservations = (
+                InventoryReservation.objects
+                .select_for_update()
+                .filter(
+                    order=order,
+                    status="active",
+                )
+            )
+
+            active_reservations.update(
+                status="expired",
+                released_at=now,
+            )
+
+            raise PaymentCompletionError(
+                "This order has expired"
+            )
+
+        reservations = list(
+            InventoryReservation.objects
+            .select_for_update()
+            .filter(
+                order=order,
+                status="active",
+            )
+            .order_by("listing_id")
+        )
+
+        if not reservations:
+            raise PaymentCompletionError(
+                "No active inventory reservation exists "
+                "for this order"
+            )
+
+        for reservation in reservations:
+            if reservation.expires_at <= now:
+                raise PaymentCompletionError(
+                    "One or more inventory reservations have expired"
+                )
+
+        listings = {}
+
+        for reservation in reservations:
+            listing = (
+                Listing.objects
+                .select_for_update()
+                .get(pk=reservation.listing_id)
+            )
+
+            listings[listing.id] = listing
+
+        for reservation in reservations:
+            listing = listings[reservation.listing_id]
+
+            if reservation.quantity > listing.available_quantity:
+                raise PaymentCompletionError(
+                    f"Insufficient inventory for "
+                    f"'{listing.title}'"
+                )
+
+        for reservation in reservations:
+            listing = listings[reservation.listing_id]
+
+            listing.available_quantity -= reservation.quantity
+            listing.save(
+                update_fields=["available_quantity"]
+            )
+
+            reservation.status = "committed"
+            reservation.released_at = now
+            reservation.save(
+                update_fields=[
+                    "status",
+                    "released_at",
+                ]
+            )
+
+        payment.status = "successful"
+        payment.paid_at = now
+        payment.verified_at = now
+        payment.save(
+            update_fields=[
+                "status",
+                "paid_at",
+                "verified_at",
+            ]
+        )
+
+        order.payment_status = "paid"
+        order.fulfilment_status = "paid"
+        order.paid_at = now
+        order.save(
+            update_fields=[
+                "payment_status",
+                "fulfilment_status",
+                "paid_at",
+            ]
+        )
+
+    return payment, order, True
 
 
 @api_view(["POST"])
@@ -359,153 +500,31 @@ def verify_payment(request):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    with transaction.atomic():
-        payment = (
-            Payment.objects
-            .select_for_update()
-            .select_related("order")
-            .get(pk=payment.pk)
+    try:
+        payment, order, completed = _complete_successful_payment(
+            payment.id
+        )
+    except PaymentCompletionError as exc:
+        return Response(
+            {"error": str(exc)},
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
-        order = (
-            Order.objects
-            .select_for_update()
-            .get(pk=payment.order_id)
-        )
-
-        if (
-            payment.status == "successful"
-            and order.payment_status == "paid"
-        ):
-            return Response(
-                {
-                    "message": "Payment has already been verified",
-                    "payment": {
-                        "reference": payment.reference,
-                        "status": payment.status,
-                    },
-                    "order": {
-                        "order_reference": order.order_reference,
-                        "payment_status": order.payment_status,
-                        "fulfilment_status": order.fulfilment_status,
-                    },
+    if not completed:
+        return Response(
+            {
+                "message": "Payment has already been verified",
+                "payment": {
+                    "reference": payment.reference,
+                    "status": payment.status,
                 },
-                status=status.HTTP_200_OK,
-            )
-
-        if order.payment_status == "paid":
-            return Response(
-                {
-                    "error": "This order has already been paid",
+                "order": {
+                    "order_reference": order.order_reference,
+                    "payment_status": order.payment_status,
+                    "fulfilment_status": order.fulfilment_status,
                 },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        if order.fulfilment_status != "awaiting_payment":
-            return Response(
-                {
-                    "error": "This order is not awaiting payment",
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        now = timezone.now()
-
-        if order.expires_at and order.expires_at <= now:
-            active_reservations = (
-                InventoryReservation.objects
-                .select_for_update()
-                .filter(
-                    order=order,
-                    status="active",
-                )
-            )
-
-            active_reservations.update(
-                status="expired",
-                released_at=now,
-            )
-
-            return Response(
-                {"error": "This order has expired"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        reservations = list(
-            InventoryReservation.objects
-            .select_for_update()
-            .select_related("listing")
-            .filter(
-                order=order,
-                status="active",
-            )
-        )
-
-        if not reservations:
-            return Response(
-                {
-                    "error": (
-                        "No active inventory reservation exists "
-                        "for this order"
-                    )
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        for reservation in reservations:
-            if reservation.expires_at <= now:
-                return Response(
-                    {"error": "One or more inventory reservations have expired"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-            if reservation.quantity > reservation.listing.available_quantity:
-                return Response(
-                    {
-                        "error": (
-                            f"Insufficient inventory for "
-                            f"'{reservation.listing.title}'"
-                        )
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-        for reservation in reservations:
-            listing = reservation.listing
-            listing.available_quantity -= reservation.quantity
-            listing.save(
-                update_fields=["available_quantity"]
-            )
-
-            reservation.status = "committed"
-            reservation.released_at = now
-            reservation.save(
-                update_fields=[
-                    "status",
-                    "released_at",
-                ]
-            )
-
-        payment.status = "successful"
-        payment.paid_at = now
-        payment.verified_at = now
-        payment.save(
-            update_fields=[
-                "status",
-                "paid_at",
-                "verified_at",
-            ]
-        )
-
-        order.payment_status = "paid"
-        order.fulfilment_status = "paid"
-        order.paid_at = now
-        order.save(
-            update_fields=[
-                "payment_status",
-                "fulfilment_status",
-                "paid_at",
-            ]
+            },
+            status=status.HTTP_200_OK,
         )
 
     return Response(
