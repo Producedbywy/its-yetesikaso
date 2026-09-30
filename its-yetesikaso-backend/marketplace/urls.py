@@ -71,6 +71,7 @@ from marketplace.api.views.cart_views import (
 
 from marketplace.api.views.payment_views import (
     initialize_payment,
+    verify_payment,
 )
 
 urlpatterns = [
@@ -217,6 +218,12 @@ urlpatterns = [
         "payments/initialize/",
         initialize_payment,
         name="initialize-payment",
+    ),
+
+    path(
+        "payments/verify/",
+        verify_payment,
+        name="verify-payment",
     ),
 
     # =========================

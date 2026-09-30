@@ -3,6 +3,7 @@ from decimal import Decimal
 import httpx
 
 from django.conf import settings
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
@@ -11,11 +12,19 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from marketplace.models import Order, Payment
+from marketplace.models import (
+    InventoryReservation,
+    Order,
+    Payment,
+)
 
 
 PAYSTACK_INITIALIZE_URL = (
     "https://api.paystack.co/transaction/initialize"
+)
+
+PAYSTACK_VERIFY_URL = (
+    "https://api.paystack.co/transaction/verify"
 )
 
 
@@ -181,4 +190,339 @@ def initialize_payment(request):
             },
         },
         status=status.HTTP_201_CREATED,
+    )
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def verify_payment(request):
+    reference = request.data.get("reference")
+
+    if not reference:
+        return Response(
+            {"error": "reference is required"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if not settings.PAYSTACK_SECRET_KEY:
+        return Response(
+            {"error": "Payment service is not configured"},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
+
+    payment = get_object_or_404(
+        Payment.objects.select_related("order"),
+        reference=reference,
+        order__buyer=request.user,
+        provider="paystack",
+    )
+
+    order = payment.order
+
+    if payment.status == "successful" and order.payment_status == "paid":
+        return Response(
+            {
+                "message": "Payment has already been verified",
+                "payment": {
+                    "reference": payment.reference,
+                    "status": payment.status,
+                },
+                "order": {
+                    "order_reference": order.order_reference,
+                    "payment_status": order.payment_status,
+                    "fulfilment_status": order.fulfilment_status,
+                },
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    headers = {
+        "Authorization": (
+            f"Bearer {settings.PAYSTACK_SECRET_KEY}"
+        ),
+        "Content-Type": "application/json",
+    }
+
+    verify_url = (
+        f"{PAYSTACK_VERIFY_URL}/"
+        f"{reference}"
+    )
+
+    try:
+        response = httpx.get(
+            verify_url,
+            headers=headers,
+            timeout=15.0,
+        )
+        response_data = response.json()
+    except (httpx.HTTPError, ValueError):
+        return Response(
+            {"error": "Unable to connect to the payment service"},
+            status=status.HTTP_502_BAD_GATEWAY,
+        )
+
+    if response.status_code >= 400 or not response_data.get("status"):
+        return Response(
+            {
+                "error": (
+                    response_data.get("message")
+                    or "Payment verification failed"
+                )
+            },
+            status=status.HTTP_502_BAD_GATEWAY,
+        )
+
+    paystack_data = response_data.get("data") or {}
+
+    paystack_status = paystack_data.get("status")
+    paystack_reference = paystack_data.get("reference")
+    paystack_currency = paystack_data.get("currency")
+    paystack_amount = paystack_data.get("amount")
+
+    expected_amount = int(
+        payment.amount * Decimal("100")
+    )
+
+    if paystack_reference != payment.reference:
+        return Response(
+            {"error": "Payment reference mismatch"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if paystack_currency != payment.currency:
+        return Response(
+            {"error": "Payment currency mismatch"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if paystack_amount != expected_amount:
+        return Response(
+            {"error": "Payment amount mismatch"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if paystack_status != "success":
+        payment_status_map = {
+            "failed": "failed",
+            "abandoned": "abandoned",
+        }
+
+        new_payment_status = payment_status_map.get(
+            paystack_status,
+            "failed",
+        )
+
+        with transaction.atomic():
+            payment = (
+                Payment.objects
+                .select_for_update()
+                .get(pk=payment.pk)
+            )
+
+            if payment.status != "successful":
+                payment.status = new_payment_status
+                payment.verified_at = timezone.now()
+                payment.save(
+                    update_fields=[
+                        "status",
+                        "verified_at",
+                    ]
+                )
+
+            active_reservations = (
+                InventoryReservation.objects
+                .select_for_update()
+                .filter(
+                    order=order,
+                    status="active",
+                )
+            )
+
+            active_reservations.update(
+                status="released",
+                released_at=timezone.now(),
+            )
+
+        return Response(
+            {
+                "message": "Payment was not successful",
+                "payment": {
+                    "reference": payment.reference,
+                    "status": new_payment_status,
+                },
+                "order": {
+                    "order_reference": order.order_reference,
+                    "payment_status": order.payment_status,
+                    "fulfilment_status": order.fulfilment_status,
+                },
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    with transaction.atomic():
+        payment = (
+            Payment.objects
+            .select_for_update()
+            .select_related("order")
+            .get(pk=payment.pk)
+        )
+
+        order = (
+            Order.objects
+            .select_for_update()
+            .get(pk=payment.order_id)
+        )
+
+        if (
+            payment.status == "successful"
+            and order.payment_status == "paid"
+        ):
+            return Response(
+                {
+                    "message": "Payment has already been verified",
+                    "payment": {
+                        "reference": payment.reference,
+                        "status": payment.status,
+                    },
+                    "order": {
+                        "order_reference": order.order_reference,
+                        "payment_status": order.payment_status,
+                        "fulfilment_status": order.fulfilment_status,
+                    },
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        if order.payment_status == "paid":
+            return Response(
+                {
+                    "error": "This order has already been paid",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if order.fulfilment_status != "awaiting_payment":
+            return Response(
+                {
+                    "error": "This order is not awaiting payment",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        now = timezone.now()
+
+        if order.expires_at and order.expires_at <= now:
+            active_reservations = (
+                InventoryReservation.objects
+                .select_for_update()
+                .filter(
+                    order=order,
+                    status="active",
+                )
+            )
+
+            active_reservations.update(
+                status="expired",
+                released_at=now,
+            )
+
+            return Response(
+                {"error": "This order has expired"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        reservations = list(
+            InventoryReservation.objects
+            .select_for_update()
+            .select_related("listing")
+            .filter(
+                order=order,
+                status="active",
+            )
+        )
+
+        if not reservations:
+            return Response(
+                {
+                    "error": (
+                        "No active inventory reservation exists "
+                        "for this order"
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        for reservation in reservations:
+            if reservation.expires_at <= now:
+                return Response(
+                    {"error": "One or more inventory reservations have expired"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            if reservation.quantity > reservation.listing.available_quantity:
+                return Response(
+                    {
+                        "error": (
+                            f"Insufficient inventory for "
+                            f"'{reservation.listing.title}'"
+                        )
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        for reservation in reservations:
+            listing = reservation.listing
+            listing.available_quantity -= reservation.quantity
+            listing.save(
+                update_fields=["available_quantity"]
+            )
+
+            reservation.status = "committed"
+            reservation.released_at = now
+            reservation.save(
+                update_fields=[
+                    "status",
+                    "released_at",
+                ]
+            )
+
+        payment.status = "successful"
+        payment.paid_at = now
+        payment.verified_at = now
+        payment.save(
+            update_fields=[
+                "status",
+                "paid_at",
+                "verified_at",
+            ]
+        )
+
+        order.payment_status = "paid"
+        order.fulfilment_status = "paid"
+        order.paid_at = now
+        order.save(
+            update_fields=[
+                "payment_status",
+                "fulfilment_status",
+                "paid_at",
+            ]
+        )
+
+    return Response(
+        {
+            "message": "Payment verified successfully",
+            "payment": {
+                "reference": payment.reference,
+                "status": payment.status,
+                "paid_at": payment.paid_at,
+            },
+            "order": {
+                "order_reference": order.order_reference,
+                "total_amount": str(order.total_amount),
+                "payment_status": order.payment_status,
+                "fulfilment_status": order.fulfilment_status,
+                "paid_at": order.paid_at,
+            },
+        },
+        status=status.HTTP_200_OK,
     )
