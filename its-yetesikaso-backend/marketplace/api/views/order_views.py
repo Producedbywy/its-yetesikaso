@@ -23,6 +23,7 @@ def serialize_order_item(order_item):
         "dispatched_at": order_item.dispatched_at,
         "completed_at": order_item.completed_at,
         "created_at": order_item.created_at,
+        "has_review": hasattr(order_item, "review"),
     }
 
 
@@ -59,6 +60,7 @@ def my_orders(request):
         .prefetch_related(
             "items__listing",
             "items__seller",
+            "items__review",
         )
     )
 
@@ -79,6 +81,7 @@ def order_detail(request, order_reference):
         .prefetch_related(
             "items__listing",
             "items__seller",
+            "items__review",
         ),
         order_reference=order_reference,
     )
