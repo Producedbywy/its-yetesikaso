@@ -135,7 +135,7 @@ export default function MobileNav() {
           <Link
             href="/"
             onClick={closeMenu}
-            className="relative block h-24 w-24"
+            className="relative block h-28 w-28"
             aria-label="Yetesikaso home"
           >
             <Image
