@@ -153,13 +153,6 @@ export default function Navbar() {
                 )}
               </Link>
 
-              <Link
-                href="/transactions"
-                className="transition-opacity hover:opacity-70"
-              >
-                Transactions
-              </Link>
-
               <button
                 type="button"
                 onClick={handleLogout}

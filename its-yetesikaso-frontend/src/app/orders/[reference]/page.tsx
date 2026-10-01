@@ -12,7 +12,7 @@ import {
   getOrder,
   type Order,
 } from "@/lib/api/orders"
-import { createOrderItemReview } from "@/lib/api/transactions"
+import { createOrderItemReview } from "@/lib/api/orders"
 
 function formatAmount(amount: string) {
   return `GHS ${Number(amount).toLocaleString("en-GH", {

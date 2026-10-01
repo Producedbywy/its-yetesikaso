@@ -13,7 +13,6 @@ import {
   User,
   Bookmark,
   MessageSquare,
-  Receipt,
   LayoutDashboard,
   PlusCircle,
   LogIn,
@@ -223,15 +222,6 @@ export default function MobileNav() {
                           : unreadMessages}
                       </span>
                     )}
-                  </Link>
-
-                  <Link
-                    href="/transactions"
-                    onClick={closeMenu}
-                    className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100"
-                  >
-                    <Receipt size={20} />
-                    Transactions
                   </Link>
                 </div>
 

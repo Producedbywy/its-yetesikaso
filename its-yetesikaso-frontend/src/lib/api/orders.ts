@@ -62,3 +62,37 @@ export async function confirmDelivery(
     }
   )
 }
+
+export type CreateOrderItemReviewResponse = {
+  message: string
+  review: {
+    id: number
+    order_item: number
+    buyer: number
+    buyer_username: string
+    seller: number
+    seller_username: string
+    listing: number
+    listing_title: string
+    rating: number
+    comment: string
+    created_at: string
+  }
+}
+
+export async function createOrderItemReview(
+  orderItemId: number,
+  rating: number,
+  comment: string
+): Promise<CreateOrderItemReviewResponse> {
+  return apiClient<CreateOrderItemReviewResponse>(
+    `/orders/items/${orderItemId}/review/`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        rating,
+        comment,
+      }),
+    }
+  )
+}

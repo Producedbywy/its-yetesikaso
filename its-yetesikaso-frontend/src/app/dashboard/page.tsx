@@ -578,7 +578,7 @@ export default function DashboardPage() {
                   </p>
 
                   <p className="mt-1 text-sm text-[var(--muted)]">
-                    Completed buyer transactions can leave reviews for your listings.
+                    Completed purchases can leave reviews for your listings.
                   </p>
                 </div>
               )}
