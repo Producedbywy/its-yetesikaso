@@ -143,7 +143,7 @@ export default function MobileNav() {
               alt="Yetesikaso"
               fill
               sizes="64px"
-              className="scale-125 object-contain"
+              className="scale-150 object-contain"
               priority
             />
           </Link>
