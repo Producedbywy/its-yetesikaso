@@ -33,7 +33,7 @@ export default function Footer() {
   return (
     <footer className="border-t border-[var(--border)] bg-[var(--card)]">
       <Container>
-        <div className="grid gap-12 py-14 sm:grid-cols-2 lg:grid-cols-[1.5fr_repeat(4,1fr)]">
+        <div className="grid gap-8 py-9 sm:grid-cols-2 lg:grid-cols-[1.5fr_repeat(4,1fr)]">
           <div className="max-w-sm">
             <Link
               href="/"
@@ -43,18 +43,18 @@ export default function Footer() {
               <Image
                 src="/images/Yetesikaso New Logo.png"
                 alt="Yetesikaso"
-                width={180}
-                height={60}
-                className="h-auto w-[170px] object-contain"
+                width={200}
+                height={66}
+                className="h-auto w-[190px] object-contain"
               />
             </Link>
 
-            <p className="mt-5 text-sm leading-6 text-[var(--muted)]">
+            <p className="mt-4 text-sm leading-6 text-[var(--muted)]">
               A trusted marketplace for buying and selling goods and services
               in Ghana.
             </p>
 
-            <p className="mt-4 text-sm font-medium text-[var(--foreground)]">
+            <p className="mt-3 text-sm font-medium text-[var(--foreground)]">
               Choose • Verify • Pay
             </p>
           </div>
@@ -65,7 +65,7 @@ export default function Footer() {
           <FooterColumn title="Legal" links={legalLinks} />
         </div>
 
-        <div className="flex flex-col gap-4 border-t border-[var(--border)] py-6 text-sm text-[var(--muted)] sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 border-t border-[var(--border)] py-4 text-sm text-[var(--muted)] sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} Yetesikaso. All rights reserved.</p>
 
           <div className="flex flex-wrap gap-x-5 gap-y-2">

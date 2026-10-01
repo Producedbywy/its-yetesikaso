@@ -3,7 +3,6 @@ import Navbar from '@/components/layout/navbar'
 import Footer from '@/components/layout/footer'
 import Container from '@/components/layout/container'
 import type { Listing } from '@/types/listing'
-import ContactSellerButton from '@/components/marketplace/contact-seller-button'
 import ReportListingButton from '@/components/marketplace/report-listing-button'
 import BuyListingButton from '@/components/marketplace/buy-listing-button'
 
@@ -156,8 +155,6 @@ export default async function ListingDetailPage({
                     listingId={listing.id}
                     availableQuantity={listing.available_quantity}
                   />
-
-                <ContactSellerButton listingId={listing.id} />
                 </div>
 
                 <div className="mt-4">

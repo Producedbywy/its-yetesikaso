@@ -3,6 +3,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { useEffect, useState } from "react"
+import { usePathname } from "next/navigation"
 
 import Container from "./container"
 import { getAccessToken, clearTokens } from "@/lib/auth/tokens"
@@ -11,6 +12,8 @@ import { getMyCart } from "@/lib/api/cart"
 import { getMyProfile, type AccountRole } from "@/lib/api/seller"
 
 export default function Navbar() {
+  const pathname = usePathname()
+
   const [authenticated, setAuthenticated] = useState(false)
   const [role, setRole] = useState<AccountRole>("user")
   const [unreadMessages, setUnreadMessages] = useState(0)
@@ -85,21 +88,37 @@ export default function Navbar() {
   const isSeller = authenticated && role === "seller"
   const isEmployer = authenticated && role === "employer"
 
+  function isActive(path: string) {
+    return pathname === path || pathname.startsWith(`${path}/`)
+  }
+
+  function linkClass(path: string) {
+    return isActive(path)
+      ? "rounded-lg bg-lime-100 px-2.5 py-1.5 font-semibold text-lime-800"
+      : "rounded-lg px-2.5 py-1.5 transition-opacity hover:opacity-70"
+  }
+
+  function actionClass(path: string) {
+    return isActive(path)
+      ? "rounded-xl bg-lime-300 px-5 py-2.5 font-semibold text-black transition hover:bg-lime-200"
+      : "rounded-xl bg-lime-400 px-5 py-2.5 font-medium text-black transition hover:bg-lime-300"
+  }
+
   return (
     <header className="hidden border-b border-gray-200 bg-white text-gray-900 md:block">
-      <Container className="py-2">
+      <Container className="py-1">
         {/* LOGO */}
         <div className="flex justify-center">
           <Link
             href="/"
-            className="relative block h-40 w-40"
+            className="relative block h-44 w-44"
             aria-label="Yetesikaso home"
           >
             <Image
               src="/images/Yetesikaso New Logo.png"
               alt="Yetesikaso"
               fill
-              sizes="160px"
+              sizes="176px"
               className="scale-125 object-contain"
               priority
             />
@@ -107,17 +126,24 @@ export default function Navbar() {
         </div>
 
         {/* NAVIGATION */}
-        <nav className="relative z-10 -mt-3 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm">
+        <nav className="relative z-10 -mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm">
+          <Link
+            href="/"
+            className={linkClass("/")}
+          >
+            Home
+          </Link>
+
           <Link
             href="/marketplace"
-            className="transition-opacity hover:opacity-70"
+            className={linkClass("/marketplace")}
           >
             Marketplace
           </Link>
 
           <Link
             href="/jobs"
-            className="transition-opacity hover:opacity-70"
+            className={linkClass("/jobs")}
           >
             Jobs
           </Link>
@@ -126,7 +152,7 @@ export default function Navbar() {
             <>
               <Link
                 href="/cart"
-                className="flex items-center gap-2 transition-opacity hover:opacity-70"
+                className={`flex items-center gap-2 ${linkClass("/cart")}`}
               >
                 <span>Cart</span>
 
@@ -139,7 +165,7 @@ export default function Navbar() {
 
               <Link
                 href="/orders"
-                className="transition-opacity hover:opacity-70"
+                className={linkClass("/orders")}
               >
                 Orders
               </Link>
@@ -147,7 +173,7 @@ export default function Navbar() {
               {isSeller && (
                 <Link
                   href="/dashboard"
-                  className="transition-opacity hover:opacity-70"
+                  className={linkClass("/dashboard")}
                 >
                   Seller Dashboard
                 </Link>
@@ -156,7 +182,7 @@ export default function Navbar() {
               {isEmployer && (
                 <Link
                   href="/employer/dashboard"
-                  className="transition-opacity hover:opacity-70"
+                  className={linkClass("/employer/dashboard")}
                 >
                   Employer Dashboard
                 </Link>
@@ -164,21 +190,21 @@ export default function Navbar() {
 
               <Link
                 href="/profile"
-                className="transition-opacity hover:opacity-70"
+                className={linkClass("/profile")}
               >
                 Profile
               </Link>
 
               <Link
                 href="/saved"
-                className="transition-opacity hover:opacity-70"
+                className={linkClass("/saved")}
               >
                 Saved
               </Link>
 
               <Link
                 href="/messages"
-                className="flex items-center gap-2 transition-opacity hover:opacity-70"
+                className={`flex items-center gap-2 ${linkClass("/messages")}`}
               >
                 <span>Messages</span>
 
@@ -192,7 +218,7 @@ export default function Navbar() {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="transition-opacity hover:opacity-70"
+                className="rounded-lg px-2.5 py-1.5 transition-opacity hover:opacity-70"
               >
                 Logout
               </button>
@@ -201,21 +227,21 @@ export default function Navbar() {
             <>
               <Link
                 href="/login"
-                className="transition-opacity hover:opacity-70"
+                className={linkClass("/login")}
               >
                 Login
               </Link>
 
               <Link
                 href="/register"
-                className="transition-opacity hover:opacity-70"
+                className={linkClass("/register")}
               >
                 Register
               </Link>
 
               <Link
                 href="/dashboard/create"
-                className="rounded-xl bg-lime-400 px-5 py-2.5 font-medium text-black transition hover:bg-lime-300"
+                className={actionClass("/dashboard/create")}
               >
                 Post Listing
               </Link>
@@ -225,7 +251,7 @@ export default function Navbar() {
           {isSeller && (
             <Link
               href="/dashboard/create"
-              className="rounded-xl bg-lime-400 px-5 py-2.5 font-medium text-black transition hover:bg-lime-300"
+              className={actionClass("/dashboard/create")}
             >
               Post Listing
             </Link>
@@ -234,7 +260,7 @@ export default function Navbar() {
           {isEmployer && (
             <Link
               href="/employer/jobs/create"
-              className="rounded-xl bg-lime-400 px-5 py-2.5 font-medium text-black transition hover:bg-lime-300"
+              className={actionClass("/employer/jobs/create")}
             >
               Post Job
             </Link>

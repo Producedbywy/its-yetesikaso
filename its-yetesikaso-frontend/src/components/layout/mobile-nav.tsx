@@ -121,6 +121,22 @@ export default function MobileNav() {
     window.location.href = "/"
   }
 
+  function isActive(path: string) {
+    return pathname === path || pathname.startsWith(`${path}/`)
+  }
+
+  function linkClass(path: string) {
+    return isActive(path)
+      ? "flex items-center gap-3 rounded-xl bg-lime-100 px-4 py-3 font-semibold text-lime-800 transition"
+      : "flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100"
+  }
+
+  function actionClass(path: string) {
+    return isActive(path)
+      ? "flex items-center gap-3 rounded-xl bg-lime-200 px-4 py-3 font-semibold text-lime-900 transition"
+      : "flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100"
+  }
+
   const isSeller =
     authenticated && role === "seller"
 
@@ -131,11 +147,11 @@ export default function MobileNav() {
     <>
       {/* MOBILE HEADER */}
       <div className="fixed inset-x-0 top-0 z-50 border-b border-gray-200 bg-white dark:border-gray-200 dark:bg-white md:hidden">
-        <div className="flex h-28 items-center justify-center px-4">
+        <div className="flex h-24 items-center justify-center px-4">
           <Link
             href="/"
             onClick={closeMenu}
-            className="relative block h-28 w-28"
+            className="relative block h-32 w-32"
             aria-label="Yetesikaso home"
           >
             <Image
@@ -170,14 +186,14 @@ export default function MobileNav() {
 
       {/* MOBILE MENU */}
       {open && (
-        <div className="fixed inset-0 top-20 z-40 overflow-y-auto bg-white md:hidden">
+        <div className="fixed inset-0 top-24 z-40 overflow-y-auto bg-white md:hidden">
           <nav className="px-4 py-6">
             {/* GENERAL */}
             <div className="space-y-1">
               <Link
                 href="/"
                 onClick={closeMenu}
-                className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100"
+                className={linkClass("/")}
               >
                 <Home size={20} />
                 Home
@@ -186,7 +202,7 @@ export default function MobileNav() {
               <Link
                 href="/marketplace"
                 onClick={closeMenu}
-                className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100"
+                className={linkClass("/marketplace")}
               >
                 <Search size={20} />
                 Marketplace
@@ -195,7 +211,7 @@ export default function MobileNav() {
               <Link
                 href="/jobs"
                 onClick={closeMenu}
-                className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100"
+                className={linkClass("/jobs")}
               >
                 <Briefcase size={20} />
                 Jobs
@@ -211,7 +227,7 @@ export default function MobileNav() {
                   <Link
                     href="/cart"
                     onClick={closeMenu}
-                    className="flex items-center justify-between rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100"
+                    className={linkClass("/cart")}
                   >
                     <span className="flex items-center gap-3">
                       <ShoppingCart size={20} />
@@ -219,7 +235,7 @@ export default function MobileNav() {
                     </span>
 
                     {cartQuantity > 0 && (
-                      <span className="flex min-w-5 items-center justify-center rounded-full bg-lime-400 px-1.5 py-0.5 text-xs font-bold text-black">
+                      <span className="ml-auto flex min-w-5 items-center justify-center rounded-full bg-lime-400 px-1.5 py-0.5 text-xs font-bold text-black">
                         {cartQuantity > 99
                           ? "99+"
                           : cartQuantity}
@@ -230,7 +246,7 @@ export default function MobileNav() {
                   <Link
                     href="/orders"
                     onClick={closeMenu}
-                    className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100"
+                    className={linkClass("/orders")}
                   >
                     <ClipboardList size={20} />
                     Orders
@@ -239,7 +255,7 @@ export default function MobileNav() {
                   <Link
                     href="/profile"
                     onClick={closeMenu}
-                    className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100"
+                    className={linkClass("/profile")}
                   >
                     <User size={20} />
                     Profile
@@ -248,7 +264,7 @@ export default function MobileNav() {
                   <Link
                     href="/saved"
                     onClick={closeMenu}
-                    className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100"
+                    className={linkClass("/saved")}
                   >
                     <Bookmark size={20} />
                     Saved
@@ -257,7 +273,7 @@ export default function MobileNav() {
                   <Link
                     href="/messages"
                     onClick={closeMenu}
-                    className="flex items-center justify-between rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100"
+                    className={linkClass("/messages")}
                   >
                     <span className="flex items-center gap-3">
                       <MessageSquare size={20} />
@@ -265,7 +281,7 @@ export default function MobileNav() {
                     </span>
 
                     {unreadMessages > 0 && (
-                      <span className="flex min-w-5 items-center justify-center rounded-full bg-lime-400 px-1.5 py-0.5 text-xs font-bold text-black">
+                      <span className="ml-auto flex min-w-5 items-center justify-center rounded-full bg-lime-400 px-1.5 py-0.5 text-xs font-bold text-black">
                         {unreadMessages > 99
                           ? "99+"
                           : unreadMessages}
@@ -287,7 +303,7 @@ export default function MobileNav() {
                       <Link
                         href="/dashboard"
                         onClick={closeMenu}
-                        className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100"
+                        className={linkClass("/dashboard")}
                       >
                         <LayoutDashboard size={20} />
                         Seller Dashboard
@@ -296,7 +312,7 @@ export default function MobileNav() {
                       <Link
                         href="/dashboard/create"
                         onClick={closeMenu}
-                        className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100"
+                        className={actionClass("/dashboard/create")}
                       >
                         <PlusCircle size={20} />
                         Post Listing
@@ -318,7 +334,7 @@ export default function MobileNav() {
                       <Link
                         href="/employer/dashboard"
                         onClick={closeMenu}
-                        className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100"
+                        className={linkClass("/employer/dashboard")}
                       >
                         <LayoutDashboard size={20} />
                         Employer Dashboard
@@ -327,7 +343,7 @@ export default function MobileNav() {
                       <Link
                         href="/employer/jobs/create"
                         onClick={closeMenu}
-                        className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100"
+                        className={actionClass("/employer/jobs/create")}
                       >
                         <PlusCircle size={20} />
                         Post Job
@@ -359,7 +375,7 @@ export default function MobileNav() {
                   <Link
                     href="/login"
                     onClick={closeMenu}
-                    className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100"
+                    className={linkClass("/login")}
                   >
                     <LogIn size={20} />
                     Login
@@ -368,7 +384,7 @@ export default function MobileNav() {
                   <Link
                     href="/register"
                     onClick={closeMenu}
-                    className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100"
+                    className={linkClass("/register")}
                   >
                     <UserPlus size={20} />
                     Register
