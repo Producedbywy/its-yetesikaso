@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useParams } from "next/navigation"
-import { useEffect, useState } from "react"
+import { FormEvent, useEffect, useState } from "react"
 
 import Navbar from "@/components/layout/navbar"
 import Footer from "@/components/layout/footer"
@@ -12,6 +12,7 @@ import {
   getOrder,
   type Order,
 } from "@/lib/api/orders"
+import { createOrderItemReview } from "@/lib/api/transactions"
 
 function formatAmount(amount: string) {
   return `GHS ${Number(amount).toLocaleString("en-GH", {
@@ -62,9 +63,7 @@ function getFulfilmentStatusLabel(
   }
 }
 
-function getOrderItemStatusLabel(
-  status: string
-) {
+function getOrderItemStatusLabel(status: string) {
   switch (status) {
     case "paid":
       return "Paid"
@@ -89,6 +88,13 @@ export default function OrderDetailPage() {
   const [confirmingItemId, setConfirmingItemId] =
     useState<number | null>(null)
   const [confirmError, setConfirmError] =
+    useState<string | null>(null)
+
+  const [reviewingItemId, setReviewingItemId] =
+    useState<number | null>(null)
+  const [reviewRating, setReviewRating] = useState(5)
+  const [reviewComment, setReviewComment] = useState("")
+  const [reviewError, setReviewError] =
     useState<string | null>(null)
 
   async function loadOrder() {
@@ -173,6 +179,61 @@ export default function OrderDetailPage() {
       )
     } finally {
       setConfirmingItemId(null)
+    }
+  }
+
+  function openReviewForm(orderItemId: number) {
+    setReviewingItemId(orderItemId)
+    setReviewRating(5)
+    setReviewComment("")
+    setReviewError(null)
+  }
+
+  function closeReviewForm() {
+    setReviewingItemId(null)
+    setReviewError(null)
+  }
+
+  async function handleReview(
+    event: FormEvent<HTMLFormElement>,
+    orderItemId: number
+  ) {
+    event.preventDefault()
+
+    try {
+      setReviewingItemId(orderItemId)
+      setReviewError(null)
+
+      await createOrderItemReview(
+        orderItemId,
+        reviewRating,
+        reviewComment.trim()
+      )
+
+      setOrder((currentOrder) => {
+        if (!currentOrder) {
+          return currentOrder
+        }
+
+        return {
+          ...currentOrder,
+          items: currentOrder.items.map((item) =>
+            item.id === orderItemId
+              ? { ...item, has_review: true }
+              : item
+          ),
+        }
+      })
+
+      setReviewingItemId(null)
+      setReviewRating(5)
+      setReviewComment("")
+    } catch (err: unknown) {
+      setReviewError(
+        err instanceof Error
+          ? err.message
+          : "Unable to submit review"
+      )
     }
   }
 
@@ -335,6 +396,174 @@ export default function OrderDetailPage() {
                             </button>
                           </div>
                         )}
+
+                        {item.fulfilment_status ===
+                          "completed" &&
+                          !item.has_review && (
+                            <div className="mt-6 border-t border-[var(--border)] pt-6">
+                              {reviewingItemId !== item.id ? (
+                                <>
+                                  <div>
+                                    <h3 className="text-base font-semibold">
+                                      Review your purchase
+                                    </h3>
+
+                                    <p className="mt-1 text-sm text-[var(--muted-foreground)]">
+                                      Share your experience with this seller.
+                                    </p>
+                                  </div>
+
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      openReviewForm(item.id)
+                                    }
+                                    className="mt-4 rounded-xl bg-lime-400 px-5 py-3 text-sm font-semibold text-black transition hover:bg-lime-300"
+                                  >
+                                    Write a Review
+                                  </button>
+                                </>
+                              ) : (
+                                <form
+                                  onSubmit={(event) =>
+                                    void handleReview(
+                                      event,
+                                      item.id
+                                    )
+                                  }
+                                >
+                                  <div>
+                                    <h3 className="text-base font-semibold">
+                                      Review your purchase
+                                    </h3>
+
+                                    <p className="mt-1 text-sm text-[var(--muted-foreground)]">
+                                      Share your experience with this seller.
+                                    </p>
+                                  </div>
+
+                                  {reviewError && (
+                                    <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+                                      {reviewError}
+                                    </div>
+                                  )}
+
+                                  <div className="mt-5">
+                                    <label
+                                      htmlFor={`review-rating-${item.id}`}
+                                      className="mb-1.5 block text-sm font-medium"
+                                    >
+                                      Rating
+                                    </label>
+
+                                    <select
+                                      id={`review-rating-${item.id}`}
+                                      value={reviewRating}
+                                      onChange={(event) =>
+                                        setReviewRating(
+                                          Number(
+                                            event.target.value
+                                          )
+                                        )
+                                      }
+                                      disabled={
+                                        reviewingItemId !==
+                                        item.id
+                                      }
+                                      className="w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 outline-none focus:border-lime-500 disabled:opacity-50"
+                                    >
+                                      <option value={5}>
+                                        5 — Excellent
+                                      </option>
+                                      <option value={4}>
+                                        4 — Good
+                                      </option>
+                                      <option value={3}>
+                                        3 — Average
+                                      </option>
+                                      <option value={2}>
+                                        2 — Poor
+                                      </option>
+                                      <option value={1}>
+                                        1 — Very poor
+                                      </option>
+                                    </select>
+                                  </div>
+
+                                  <div className="mt-4">
+                                    <label
+                                      htmlFor={`review-comment-${item.id}`}
+                                      className="mb-1.5 block text-sm font-medium"
+                                    >
+                                      Comment
+                                    </label>
+
+                                    <textarea
+                                      id={`review-comment-${item.id}`}
+                                      value={reviewComment}
+                                      onChange={(event) =>
+                                        setReviewComment(
+                                          event.target.value
+                                        )
+                                      }
+                                      disabled={
+                                        reviewingItemId !==
+                                        item.id
+                                      }
+                                      rows={4}
+                                      maxLength={1000}
+                                      placeholder="Share your experience with this seller."
+                                      className="w-full resize-none rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 outline-none focus:border-lime-500 disabled:opacity-50"
+                                    />
+                                  </div>
+
+                                  <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                                    <button
+                                      type="submit"
+                                      disabled={
+                                        reviewingItemId !==
+                                        item.id
+                                      }
+                                      className="rounded-xl bg-lime-400 px-5 py-3 text-sm font-semibold text-black transition hover:bg-lime-300 disabled:cursor-not-allowed disabled:opacity-60"
+                                    >
+                                      {reviewingItemId ===
+                                      item.id
+                                        ? "Submitting..."
+                                        : "Submit Review"}
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={
+                                        closeReviewForm
+                                      }
+                                      disabled={
+                                        reviewingItemId ===
+                                        item.id
+                                      }
+                                      className="rounded-xl border border-[var(--border)] px-5 py-3 text-sm font-medium transition hover:border-lime-400 disabled:cursor-not-allowed disabled:opacity-60"
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                </form>
+                              )}
+                            </div>
+                          )}
+
+                        {item.fulfilment_status ===
+                          "completed" &&
+                          item.has_review && (
+                            <div className="mt-6 border-t border-[var(--border)] pt-6">
+                              <p className="font-semibold">
+                                Review submitted
+                              </p>
+
+                              <p className="mt-1 text-sm text-[var(--muted-foreground)]">
+                                Your verified purchase review has been recorded.
+                              </p>
+                            </div>
+                          )}
                       </div>
                     ))}
                   </div>

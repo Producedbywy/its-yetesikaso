@@ -15,6 +15,7 @@ export type OrderItem = {
   dispatched_at: string | null
   completed_at: string | null
   created_at: string
+  has_review: boolean
 }
 
 export type Order = {
