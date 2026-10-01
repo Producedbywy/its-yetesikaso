@@ -7,12 +7,14 @@ import { useEffect, useState } from "react"
 import Container from "./container"
 import { getAccessToken, clearTokens } from "@/lib/auth/tokens"
 import { getConversations } from "@/lib/api/messages"
+import { getMyCart } from "@/lib/api/cart"
 import { getMyProfile, type AccountRole } from "@/lib/api/seller"
 
 export default function Navbar() {
   const [authenticated, setAuthenticated] = useState(false)
   const [role, setRole] = useState<AccountRole>("user")
   const [unreadMessages, setUnreadMessages] = useState(0)
+  const [cartQuantity, setCartQuantity] = useState(0)
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
@@ -34,27 +36,40 @@ export default function Navbar() {
 
     async function loadUserData() {
       try {
-        const [profile, conversations] = await Promise.all([
-          getMyProfile(),
-          getConversations(),
-        ])
+        const [profile, conversations, cartResponse] =
+          await Promise.all([
+            getMyProfile(),
+            getConversations(),
+            getMyCart(),
+          ])
 
         if (!cancelled) {
           setRole(profile.role)
           setUnreadMessages(conversations.unread_count || 0)
+          setCartQuantity(cartResponse.cart.total_quantity || 0)
         }
       } catch {
         if (!cancelled) {
           setRole("user")
           setUnreadMessages(0)
+          setCartQuantity(0)
         }
       }
     }
 
+    function handleCartUpdated() {
+      void loadUserData()
+    }
+
     void loadUserData()
+    window.addEventListener("cart-updated", handleCartUpdated)
 
     return () => {
       cancelled = true
+      window.removeEventListener(
+        "cart-updated",
+        handleCartUpdated
+      )
     }
   }, [authenticated])
 
@@ -63,6 +78,7 @@ export default function Navbar() {
     setAuthenticated(false)
     setRole("user")
     setUnreadMessages(0)
+    setCartQuantity(0)
     window.location.href = "/"
   }
 
@@ -70,8 +86,8 @@ export default function Navbar() {
   const isEmployer = authenticated && role === "employer"
 
   return (
-      <header className="hidden border-b border-gray-200 bg-white text-gray-900 md:block">
-       <Container className="py-2">
+    <header className="hidden border-b border-gray-200 bg-white text-gray-900 md:block">
+      <Container className="py-2">
         {/* LOGO */}
         <div className="flex justify-center">
           <Link
@@ -108,6 +124,26 @@ export default function Navbar() {
 
           {authenticated ? (
             <>
+              <Link
+                href="/cart"
+                className="flex items-center gap-2 transition-opacity hover:opacity-70"
+              >
+                <span>Cart</span>
+
+                {cartQuantity > 0 && (
+                  <span className="flex min-w-5 items-center justify-center rounded-full bg-lime-400 px-1.5 py-0.5 text-xs font-bold text-black">
+                    {cartQuantity > 99 ? "99+" : cartQuantity}
+                  </span>
+                )}
+              </Link>
+
+              <Link
+                href="/orders"
+                className="transition-opacity hover:opacity-70"
+              >
+                Orders
+              </Link>
+
               {isSeller && (
                 <Link
                   href="/dashboard"

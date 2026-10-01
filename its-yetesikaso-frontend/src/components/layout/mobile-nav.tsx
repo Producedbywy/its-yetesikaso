@@ -10,6 +10,8 @@ import {
   Home,
   Search,
   Briefcase,
+  ShoppingCart,
+  ClipboardList,
   User,
   Bookmark,
   MessageSquare,
@@ -34,6 +36,10 @@ import {
   getConversations,
 } from "@/lib/api/messages"
 
+import {
+  getMyCart,
+} from "@/lib/api/cart"
+
 export default function MobileNav() {
   const pathname = usePathname()
 
@@ -41,6 +47,7 @@ export default function MobileNav() {
   const [authenticated, setAuthenticated] = useState(false)
   const [role, setRole] = useState<AccountRole>("user")
   const [unreadMessages, setUnreadMessages] = useState(0)
+  const [cartQuantity, setCartQuantity] = useState(0)
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
@@ -63,27 +70,40 @@ export default function MobileNav() {
 
     async function loadUserData() {
       try {
-        const [profile, conversations] = await Promise.all([
-          getMyProfile(),
-          getConversations(),
-        ])
+        const [profile, conversations, cartResponse] =
+          await Promise.all([
+            getMyProfile(),
+            getConversations(),
+            getMyCart(),
+          ])
 
         if (!cancelled) {
           setRole(profile.role)
           setUnreadMessages(conversations.unread_count || 0)
+          setCartQuantity(cartResponse.cart.total_quantity || 0)
         }
       } catch {
         if (!cancelled) {
           setRole("user")
           setUnreadMessages(0)
+          setCartQuantity(0)
         }
       }
     }
 
+    function handleCartUpdated() {
+      void loadUserData()
+    }
+
     void loadUserData()
+    window.addEventListener("cart-updated", handleCartUpdated)
 
     return () => {
       cancelled = true
+      window.removeEventListener(
+        "cart-updated",
+        handleCartUpdated
+      )
     }
   }, [authenticated])
 
@@ -96,6 +116,7 @@ export default function MobileNav() {
     setAuthenticated(false)
     setRole("user")
     setUnreadMessages(0)
+    setCartQuantity(0)
     setOpen(false)
     window.location.href = "/"
   }
@@ -187,6 +208,34 @@ export default function MobileNav() {
                 <div className="my-5 border-t border-gray-200" />
 
                 <div className="space-y-1">
+                  <Link
+                    href="/cart"
+                    onClick={closeMenu}
+                    className="flex items-center justify-between rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100"
+                  >
+                    <span className="flex items-center gap-3">
+                      <ShoppingCart size={20} />
+                      Cart
+                    </span>
+
+                    {cartQuantity > 0 && (
+                      <span className="flex min-w-5 items-center justify-center rounded-full bg-lime-400 px-1.5 py-0.5 text-xs font-bold text-black">
+                        {cartQuantity > 99
+                          ? "99+"
+                          : cartQuantity}
+                      </span>
+                    )}
+                  </Link>
+
+                  <Link
+                    href="/orders"
+                    onClick={closeMenu}
+                    className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100"
+                  >
+                    <ClipboardList size={20} />
+                    Orders
+                  </Link>
+
                   <Link
                     href="/profile"
                     onClick={closeMenu}

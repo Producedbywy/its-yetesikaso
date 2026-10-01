@@ -28,6 +28,8 @@ export default function BuyListingButton({
 
       await addToCart(listingId, quantity)
 
+      window.dispatchEvent(new Event("cart-updated"))
+
       setMessage(
         quantity === 1
           ? "Added to cart."

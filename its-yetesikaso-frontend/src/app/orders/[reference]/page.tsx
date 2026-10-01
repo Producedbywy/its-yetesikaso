@@ -65,6 +65,8 @@ function getFulfilmentStatusLabel(
 
 function getOrderItemStatusLabel(status: string) {
   switch (status) {
+    case "awaiting_payment":
+      return "Awaiting payment"
     case "paid":
       return "Paid"
     case "dispatched":
@@ -295,25 +297,42 @@ export default function OrderDetailPage() {
                     </p>
                   </div>
 
-                  <div className="flex flex-wrap gap-2">
-                    <span className="rounded-full bg-lime-100 px-3 py-1 text-xs font-semibold text-lime-800 dark:bg-lime-950 dark:text-lime-300">
-                      {getPaymentStatusLabel(
-                        order.payment_status
-                      )}
-                    </span>
+<div className="flex flex-wrap gap-2">
+  {getPaymentStatusLabel(order.payment_status) ===
+  getFulfilmentStatusLabel(order.fulfilment_status) ? (
+    <span className="rounded-full bg-lime-100 px-3 py-1 text-xs font-semibold text-lime-800 dark:bg-lime-950 dark:text-lime-300">
+      {getPaymentStatusLabel(order.payment_status)}
+    </span>
+  ) : (
+    <>
+      <span className="rounded-full bg-lime-100 px-3 py-1 text-xs font-semibold text-lime-800 dark:bg-lime-950 dark:text-lime-300">
+        {getPaymentStatusLabel(order.payment_status)}
+      </span>
 
-                    <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold dark:bg-gray-800">
-                      {getFulfilmentStatusLabel(
-                        order.fulfilment_status
-                      )}
-                    </span>
-                  </div>
+      <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold dark:bg-gray-800">
+        {getFulfilmentStatusLabel(order.fulfilment_status)}
+      </span>
+    </>
+  )}
+</div>
                 </div>
               </div>
 
               {confirmError && (
                 <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
                   {confirmError}
+                </div>
+              )}
+
+              {order.payment_status === "unpaid" && (
+                <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-5 dark:border-amber-900 dark:bg-amber-950/30">
+                  <h2 className="font-semibold text-amber-900 dark:text-amber-200">
+                    Payment pending
+                  </h2>
+
+                  <p className="mt-1 text-sm text-amber-800 dark:text-amber-300">
+                    Your order has been created and is waiting for payment.
+                  </p>
                 </div>
               )}
 
@@ -541,7 +560,7 @@ export default function OrderDetailPage() {
                                         reviewingItemId ===
                                         item.id
                                       }
-                                      className="rounded-xl border border-[var(--border)] px-5 py-3 text-sm font-medium transition hover:border-lime-400 disabled:cursor-not-allowed disabled:opacity-60"
+                                      className="rounded-xl border border-gray-300 bg-white px-5 py-3 text-sm font-medium text-gray-900 transition hover:border-lime-400 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:border-lime-400 dark:hover:bg-gray-700"
                                     >
                                       Cancel
                                     </button>
@@ -635,7 +654,7 @@ export default function OrderDetailPage() {
 
                   <Link
                     href="/marketplace"
-                    className="mt-6 block rounded-xl border border-[var(--border)] px-5 py-3 text-center text-sm font-medium transition hover:border-lime-400"
+                    className="mt-6 block rounded-xl border border-gray-300 bg-white px-5 py-3 text-center text-sm font-medium text-gray-900 transition hover:border-lime-400 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:border-lime-400 dark:hover:bg-gray-700"
                   >
                     Continue Shopping
                   </Link>

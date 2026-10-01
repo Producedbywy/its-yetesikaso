@@ -140,16 +140,30 @@ export default function CartPage() {
         </h1>
 
         <div className="mt-8 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-8 text-center">
-          <p className="text-[var(--muted)]">
-            Your cart is empty.
+          <h2 className="text-xl font-semibold">
+            Your cart is empty
+          </h2>
+
+          <p className="mx-auto mt-2 max-w-xl text-sm text-[var(--muted)]">
+            Items you've proceeded with are moved to Orders while payment is
+            being completed.
           </p>
 
-          <Link
-            href="/marketplace"
-            className="mt-5 inline-flex rounded-xl bg-lime-400 px-5 py-3 font-medium text-black transition hover:bg-lime-300"
-          >
-            Browse Listings
-          </Link>
+          <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+            <Link
+              href="/orders"
+              className="inline-flex rounded-xl bg-lime-400 px-5 py-3 font-medium text-black transition hover:bg-lime-300"
+            >
+              View Orders
+            </Link>
+
+            <Link
+              href="/marketplace"
+              className="inline-flex rounded-xl border border-[var(--border)] px-5 py-3 font-medium transition hover:bg-[var(--muted)]"
+            >
+              Browse Listings
+            </Link>
+          </div>
         </div>
       </main>
     )
