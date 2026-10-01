@@ -96,6 +96,18 @@ class Listing(models.Model):
         ("property", "Property"),
         ("fashion", "Fashion"),
         ("services", "Services"),
+        ("furniture", "Furniture"),
+        ("other", "Other"),
+    ]
+
+    PRICING_TYPE_CHOICES = [
+        ("one_time", "One-time"),
+        ("for_sale", "For sale"),
+        ("per_service", "Per service"),
+        ("per_day", "Per day"),
+        ("per_week", "Per week"),
+        ("per_month", "Per month"),
+        ("per_year", "Per year"),
     ]
 
     owner = models.ForeignKey(
@@ -118,6 +130,12 @@ class Listing(models.Model):
     category = models.CharField(
         max_length=50,
         choices=CATEGORY_CHOICES,
+    )
+
+    pricing_type = models.CharField(
+        max_length=20,
+        choices=PRICING_TYPE_CHOICES,
+        default="one_time",
     )
 
     location = models.CharField(

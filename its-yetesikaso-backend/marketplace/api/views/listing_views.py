@@ -166,6 +166,7 @@ def create_listing(request):
         title=data["title"],
         description=data["description"],
         price=data["price"],
+        pricing_type=data.get("pricing_type", "one_time"),
         category=data["category"],
         location=data["location"],
         quantity=quantity,
@@ -263,6 +264,9 @@ def listing_detail(request, listing_id):
 
     if "price" in data:
         listing.price = data["price"]
+
+    if "pricing_type" in data:
+        listing.pricing_type = data["pricing_type"]
 
     if "category" in data:
         listing.category = data["category"]

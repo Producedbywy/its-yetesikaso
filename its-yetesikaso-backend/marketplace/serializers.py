@@ -135,6 +135,7 @@ class ListingSerializer(serializers.ModelSerializer):
             "title",
             "description",
             "price",
+            "pricing_type",
             "category",
             "location",
             "image",
