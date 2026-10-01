@@ -478,8 +478,8 @@ export default function ImageUploader({
 
       {/* IMAGE EDITOR */}
       {editingImage && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4">
-          <div className="w-full max-w-2xl overflow-hidden rounded-2xl bg-[var(--card)] shadow-2xl">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-black/80 p-4">
+          <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-[var(--card)] shadow-2xl">
             <div className="p-5">
               <div className="mb-4">
                 <h2 className="text-lg font-semibold">
@@ -522,7 +522,7 @@ export default function ImageUploader({
                 </select>
               </div>
 
-              <div className="relative h-[360px] w-full overflow-hidden rounded-xl bg-black sm:h-[440px]">
+              <div className="relative h-[min(52vh,360px)] w-full overflow-hidden rounded-xl bg-black">
                 <Cropper
                   image={editingImage}
                   crop={crop}
