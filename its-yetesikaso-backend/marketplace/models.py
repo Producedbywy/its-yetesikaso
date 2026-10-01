@@ -423,6 +423,7 @@ class Order(models.Model):
 
 class OrderItem(models.Model):
     FULFILMENT_STATUS_CHOICES = [
+        ("awaiting_payment", "Awaiting Payment"),
         ("paid", "Paid"),
         ("dispatched", "Dispatched"),
         ("completed", "Completed"),
@@ -448,21 +449,19 @@ class OrderItem(models.Model):
     )
 
     quantity = models.PositiveIntegerField()
-
     unit_price = models.DecimalField(
         max_digits=12,
         decimal_places=2,
     )
-
     total_amount = models.DecimalField(
         max_digits=12,
         decimal_places=2,
     )
 
     fulfilment_status = models.CharField(
-        max_length=20,
+        max_length=30,
         choices=FULFILMENT_STATUS_CHOICES,
-        default="paid",
+        default="awaiting_payment",
     )
 
     dispatched_at = models.DateTimeField(

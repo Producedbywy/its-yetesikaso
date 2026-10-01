@@ -166,6 +166,12 @@ def _complete_successful_payment(payment_id):
             ]
         )
 
+        order.items.filter(
+            fulfilment_status="awaiting_payment"
+        ).update(
+            fulfilment_status="paid"
+        )
+
     return payment, order, True
 
 
