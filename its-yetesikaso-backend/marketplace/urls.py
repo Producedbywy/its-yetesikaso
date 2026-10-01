@@ -7,13 +7,6 @@ from marketplace.api.views.listing_views import (
     create_listing,
     listing_detail,
     mark_listing_sold,
-    create_transaction,
-    confirm_transaction,
-    complete_transaction,
-    cancel_transaction,
-    my_transactions,
-    transaction_detail,
-    create_review,
     create_order_item_review,
 )
 
@@ -130,48 +123,6 @@ urlpatterns = [
         "listings/me/",
         my_listings,
         name="my-listings",
-    ),
-
-    path(
-        "transactions/create/",
-        create_transaction,
-        name="create-transaction",
-    ),
-
-    path(
-        "transactions/<int:transaction_id>/confirm/",
-        confirm_transaction,
-        name="confirm-transaction",
-    ),
-
-    path(
-        "transactions/<int:transaction_id>/complete/",
-        complete_transaction,
-        name="complete-transaction",
-    ),
-
-    path(
-        "transactions/<int:transaction_id>/cancel/",
-        cancel_transaction,
-        name="cancel-transaction",
-    ),
-
-    path(
-        "transactions/",
-        my_transactions,
-        name="my-transactions",
-    ),
-
-    path(
-        "transactions/<int:transaction_id>/",
-        transaction_detail,
-        name="transaction-detail",
-    ),
-
-    path(
-        "transactions/<int:transaction_id>/review/",
-        create_review,
-        name="create-review",
     ),
 
     path(
