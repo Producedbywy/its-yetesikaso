@@ -80,6 +80,14 @@ function getOrderItemStatusLabel(status: string) {
   }
 }
 
+function getOrderTitle(order: Order) {
+  if (order.items.length === 1) {
+    return order.items[0].listing_title
+  }
+
+  return `${order.items.length} items in this order`
+}
+
 export default function OrderDetailPage() {
   const params = useParams<{ reference: string }>()
   const reference = params.reference
@@ -283,38 +291,40 @@ export default function OrderDetailPage() {
             <>
               <div className="mb-8">
                 <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                  <div>
-                    <p className="text-sm text-[var(--muted-foreground)]">
-                      Order
-                    </p>
-
-                    <h1 className="mt-1 text-3xl font-bold tracking-tight md:text-4xl">
-                      {order.order_reference}
+                  <div className="min-w-0">
+                    <h1 className="truncate text-3xl font-bold tracking-tight md:text-4xl">
+                      {getOrderTitle(order)}
                     </h1>
 
                     <p className="mt-2 text-sm text-[var(--muted-foreground)]">
                       Ordered {formatDate(order.created_at)}
                     </p>
+
+                    <p className="mt-1 text-sm text-[var(--muted-foreground)]">
+                      Order reference: {order.order_reference}
+                    </p>
                   </div>
 
-<div className="flex flex-wrap gap-2">
-  {getPaymentStatusLabel(order.payment_status) ===
-  getFulfilmentStatusLabel(order.fulfilment_status) ? (
-    <span className="rounded-full bg-lime-100 px-3 py-1 text-xs font-semibold text-lime-800 dark:bg-lime-950 dark:text-lime-300">
-      {getPaymentStatusLabel(order.payment_status)}
-    </span>
-  ) : (
-    <>
-      <span className="rounded-full bg-lime-100 px-3 py-1 text-xs font-semibold text-lime-800 dark:bg-lime-950 dark:text-lime-300">
-        {getPaymentStatusLabel(order.payment_status)}
-      </span>
+                  <div className="flex flex-wrap gap-2">
+                    {getPaymentStatusLabel(order.payment_status) ===
+                    getFulfilmentStatusLabel(order.fulfilment_status) ? (
+                      <span className="rounded-full bg-lime-100 px-3 py-1 text-xs font-semibold text-lime-800 dark:bg-lime-950 dark:text-lime-300">
+                        {getPaymentStatusLabel(order.payment_status)}
+                      </span>
+                    ) : (
+                      <>
+                        <span className="rounded-full bg-lime-100 px-3 py-1 text-xs font-semibold text-lime-800 dark:bg-lime-950 dark:text-lime-300">
+                          {getPaymentStatusLabel(order.payment_status)}
+                        </span>
 
-      <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold dark:bg-gray-800">
-        {getFulfilmentStatusLabel(order.fulfilment_status)}
-      </span>
-    </>
-  )}
-</div>
+                        <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold dark:bg-gray-800">
+                          {getFulfilmentStatusLabel(
+                            order.fulfilment_status
+                          )}
+                        </span>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
 

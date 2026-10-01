@@ -58,6 +58,29 @@ function getFulfilmentStatusLabel(status: Order["fulfilment_status"]) {
   }
 }
 
+function getOrderTitle(order: Order) {
+  if (order.items.length === 1) {
+    return order.items[0].listing_title
+  }
+
+  return `${order.items.length} items`
+}
+
+function getOrderItemSummary(order: Order) {
+  if (order.items.length === 0) {
+    return "No items"
+  }
+
+  if (order.items.length === 1) {
+    return `Seller: ${order.items[0].seller_username}`
+  }
+
+  const firstItem = order.items[0].listing_title
+  const remainingCount = order.items.length - 1
+
+  return `${firstItem} + ${remainingCount} more`
+}
+
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
@@ -173,14 +196,11 @@ export default function OrdersPage() {
                       </div>
 
                       <h2 className="truncate text-lg font-semibold">
-                        {order.order_reference}
+                        {getOrderTitle(order)}
                       </h2>
 
                       <p className="mt-1 text-sm text-[var(--muted-foreground)]">
-                        {order.items.length}{" "}
-                        {order.items.length === 1
-                          ? "item"
-                          : "items"}
+                        {getOrderItemSummary(order)}
                       </p>
                     </div>
 
@@ -198,9 +218,17 @@ export default function OrdersPage() {
                   </div>
 
                   <div className="mt-5 flex flex-col gap-1 border-t border-[var(--border)] pt-4 text-sm text-[var(--muted-foreground)] sm:flex-row sm:items-center sm:justify-between">
-                    <span>
-                      Ordered {formatDate(order.created_at)}
-                    </span>
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
+                      <span>
+                        Order {order.order_reference}
+                      </span>
+
+                      <span className="hidden sm:inline">·</span>
+
+                      <span>
+                        Ordered {formatDate(order.created_at)}
+                      </span>
+                    </div>
 
                     <span className="font-medium text-[var(--foreground)]">
                       View order →
