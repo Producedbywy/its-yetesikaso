@@ -89,6 +89,8 @@ export default function MobileFilterModal({
                 <option value="property">Property</option>
                 <option value="fashion">Fashion</option>
                 <option value="services">Services</option>
+                <option value="furniture">Furniture</option>
+                <option value="other">Other</option>
               </select>
             </div>
 

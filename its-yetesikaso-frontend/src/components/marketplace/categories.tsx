@@ -13,6 +13,8 @@ const categories = [
   { label: "Property", value: "property" },
   { label: "Fashion", value: "fashion" },
   { label: "Services", value: "services" },
+  { label: "Furniture", value: "furniture" },
+  { label: "Other", value: "other" },
 ]
 
 export default function Categories() {

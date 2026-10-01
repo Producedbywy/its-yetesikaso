@@ -128,6 +128,14 @@ export default function MarketplacePage() {
                 <option value="services">
                   Services
                 </option>
+
+                <option value="furniture">
+                  Furniture
+                </option>
+
+                <option value="other">
+                  Other
+                </option>
               </select>
 
               <select
@@ -287,6 +295,38 @@ export default function MarketplacePage() {
                     </button>
                   </div>
                 </div>
+
+                <button
+  type="button"
+  onClick={() =>
+    updateFilters({
+      category: "furniture",
+    })
+  }
+  className={`block transition hover:text-[var(--foreground)] ${
+    filters.category === "furniture"
+      ? "font-semibold text-[var(--foreground)]"
+      : ""
+  }`}
+>
+  Furniture
+</button>
+
+<button
+  type="button"
+  onClick={() =>
+    updateFilters({
+      category: "other",
+    })
+  }
+  className={`block transition hover:text-[var(--foreground)] ${
+    filters.category === "other"
+      ? "font-semibold text-[var(--foreground)]"
+      : ""
+  }`}
+>
+  Other
+</button>
 
                 {/* LOCATION */}
                 <div>

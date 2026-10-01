@@ -17,6 +17,7 @@ type ListingDraft = {
   title: string
   description: string
   price: string
+  pricingType: string
   quantity: string
   category: string
   location: string
@@ -28,6 +29,7 @@ const defaultForm: ListingDraft = {
   title: "",
   description: "",
   price: "",
+  pricingType: "one_time",
   quantity: "1",
   category: "electronics",
   location: "",
@@ -136,6 +138,7 @@ export default function CreateListingPage() {
       data.append("title", form.title.trim())
       data.append("description", form.description.trim())
       data.append("price", form.price)
+      data.append("pricing_type", form.pricingType)
       data.append("quantity", String(quantity))
       data.append("category", form.category)
       data.append("location", form.location.trim())
@@ -238,14 +241,14 @@ export default function CreateListingPage() {
               />
             </div>
 
-            {/* PRICE + QUANTITY */}
+            {/* PRICE + PRICING TYPE */}
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <div>
                 <label
                   htmlFor="price"
                   className="mb-2 block text-sm font-medium"
                 >
-                  Price per item
+                  Price
                 </label>
 
                 <input
@@ -267,32 +270,81 @@ export default function CreateListingPage() {
 
               <div>
                 <label
-                  htmlFor="quantity"
+                  htmlFor="pricingType"
                   className="mb-2 block text-sm font-medium"
                 >
-                  Quantity available
+                  Pricing
                 </label>
 
-                <input
-                  id="quantity"
-                  name="quantity"
-                  value={form.quantity}
+                <select
+                  id="pricingType"
+                  name="pricingType"
+                  value={form.pricingType}
                   onChange={(e) =>
-                    updateField("quantity", e.target.value)
+                    updateField("pricingType", e.target.value)
                   }
-                  type="number"
-                  min="1"
-                  step="1"
-                  required
                   disabled={loading}
                   className="w-full rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 py-4 outline-none transition focus:border-lime-400 disabled:opacity-50"
-                />
+                >
+                  <option value="one_time">
+                    One-time
+                  </option>
 
-                <p className="mt-2 text-xs text-[var(--muted)]">
-                  Enter 1 for a single item or the total number
-                  available if you have multiple units.
-                </p>
+                  <option value="for_sale">
+                    For sale
+                  </option>
+
+                  <option value="per_service">
+                    Per service
+                  </option>
+
+                  <option value="per_day">
+                    Per day
+                  </option>
+
+                  <option value="per_week">
+                    Per week
+                  </option>
+
+                  <option value="per_month">
+                    Per month
+                  </option>
+
+                  <option value="per_year">
+                    Per year
+                  </option>
+                </select>
               </div>
+            </div>
+
+            {/* QUANTITY */}
+            <div>
+              <label
+                htmlFor="quantity"
+                className="mb-2 block text-sm font-medium"
+              >
+                Quantity available
+              </label>
+
+              <input
+                id="quantity"
+                name="quantity"
+                value={form.quantity}
+                onChange={(e) =>
+                  updateField("quantity", e.target.value)
+                }
+                type="number"
+                min="1"
+                step="1"
+                required
+                disabled={loading}
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 py-4 outline-none transition focus:border-lime-400 disabled:opacity-50"
+              />
+
+              <p className="mt-2 text-xs text-[var(--muted)]">
+                Enter 1 for a single item or the total number
+                available if you have multiple units.
+              </p>
             </div>
 
             {/* CATEGORY */}
@@ -332,6 +384,14 @@ export default function CreateListingPage() {
 
                 <option value="services">
                   Services
+                </option>
+
+                <option value="furniture">
+                  Furniture
+                </option>
+
+                <option value="other">
+                  Other
                 </option>
               </select>
             </div>

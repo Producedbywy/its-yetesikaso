@@ -11,6 +11,7 @@ import {
   favouriteListing,
   unfavouriteListing,
 } from "@/lib/api/favourites"
+import { getPricingTypeLabel } from "@/lib/listing-pricing"
 
 interface ListingCardProps {
   listing: Listing
@@ -141,9 +142,17 @@ export default function ListingCard({
             {listing.title}
           </h3>
 
-          <p className="text-2xl font-bold">
-            GH₵ {Number(listing.price).toLocaleString()}
-          </p>
+          <div>
+            <p className="text-2xl font-bold">
+              GH₵ {Number(listing.price).toLocaleString()}
+            </p>
+
+            {getPricingTypeLabel(listing.pricing_type) && (
+              <p className="mt-1 text-sm text-[var(--muted)]">
+                {getPricingTypeLabel(listing.pricing_type)}
+              </p>
+            )}
+          </div>
 
           <p className="text-sm text-[var(--muted)]">
             {listing.location}

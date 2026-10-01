@@ -8,6 +8,8 @@ const marketplaceLinks = [
   { label: "Electronics", href: "/marketplace?category=electronics" },
   { label: "Vehicles", href: "/marketplace?category=vehicles" },
   { label: "Property", href: "/marketplace?category=property" },
+  { label: "Furniture", href: "/marketplace?category=furniture" },
+  { label: "Other", href: "/marketplace?category=other" },
   { label: "Saved Listings", href: "/saved" },
 ]
 

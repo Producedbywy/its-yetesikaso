@@ -17,6 +17,14 @@ const ALLOWED_TYPES = [
   "image/webp",
 ]
 
+const ASPECT_OPTIONS = [
+  { label: "Square (1:1)", value: 1 },
+  { label: "Portrait (4:5)", value: 4 / 5 },
+  { label: "Tall (3:4)", value: 3 / 4 },
+  { label: "Landscape (4:3)", value: 4 / 3 },
+  { label: "Wide (16:9)", value: 16 / 9 },
+]
+
 type Preview = {
   file: File
   url: string
@@ -118,6 +126,7 @@ export default function ImageUploader({
   })
 
   const [zoom, setZoom] = useState(1)
+  const [aspectRatio, setAspectRatio] = useState(4 / 3)
   const [croppedAreaPixels, setCroppedAreaPixels] =
     useState<Area | null>(null)
 
@@ -205,7 +214,7 @@ export default function ImageUploader({
         inputRef.current.value = ""
       }
 
-openEditor(newPreviews[0], 0)
+      openEditor(newPreviews[0], 0)
 
       return
     }
@@ -242,6 +251,7 @@ openEditor(newPreviews[0], 0)
     setEditingImage(preview.url)
     setCrop({ x: 0, y: 0 })
     setZoom(1)
+    setAspectRatio(4 / 3)
     setCroppedAreaPixels(null)
   }
 
@@ -250,6 +260,7 @@ openEditor(newPreviews[0], 0)
     setEditingImage(null)
     setCrop({ x: 0, y: 0 })
     setZoom(1)
+    setAspectRatio(4 / 3)
     setCroppedAreaPixels(null)
   }
 
@@ -353,14 +364,14 @@ openEditor(newPreviews[0], 0)
   }
 
   useEffect(() => {
-  return () => {
-    previews.forEach((preview) => {
-      URL.revokeObjectURL(preview.url)
-    })
-  }
-  // Only clean up when the component itself unmounts.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [])
+    return () => {
+      previews.forEach((preview) => {
+        URL.revokeObjectURL(preview.url)
+      })
+    }
+    // Only clean up when the component itself unmounts.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <div className="w-full">
@@ -481,12 +492,42 @@ openEditor(newPreviews[0], 0)
                 </p>
               </div>
 
+              <div className="mb-4">
+                <label
+                  htmlFor="image-aspect-ratio"
+                  className="mb-2 block text-sm font-medium"
+                >
+                  Crop shape
+                </label>
+
+                <select
+                  id="image-aspect-ratio"
+                  value={aspectRatio}
+                  onChange={(event) => {
+                    setAspectRatio(Number(event.target.value))
+                    setCrop({ x: 0, y: 0 })
+                    setZoom(1)
+                    setCroppedAreaPixels(null)
+                  }}
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 py-2.5 text-sm outline-none transition focus:border-lime-400"
+                >
+                  {ASPECT_OPTIONS.map((option) => (
+                    <option
+                      key={option.label}
+                      value={option.value}
+                    >
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div className="relative h-[360px] w-full overflow-hidden rounded-xl bg-black sm:h-[440px]">
                 <Cropper
                   image={editingImage}
                   crop={crop}
                   zoom={zoom}
-                  aspect={4 / 3}
+                  aspect={aspectRatio}
                   onCropChange={setCrop}
                   onZoomChange={setZoom}
                   onCropComplete={onCropComplete}

@@ -18,6 +18,7 @@ export type Listing = {
   title: string
   description: string
   price: number
+  pricing_type: string
   category: string
   location: string
   image: string | null

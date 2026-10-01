@@ -5,6 +5,7 @@ import Container from '@/components/layout/container'
 import type { Listing } from '@/types/listing'
 import ReportListingButton from '@/components/marketplace/report-listing-button'
 import BuyListingButton from '@/components/marketplace/buy-listing-button'
+import { getPricingTypeLabel } from '@/lib/listing-pricing'
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, '') || ''
@@ -16,11 +17,11 @@ function getImageUrl(image: string | null) {
     return image
   }
 
-const cleanImage = image.startsWith("/")
-  ? image
-  : `/${image}`
+  const cleanImage = image.startsWith("/")
+    ? image
+    : `/${image}`
 
-return `${API_BASE_URL}${cleanImage}`
+  return `${API_BASE_URL}${cleanImage}`
 }
 
 async function getListing(slug: string): Promise<Listing | null> {
@@ -106,9 +107,17 @@ export default async function ListingDetailPage({
                   {listing.title}
                 </h1>
 
-                <p className="mb-7 text-2xl font-bold sm:text-3xl">
-                  GH₵ {Number(listing.price).toLocaleString()}
-                </p>
+                <div className="mb-7">
+                  <p className="text-2xl font-bold sm:text-3xl">
+                    GH₵ {Number(listing.price).toLocaleString()}
+                  </p>
+
+                  {getPricingTypeLabel(listing.pricing_type) && (
+                    <p className="mt-1 text-sm text-[var(--muted)]">
+                      {getPricingTypeLabel(listing.pricing_type)}
+                    </p>
+                  )}
+                </div>
 
                 <div className="max-w-3xl">
                   <h2 className="mb-3 text-lg font-semibold">

@@ -15,6 +15,7 @@ type ListingForm = {
   title: string
   description: string
   price: string
+  pricingType: string
   category: string
   location: string
 }
@@ -28,6 +29,7 @@ export default function EditListingPage() {
     title: "",
     description: "",
     price: "",
+    pricingType: "one_time",
     category: "",
     location: "",
   })
@@ -56,6 +58,7 @@ export default function EditListingPage() {
           title: data.title ?? "",
           description: data.description ?? "",
           price: String(data.price ?? ""),
+          pricingType: data.pricing_type ?? "one_time",
           category: data.category ?? "",
           location: data.location ?? "",
         })
@@ -128,6 +131,7 @@ export default function EditListingPage() {
         form.description.trim()
       )
       data.append("price", form.price)
+      data.append("pricing_type", form.pricingType)
       data.append("category", form.category)
       data.append(
         "location",
@@ -318,28 +322,76 @@ export default function EditListingPage() {
               />
             </div>
 
-            {/* PRICE */}
+            {/* PRICE + PRICING TYPE */}
 
-            <div>
-              <label className="mb-2 block text-sm font-medium">
-                Price
-              </label>
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <div>
+                <label className="mb-2 block text-sm font-medium">
+                  Price
+                </label>
 
-              <input
-                value={form.price}
-                onChange={(event) =>
-                  updateField(
-                    "price",
-                    event.target.value
-                  )
-                }
-                className="w-full rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 outline-none focus:ring-2 focus:ring-lime-400"
-                placeholder="Price"
-                type="number"
-                min="0"
-                step="0.01"
-                required
-              />
+                <input
+                  value={form.price}
+                  onChange={(event) =>
+                    updateField(
+                      "price",
+                      event.target.value
+                    )
+                  }
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 outline-none focus:ring-2 focus:ring-lime-400"
+                  placeholder="Price"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium">
+                  Pricing
+                </label>
+
+                <select
+                  value={form.pricingType}
+                  onChange={(event) =>
+                    updateField(
+                      "pricingType",
+                      event.target.value
+                    )
+                  }
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 outline-none focus:ring-2 focus:ring-lime-400"
+                  required
+                >
+                  <option value="one_time">
+                    One-time
+                  </option>
+
+                  <option value="for_sale">
+                    For sale
+                  </option>
+
+                  <option value="per_service">
+                    Per service
+                  </option>
+
+                  <option value="per_day">
+                    Per day
+                  </option>
+
+                  <option value="per_week">
+                    Per week
+                  </option>
+
+                  <option value="per_month">
+                    Per month
+                  </option>
+
+                  <option value="per_year">
+                    Per year
+                  </option>
+                </select>
+              </div>
             </div>
 
             {/* CATEGORY */}
@@ -382,6 +434,14 @@ export default function EditListingPage() {
 
                 <option value="services">
                   Services
+                </option>
+
+                <option value="furniture">
+                  Furniture
+                </option>
+
+                <option value="other">
+                  Other
                 </option>
               </select>
             </div>
