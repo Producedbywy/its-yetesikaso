@@ -91,7 +91,7 @@ export default function Navbar() {
         </div>
 
         {/* NAVIGATION */}
-        <nav className="-mt-3 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm">
+        <nav className="relative z-10 -mt-3 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm">
           <Link
             href="/marketplace"
             className="transition-opacity hover:opacity-70"
