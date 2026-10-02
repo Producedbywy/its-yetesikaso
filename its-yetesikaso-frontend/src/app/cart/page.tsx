@@ -3,6 +3,8 @@
 import Link from "next/link"
 import { useEffect, useState } from "react"
 
+import Navbar from "@/components/layout/navbar"
+
 import {
   clearCart,
   getMyCart,
@@ -170,7 +172,10 @@ export default function CartPage() {
   }
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+      <Navbar />
+
+      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">
@@ -298,14 +303,24 @@ export default function CartPage() {
             </span>
           </div>
 
-          <Link
-            href="/checkout"
-            className="mt-6 block rounded-xl bg-lime-400 px-5 py-3 text-center font-medium text-black transition hover:bg-lime-300"
-          >
-            Proceed to Checkout
-          </Link>
+          <div className="mt-6 space-y-3">
+  <Link
+    href="/checkout"
+    className="block rounded-xl bg-lime-400 px-5 py-3 text-center font-medium text-black transition hover:bg-lime-300"
+  >
+    Proceed to Checkout
+  </Link>
+
+  <Link
+    href="/marketplace"
+    className="block rounded-xl border border-[var(--border)] px-5 py-3 text-center font-medium transition hover:bg-[var(--muted)]"
+  >
+    Continue Shopping
+  </Link>
+</div>
         </aside>
       </div>
-    </main>
+    </div>
+  </main>
   )
 }

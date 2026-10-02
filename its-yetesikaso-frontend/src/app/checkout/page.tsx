@@ -3,6 +3,8 @@
 import Link from "next/link"
 import { useEffect, useState } from "react"
 
+import Navbar from "@/components/layout/navbar"
+
 import { checkoutCart, getMyCart, type Cart } from "@/lib/api/cart"
 import { initializePayment } from "@/lib/api/payments"
 
@@ -110,8 +112,11 @@ export default function CheckoutPage() {
   }
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
-      <div>
+    <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+      <Navbar />
+
+      <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
+        <div>
         <h1 className="text-3xl font-semibold tracking-tight">
           Checkout
         </h1>
@@ -181,6 +186,7 @@ export default function CheckoutPage() {
           Back to Cart
         </Link>
       </div>
-    </main>
+    </div>
+  </main>
   )
 }
