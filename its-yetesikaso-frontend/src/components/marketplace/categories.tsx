@@ -7,28 +7,102 @@ import ListingCard from "@/components/marketplace/listing-card"
 import { useListings } from "@/lib/marketplace/useListings"
 
 const categories = [
-  { label: "All Categories", value: "all" },
-  { label: "Property & Land", value: "property_land" },
-  { label: "Vehicles", value: "vehicles" },
-  { label: "Phones & Tablets", value: "phones_tablets" },
-  { label: "Computers & Office", value: "computers_office" },
+  {
+    label: "All Categories",
+    value: "all",
+    description:
+      "Explore what is available across the marketplace and browse by category.",
+  },
+  {
+    label: "Property & Land",
+    value: "property_land",
+    description:
+      "Property, houses, apartments, land and plots.",
+  },
+  {
+    label: "Vehicles",
+    value: "vehicles",
+    description:
+      "Cars, motorcycles, trucks and other vehicles.",
+  },
+  {
+    label: "Phones & Tablets",
+    value: "phones_tablets",
+    description:
+      "Mobile phones, tablets and related accessories.",
+  },
+  {
+    label: "Computers & Office",
+    value: "computers_office",
+    description:
+      "Laptops, desktops, printers and office equipment.",
+  },
   {
     label: "Electronics & Appliances",
     value: "electronics_appliances",
+    description:
+      "TVs, refrigerators, washing machines and appliances.",
   },
-  { label: "Home & Garden", value: "home_garden" },
-  { label: "Fashion", value: "fashion" },
-  { label: "Baby & Kids", value: "baby_kids" },
-  { label: "Health & Beauty", value: "health_beauty" },
-  { label: "Sports & Fitness", value: "sports_fitness" },
+  {
+    label: "Home & Garden",
+    value: "home_garden",
+    description:
+      "Furniture, home items, garden and outdoor products.",
+  },
+  {
+    label: "Fashion",
+    value: "fashion",
+    description:
+      "Clothing, shoes, bags and fashion accessories.",
+  },
+  {
+    label: "Baby & Kids",
+    value: "baby_kids",
+    description:
+      "Baby products, children's items, toys and equipment.",
+  },
+  {
+    label: "Health & Beauty",
+    value: "health_beauty",
+    description:
+      "Beauty products, personal care and wellness items.",
+  },
+  {
+    label: "Sports & Fitness",
+    value: "sports_fitness",
+    description:
+      "Sports equipment, gym gear and fitness products.",
+  },
   {
     label: "Business & Industrial",
     value: "business_industrial",
+    description:
+      "Commercial equipment, machinery, tools and business supplies.",
   },
-  { label: "Education", value: "education" },
-  { label: "Food & Agriculture", value: "food_agriculture" },
-  { label: "Services", value: "services" },
-  { label: "Other", value: "other" },
+  {
+    label: "Education",
+    value: "education",
+    description:
+      "Books, school supplies, courses and educational materials.",
+  },
+  {
+    label: "Food & Agriculture",
+    value: "food_agriculture",
+    description:
+      "Food products, farm produce and agricultural supplies.",
+  },
+  {
+    label: "Services",
+    value: "services",
+    description:
+      "Professional, household, technical and other services.",
+  },
+  {
+    label: "Other",
+    value: "other",
+    description:
+      "Items that do not fit another category.",
+  },
 ]
 
 export default function Categories() {
@@ -64,8 +138,7 @@ export default function Categories() {
           </h2>
 
           <p className="mt-3 max-w-2xl text-[var(--muted)]">
-            Explore what is available across the marketplace and browse by
-            category.
+            {categories.find((item) => item.value === category)?.description}
           </p>
         </div>
 
