@@ -1,7 +1,7 @@
-import Image from 'next/image'
 import Navbar from '@/components/layout/navbar'
 import Footer from '@/components/layout/footer'
 import Container from '@/components/layout/container'
+import ListingImageGallery from '@/components/marketplace/listing-image-gallery'
 import type { Listing } from '@/types/listing'
 import ReportListingButton from '@/components/marketplace/report-listing-button'
 import BuyListingButton from '@/components/marketplace/buy-listing-button'
@@ -63,7 +63,16 @@ export default async function ListingDetailPage({
     )
   }
 
-  const imageSrc = getImageUrl(listing.image)
+  const imageSources = (
+    listing.images?.length
+      ? listing.images
+      : listing.image
+        ? [listing.image]
+        : []
+  )
+    .map(getImageUrl)
+    .filter((image): image is string => Boolean(image))
+
   const seller = listing.seller
 
   return (
@@ -75,22 +84,10 @@ export default async function ListingDetailPage({
           <div className="mx-auto grid max-w-5xl gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
             {/* LEFT */}
             <div className="min-w-0">
-              <div className="relative mb-6 h-[360px] overflow-hidden rounded-2xl bg-[var(--card)] sm:h-[420px]">
-                {imageSrc ? (
-                  <Image
-                    src={imageSrc}
-                    alt={listing.title}
-                    fill
-                    sizes="(max-width: 1024px) 100vw, 800px"
-                    className="object-cover"
-                    unoptimized
-                  />
-                ) : (
-                  <div className="flex h-full items-center justify-center text-sm text-[var(--muted)]">
-                    No image available
-                  </div>
-                )}
-              </div>
+              <ListingImageGallery
+                images={imageSources}
+                title={listing.title}
+              />
 
               <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 sm:p-7">
                 <div className="mb-5 flex items-center justify-between gap-4">
