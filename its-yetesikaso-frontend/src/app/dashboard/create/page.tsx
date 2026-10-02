@@ -31,7 +31,7 @@ const defaultForm: ListingDraft = {
   price: "",
   pricingType: "one_time",
   quantity: "1",
-  category: "electronics",
+  category: "property_land",
   location: "",
 }
 
@@ -366,28 +366,60 @@ export default function CreateListingPage() {
                 disabled={loading}
                 className="w-full rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 py-4 outline-none transition focus:border-lime-400 disabled:opacity-50"
               >
-                <option value="electronics">
-                  Electronics
+                <option value="property_land">
+                  Property & Land
                 </option>
 
                 <option value="vehicles">
                   Vehicles
                 </option>
 
-                <option value="property">
-                  Property
+                <option value="phones_tablets">
+                  Phones & Tablets
+                </option>
+
+                <option value="computers_office">
+                  Computers & Office
+                </option>
+
+                <option value="electronics_appliances">
+                  Electronics & Appliances
+                </option>
+
+                <option value="home_garden">
+                  Home & Garden
                 </option>
 
                 <option value="fashion">
                   Fashion
                 </option>
 
-                <option value="services">
-                  Services
+                <option value="baby_kids">
+                  Baby & Kids
                 </option>
 
-                <option value="furniture">
-                  Furniture
+                <option value="health_beauty">
+                  Health & Beauty
+                </option>
+
+                <option value="sports_fitness">
+                  Sports & Fitness
+                </option>
+
+                <option value="business_industrial">
+                  Business & Industrial
+                </option>
+
+                <option value="education">
+                  Education
+                </option>
+
+                <option value="food_agriculture">
+                  Food & Agriculture
+                </option>
+
+                <option value="services">
+                  Services
                 </option>
 
                 <option value="other">

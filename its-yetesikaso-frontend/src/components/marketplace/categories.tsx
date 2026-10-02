@@ -8,12 +8,26 @@ import { useListings } from "@/lib/marketplace/useListings"
 
 const categories = [
   { label: "All Categories", value: "all" },
-  { label: "Electronics", value: "electronics" },
+  { label: "Property & Land", value: "property_land" },
   { label: "Vehicles", value: "vehicles" },
-  { label: "Property", value: "property" },
+  { label: "Phones & Tablets", value: "phones_tablets" },
+  { label: "Computers & Office", value: "computers_office" },
+  {
+    label: "Electronics & Appliances",
+    value: "electronics_appliances",
+  },
+  { label: "Home & Garden", value: "home_garden" },
   { label: "Fashion", value: "fashion" },
+  { label: "Baby & Kids", value: "baby_kids" },
+  { label: "Health & Beauty", value: "health_beauty" },
+  { label: "Sports & Fitness", value: "sports_fitness" },
+  {
+    label: "Business & Industrial",
+    value: "business_industrial",
+  },
+  { label: "Education", value: "education" },
+  { label: "Food & Agriculture", value: "food_agriculture" },
   { label: "Services", value: "services" },
-  { label: "Furniture", value: "furniture" },
   { label: "Other", value: "other" },
 ]
 

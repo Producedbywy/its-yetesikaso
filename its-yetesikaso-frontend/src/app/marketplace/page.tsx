@@ -109,28 +109,60 @@ export default function MarketplacePage() {
                   All Categories
                 </option>
 
-                <option value="electronics">
-                  Electronics
+                <option value="property_land">
+                  Property & Land
                 </option>
 
                 <option value="vehicles">
                   Vehicles
                 </option>
 
-                <option value="property">
-                  Property
+                <option value="phones_tablets">
+                  Phones & Tablets
+                </option>
+
+                <option value="computers_office">
+                  Computers & Office
+                </option>
+
+                <option value="electronics_appliances">
+                  Electronics & Appliances
+                </option>
+
+                <option value="home_garden">
+                  Home & Garden
                 </option>
 
                 <option value="fashion">
                   Fashion
                 </option>
 
-                <option value="services">
-                  Services
+                <option value="baby_kids">
+                  Baby & Kids
                 </option>
 
-                <option value="furniture">
-                  Furniture
+                <option value="health_beauty">
+                  Health & Beauty
+                </option>
+
+                <option value="sports_fitness">
+                  Sports & Fitness
+                </option>
+
+                <option value="business_industrial">
+                  Business & Industrial
+                </option>
+
+                <option value="education">
+                  Education
+                </option>
+
+                <option value="food_agriculture">
+                  Food & Agriculture
+                </option>
+
+                <option value="services">
+                  Services
                 </option>
 
                 <option value="other">
@@ -218,16 +250,16 @@ export default function MarketplacePage() {
                       type="button"
                       onClick={() =>
                         updateFilters({
-                          category: "electronics",
+                          category: "property_land",
                         })
                       }
                       className={`block transition hover:text-[var(--foreground)] ${
-                        filters.category === "electronics"
+                        filters.category === "property_land"
                           ? "font-semibold text-[var(--foreground)]"
                           : ""
                       }`}
                     >
-                      Electronics
+                      Property & Land
                     </button>
 
                     <button
@@ -250,16 +282,64 @@ export default function MarketplacePage() {
                       type="button"
                       onClick={() =>
                         updateFilters({
-                          category: "property",
+                          category: "phones_tablets",
                         })
                       }
                       className={`block transition hover:text-[var(--foreground)] ${
-                        filters.category === "property"
+                        filters.category === "phones_tablets"
                           ? "font-semibold text-[var(--foreground)]"
                           : ""
                       }`}
                     >
-                      Property
+                      Phones & Tablets
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        updateFilters({
+                          category: "computers_office",
+                        })
+                      }
+                      className={`block transition hover:text-[var(--foreground)] ${
+                        filters.category === "computers_office"
+                          ? "font-semibold text-[var(--foreground)]"
+                          : ""
+                      }`}
+                    >
+                      Computers & Office
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        updateFilters({
+                          category: "electronics_appliances",
+                        })
+                      }
+                      className={`block transition hover:text-[var(--foreground)] ${
+                        filters.category === "electronics_appliances"
+                          ? "font-semibold text-[var(--foreground)]"
+                          : ""
+                      }`}
+                    >
+                      Electronics & Appliances
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        updateFilters({
+                          category: "home_garden",
+                        })
+                      }
+                      className={`block transition hover:text-[var(--foreground)] ${
+                        filters.category === "home_garden"
+                          ? "font-semibold text-[var(--foreground)]"
+                          : ""
+                      }`}
+                    >
+                      Home & Garden
                     </button>
 
                     <button
@@ -282,6 +362,102 @@ export default function MarketplacePage() {
                       type="button"
                       onClick={() =>
                         updateFilters({
+                          category: "baby_kids",
+                        })
+                      }
+                      className={`block transition hover:text-[var(--foreground)] ${
+                        filters.category === "baby_kids"
+                          ? "font-semibold text-[var(--foreground)]"
+                          : ""
+                      }`}
+                    >
+                      Baby & Kids
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        updateFilters({
+                          category: "health_beauty",
+                        })
+                      }
+                      className={`block transition hover:text-[var(--foreground)] ${
+                        filters.category === "health_beauty"
+                          ? "font-semibold text-[var(--foreground)]"
+                          : ""
+                      }`}
+                    >
+                      Health & Beauty
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        updateFilters({
+                          category: "sports_fitness",
+                        })
+                      }
+                      className={`block transition hover:text-[var(--foreground)] ${
+                        filters.category === "sports_fitness"
+                          ? "font-semibold text-[var(--foreground)]"
+                          : ""
+                      }`}
+                    >
+                      Sports & Fitness
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        updateFilters({
+                          category: "business_industrial",
+                        })
+                      }
+                      className={`block transition hover:text-[var(--foreground)] ${
+                        filters.category === "business_industrial"
+                          ? "font-semibold text-[var(--foreground)]"
+                          : ""
+                      }`}
+                    >
+                      Business & Industrial
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        updateFilters({
+                          category: "education",
+                        })
+                      }
+                      className={`block transition hover:text-[var(--foreground)] ${
+                        filters.category === "education"
+                          ? "font-semibold text-[var(--foreground)]"
+                          : ""
+                      }`}
+                    >
+                      Education
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        updateFilters({
+                          category: "food_agriculture",
+                        })
+                      }
+                      className={`block transition hover:text-[var(--foreground)] ${
+                        filters.category === "food_agriculture"
+                          ? "font-semibold text-[var(--foreground)]"
+                          : ""
+                      }`}
+                    >
+                      Food & Agriculture
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        updateFilters({
                           category: "services",
                         })
                       }
@@ -293,40 +469,24 @@ export default function MarketplacePage() {
                     >
                       Services
                     </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        updateFilters({
+                          category: "other",
+                        })
+                      }
+                      className={`block transition hover:text-[var(--foreground)] ${
+                        filters.category === "other"
+                          ? "font-semibold text-[var(--foreground)]"
+                          : ""
+                      }`}
+                    >
+                      Other
+                    </button>
                   </div>
                 </div>
-
-                <button
-  type="button"
-  onClick={() =>
-    updateFilters({
-      category: "furniture",
-    })
-  }
-  className={`block transition hover:text-[var(--foreground)] ${
-    filters.category === "furniture"
-      ? "font-semibold text-[var(--foreground)]"
-      : ""
-  }`}
->
-  Furniture
-</button>
-
-<button
-  type="button"
-  onClick={() =>
-    updateFilters({
-      category: "other",
-    })
-  }
-  className={`block transition hover:text-[var(--foreground)] ${
-    filters.category === "other"
-      ? "font-semibold text-[var(--foreground)]"
-      : ""
-  }`}
->
-  Other
-</button>
 
                 {/* LOCATION */}
                 <div>

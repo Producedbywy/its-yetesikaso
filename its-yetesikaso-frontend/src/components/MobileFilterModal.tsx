@@ -84,12 +84,24 @@ export default function MobileFilterModal({
                 className="mt-2 w-full rounded-xl border p-3"
               >
                 <option value="all">All Categories</option>
-                <option value="electronics">Electronics</option>
+                <option value="property_land">Property & Land</option>
                 <option value="vehicles">Vehicles</option>
-                <option value="property">Property</option>
+                <option value="phones_tablets">Phones & Tablets</option>
+                <option value="computers_office">Computers & Office</option>
+                <option value="electronics_appliances">
+                  Electronics & Appliances
+                </option>
+                <option value="home_garden">Home & Garden</option>
                 <option value="fashion">Fashion</option>
+                <option value="baby_kids">Baby & Kids</option>
+                <option value="health_beauty">Health & Beauty</option>
+                <option value="sports_fitness">Sports & Fitness</option>
+                <option value="business_industrial">
+                  Business & Industrial
+                </option>
+                <option value="education">Education</option>
+                <option value="food_agriculture">Food & Agriculture</option>
                 <option value="services">Services</option>
-                <option value="furniture">Furniture</option>
                 <option value="other">Other</option>
               </select>
             </div>
