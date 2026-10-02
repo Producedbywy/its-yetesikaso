@@ -1,9 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import { addToCart } from "@/lib/api/cart"
 import { getAccessToken } from "@/lib/auth/tokens"
+
+const PENDING_CART_KEY = "yetesikaso_pending_cart"
 
 type BuyListingButtonProps = {
   listingId: number
@@ -19,10 +21,76 @@ export default function BuyListingButton({
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [showLoginPrompt, setShowLoginPrompt] = useState(false)
+  const restoringPendingRef = useRef(false)
 
   const soldOut = availableQuantity <= 0
 
-  async function handleAddToCart() {
+useEffect(() => {
+  const token = getAccessToken()
+
+  if (!token || restoringPendingRef.current) {
+    return
+  }
+
+  const saved = sessionStorage.getItem(PENDING_CART_KEY)
+
+  if (!saved) {
+    return
+  }
+
+  try {
+    const pending = JSON.parse(saved) as {
+      listingId?: number
+      quantity?: number
+    }
+
+    if (
+      pending.listingId !== listingId ||
+      !pending.quantity ||
+      pending.quantity < 1
+    ) {
+      sessionStorage.removeItem(PENDING_CART_KEY)
+      return
+    }
+
+    restoringPendingRef.current = true
+
+    async function restorePendingCart() {
+      try {
+        setLoading(true)
+        setError(null)
+
+        await addToCart(listingId, pending.quantity!)
+
+        sessionStorage.removeItem(PENDING_CART_KEY)
+        window.dispatchEvent(new Event("cart-updated"))
+
+        setMessage(
+          pending.quantity === 1
+            ? "Added to cart."
+            : `${pending.quantity} items added to cart.`
+        )
+      } catch (err: unknown) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Unable to add item to cart"
+        )
+      } finally {
+        setLoading(false)
+        restoringPendingRef.current = false
+      }
+    }
+
+    restorePendingCart()
+  } catch {
+    sessionStorage.removeItem(PENDING_CART_KEY)
+    restoringPendingRef.current = false
+  }
+}, [listingId])
+
+async function handleAddToCart() {
+
     const token = getAccessToken()
 
     if (!token) {
@@ -146,7 +214,17 @@ export default function BuyListingButton({
   <button
     type="button"
     onClick={() => {
-      window.location.href = "/login"
+      sessionStorage.setItem(
+        PENDING_CART_KEY,
+        JSON.stringify({
+          listingId,
+          quantity,
+        })
+      )
+
+      window.location.href = `/login?returnTo=${encodeURIComponent(
+        window.location.pathname + window.location.search
+      )}`
     }}
     className="rounded-xl border border-[var(--border)] px-5 py-3 font-medium transition hover:bg-[var(--background)]"
   >
@@ -156,7 +234,17 @@ export default function BuyListingButton({
   <button
     type="button"
     onClick={() => {
-      window.location.href = "/register"
+      sessionStorage.setItem(
+        PENDING_CART_KEY,
+        JSON.stringify({
+          listingId,
+          quantity,
+        })
+      )
+
+      window.location.href = `/register?returnTo=${encodeURIComponent(
+        window.location.pathname + window.location.search
+      )}`
     }}
     className="rounded-xl bg-lime-400 px-5 py-3 font-medium text-black transition hover:bg-lime-300"
   >
