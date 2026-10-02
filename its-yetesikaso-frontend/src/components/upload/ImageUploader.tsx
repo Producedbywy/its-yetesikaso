@@ -481,105 +481,107 @@ export default function ImageUploader({
         <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-black/80 p-4">
           <div className="max-h-[90vh] w-full max-w-5xl overflow-y-auto rounded-2xl bg-[var(--card)] pr-8 shadow-2xl">
             <div className="p-5">
-              <div className="mb-4">
-                <h2 className="text-lg font-semibold">
-                  Adjust image
-                </h2>
+              <div className="mx-auto w-full max-w-4xl">
+                <div className="mb-4">
+                  <h2 className="text-lg font-semibold">
+                    Adjust image
+                  </h2>
 
-                <p className="mt-1 text-sm text-[var(--muted)]">
-                  Drag the image to reposition it and use
-                  the slider to zoom.
-                </p>
-              </div>
-
-              <div className="mb-4">
-                <label
-                  htmlFor="image-aspect-ratio"
-                  className="mb-2 block text-sm font-medium"
-                >
-                  Crop shape
-                </label>
-
-                <select
-                  id="image-aspect-ratio"
-                  value={aspectRatio}
-                  onChange={(event) => {
-                    setAspectRatio(Number(event.target.value))
-                    setCrop({ x: 0, y: 0 })
-                    setZoom(1)
-                    setCroppedAreaPixels(null)
-                  }}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 py-2.5 text-sm outline-none transition focus:border-lime-400"
-                >
-                  {ASPECT_OPTIONS.map((option) => (
-                    <option
-                      key={option.label}
-                      value={option.value}
-                    >
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="relative h-[min(52vh,360px)] w-full overflow-hidden rounded-xl bg-black">
-                <Cropper
-                  image={editingImage}
-                  crop={crop}
-                  zoom={zoom}
-                  aspect={aspectRatio}
-                  onCropChange={setCrop}
-                  onZoomChange={setZoom}
-                  onCropComplete={onCropComplete}
-                />
-              </div>
-
-              <div className="mt-5">
-                <div className="mb-2 flex items-center justify-between text-sm">
-                  <span>Zoom</span>
-                  <span className="text-[var(--muted)]">
-                    {zoom.toFixed(1)}x
-                  </span>
+                  <p className="mt-1 text-sm text-[var(--muted)]">
+                    Drag the image to reposition it and use
+                    the slider to zoom.
+                  </p>
                 </div>
 
-                <input
-                  type="range"
-                  min="1"
-                  max="3"
-                  step="0.1"
-                  value={zoom}
-                  onChange={(event) =>
-                    setZoom(
-                      Number(event.target.value)
-                    )
-                  }
-                  className="w-full accent-lime-400"
-                />
-              </div>
+                <div className="mb-4">
+                  <label
+                    htmlFor="image-aspect-ratio"
+                    className="mb-2 block text-sm font-medium"
+                  >
+                    Crop shape
+                  </label>
 
-              <div className="mt-6 flex gap-3">
-                <button
-                  type="button"
-                  onClick={closeEditor}
-                  disabled={processing}
-                  className="flex-1 rounded-xl border border-[var(--border)] px-4 py-3 font-medium transition hover:bg-[var(--background)] disabled:opacity-50"
-                >
-                  Cancel
-                </button>
+                  <select
+                    id="image-aspect-ratio"
+                    value={aspectRatio}
+                    onChange={(event) => {
+                      setAspectRatio(Number(event.target.value))
+                      setCrop({ x: 0, y: 0 })
+                      setZoom(1)
+                      setCroppedAreaPixels(null)
+                    }}
+                    className="w-auto min-w-[180px] rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 py-2.5 text-sm outline-none transition focus:border-lime-400"
+                  >
+                    {ASPECT_OPTIONS.map((option) => (
+                      <option
+                        key={option.label}
+                        value={option.value}
+                      >
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-                <button
-                  type="button"
-                  onClick={applyCrop}
-                  disabled={
-                    processing ||
-                    !croppedAreaPixels
-                  }
-                  className="flex-1 rounded-xl bg-lime-400 px-4 py-3 font-medium text-black transition hover:bg-lime-300 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {processing
-                    ? "Processing..."
-                    : "Save Image"}
-                </button>
+                <div className="relative mx-auto h-[min(52vh,360px)] w-full overflow-hidden rounded-xl bg-black">
+                  <Cropper
+                    image={editingImage}
+                    crop={crop}
+                    zoom={zoom}
+                    aspect={aspectRatio}
+                    onCropChange={setCrop}
+                    onZoomChange={setZoom}
+                    onCropComplete={onCropComplete}
+                  />
+                </div>
+
+                <div className="mt-5">
+                  <div className="mb-2 flex items-center justify-between text-sm">
+                    <span>Zoom</span>
+                    <span className="text-[var(--muted)]">
+                      {zoom.toFixed(1)}x
+                    </span>
+                  </div>
+
+                  <input
+                    type="range"
+                    min="1"
+                    max="3"
+                    step="0.1"
+                    value={zoom}
+                    onChange={(event) =>
+                      setZoom(
+                        Number(event.target.value)
+                      )
+                    }
+                    className="w-full accent-lime-400"
+                  />
+                </div>
+
+                <div className="mt-6 flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={closeEditor}
+                    disabled={processing}
+                    className="rounded-xl border border-[var(--border)] px-5 py-3 font-medium transition hover:bg-[var(--background)] disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={applyCrop}
+                    disabled={
+                      processing ||
+                      !croppedAreaPixels
+                    }
+                    className="rounded-xl bg-lime-400 px-5 py-3 font-medium text-black transition hover:bg-lime-300 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {processing
+                      ? "Processing..."
+                      : "Save Image"}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
