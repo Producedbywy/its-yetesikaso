@@ -67,10 +67,23 @@ export default function CreateListingPage() {
     field: keyof ListingDraft,
     value: string
   ) {
-    setForm((prev) => ({
-      ...prev,
-      [field]: value,
-    }))
+    setForm((prev) => {
+      if (field === "category") {
+        return {
+          ...prev,
+          category: value,
+          quantity:
+            value === "services"
+              ? "1"
+              : prev.quantity,
+        }
+      }
+
+      return {
+        ...prev,
+        [field]: value,
+      }
+    })
   }
 
   function saveDraft() {
@@ -318,34 +331,36 @@ export default function CreateListingPage() {
             </div>
 
             {/* QUANTITY */}
-            <div>
-              <label
-                htmlFor="quantity"
-                className="mb-2 block text-sm font-medium"
-              >
-                Quantity available
-              </label>
+            {form.category !== "services" && (
+              <div>
+                <label
+                  htmlFor="quantity"
+                  className="mb-2 block text-sm font-medium"
+                >
+                  Quantity available
+                </label>
 
-              <input
-                id="quantity"
-                name="quantity"
-                value={form.quantity}
-                onChange={(e) =>
-                  updateField("quantity", e.target.value)
-                }
-                type="number"
-                min="1"
-                step="1"
-                required
-                disabled={loading}
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 py-4 outline-none transition focus:border-lime-400 disabled:opacity-50"
-              />
+                <input
+                  id="quantity"
+                  name="quantity"
+                  value={form.quantity}
+                  onChange={(e) =>
+                    updateField("quantity", e.target.value)
+                  }
+                  type="number"
+                  min="1"
+                  step="1"
+                  required
+                  disabled={loading}
+                  className="w-full rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 py-4 outline-none transition focus:border-lime-400 disabled:opacity-50"
+                />
 
-              <p className="mt-2 text-xs text-[var(--muted)]">
-                Enter 1 for a single item or the total number
-                available if you have multiple units.
-              </p>
-            </div>
+                <p className="mt-2 text-xs text-[var(--muted)]">
+                  Enter 1 for a single item or the total number
+                  available if you have multiple units.
+                </p>
+              </div>
+            )}
 
             {/* CATEGORY */}
             <div>
@@ -426,6 +441,53 @@ export default function CreateListingPage() {
                   Other
                 </option>
               </select>
+
+              <p className="mt-2 text-xs text-[var(--muted)]">
+                {form.category === "property_land" &&
+                  "Property, houses, apartments, land and plots."}
+
+                {form.category === "vehicles" &&
+                  "Cars, motorcycles, trucks and other vehicles."}
+
+                {form.category === "phones_tablets" &&
+                  "Mobile phones, tablets and related accessories."}
+
+                {form.category === "computers_office" &&
+                  "Laptops, desktops, printers and office equipment."}
+
+                {form.category === "electronics_appliances" &&
+                  "TVs, refrigerators, washing machines and appliances."}
+
+                {form.category === "home_garden" &&
+                  "Furniture, home items, garden and outdoor products."}
+
+                {form.category === "fashion" &&
+                  "Clothing, shoes, bags and fashion accessories."}
+
+                {form.category === "baby_kids" &&
+                  "Baby products, children's items, toys and equipment."}
+
+                {form.category === "health_beauty" &&
+                  "Beauty products, personal care and wellness items."}
+
+                {form.category === "sports_fitness" &&
+                  "Sports equipment, gym gear and fitness products."}
+
+                {form.category === "business_industrial" &&
+                  "Commercial equipment, machinery, tools and business supplies."}
+
+                {form.category === "education" &&
+                  "Books, school supplies, courses and educational materials."}
+
+                {form.category === "food_agriculture" &&
+                  "Food products, farm produce and agricultural supplies."}
+
+                {form.category === "services" &&
+                  "Professional, household, technical and other services."}
+
+                {form.category === "other" &&
+                  "Items that do not fit another category."}
+              </p>
             </div>
 
             {/* LOCATION */}
