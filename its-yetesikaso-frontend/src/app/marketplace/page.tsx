@@ -21,6 +21,41 @@ export default function MarketplacePage() {
 
   const [page, setPage] = useState(1)
 
+  const categoryDescriptions: Record<string, string> = {
+    all:
+      "Explore what is available across the marketplace and browse by category.",
+    property_land:
+      "Property, houses, apartments, land and plots.",
+    vehicles:
+      "Cars, motorcycles, trucks and other vehicles.",
+    phones_tablets:
+      "Mobile phones, tablets and related accessories.",
+    computers_office:
+      "Laptops, desktops, printers and office equipment.",
+    electronics_appliances:
+      "TVs, refrigerators, washing machines and appliances.",
+    home_garden:
+      "Furniture, home items, garden and outdoor products.",
+    fashion:
+      "Clothing, shoes, bags and fashion accessories.",
+    baby_kids:
+      "Baby products, children's items, toys and equipment.",
+    health_beauty:
+      "Beauty products, personal care and wellness items.",
+    sports_fitness:
+      "Sports equipment, gym gear and fitness products.",
+    business_industrial:
+      "Commercial equipment, machinery, tools and business supplies.",
+    education:
+      "Books, school supplies, courses and educational materials.",
+    food_agriculture:
+      "Food products, farm produce and agricultural supplies.",
+    services:
+      "Professional, household, technical and other services.",
+    other:
+      "Items that do not fit another category.",
+  }
+
   const {
     data: listings = [],
     total = 0,
@@ -81,6 +116,11 @@ export default function MarketplacePage() {
               <h1 className="text-4xl font-bold md:text-6xl">
                 Discover Listings
               </h1>
+
+              <p className="mt-3 max-w-2xl text-[var(--muted)]">
+                {categoryDescriptions[filters.category]}
+              </p>
+
             </div>
 
             <div className="grid gap-3 md:grid-cols-3">
