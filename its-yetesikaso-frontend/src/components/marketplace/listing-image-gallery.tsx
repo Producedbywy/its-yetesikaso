@@ -16,8 +16,8 @@ export default function ListingImageGallery({
 
   if (images.length === 0) {
     return (
-      <div className="relative mb-6 h-[360px] overflow-hidden rounded-2xl bg-[var(--card)] sm:h-[420px]">
-        <div className="flex h-full items-center justify-center text-sm text-[var(--muted)]">
+      <div className="mb-6 flex min-h-[240px] items-center justify-center overflow-hidden rounded-2xl bg-[var(--card)]">
+        <div className="text-sm text-[var(--muted)]">
           No image available
         </div>
       </div>
@@ -28,13 +28,14 @@ export default function ListingImageGallery({
 
   return (
     <div className="mb-6">
-      <div className="relative h-[360px] overflow-hidden rounded-2xl bg-[var(--card)] sm:h-[420px]">
+      <div className="relative flex max-h-[70vh] min-h-[240px] items-center justify-center overflow-hidden rounded-2xl bg-[var(--card)]">
         <Image
           src={currentImage}
           alt={`${title} - image ${currentIndex + 1}`}
-          fill
+          width={1600}
+          height={1200}
           sizes="(max-width: 1024px) 100vw, 800px"
-          className="object-cover"
+          className="block h-auto max-h-[70vh] w-full object-contain"
           unoptimized
         />
 

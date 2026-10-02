@@ -35,6 +35,7 @@ export default function EditListingPage() {
   })
 
   const [currentImages, setCurrentImages] = useState<string[]>([])
+  const [listingSlug, setListingSlug] = useState("")
   const [newImages, setNewImages] = useState<File[]>([])
 
   const [loading, setLoading] = useState(true)
@@ -53,6 +54,8 @@ export default function EditListingPage() {
         )
 
         if (cancelled) return
+
+        setListingSlug(data.slug)
 
         setForm({
           title: data.title ?? "",
@@ -190,11 +193,11 @@ export default function EditListingPage() {
           <div className="mb-8">
             <button
               type="button"
-              onClick={() =>
-                router.push(
-                  `/marketplace/${id}`
-                )
-              }
+              onClick={() => {
+                if (listingSlug) {
+                  router.push(`/marketplace/${listingSlug}`)
+                }
+              }}
               className="mb-4 text-sm text-[var(--muted)] hover:text-[var(--foreground)]"
             >
               ← Back
