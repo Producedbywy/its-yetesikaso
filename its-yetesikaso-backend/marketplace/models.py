@@ -91,12 +91,20 @@ class UserBlock(models.Model):
 
 class Listing(models.Model):
     CATEGORY_CHOICES = [
-        ("electronics", "Electronics"),
+        ("property_land", "Property & Land"),
         ("vehicles", "Vehicles"),
-        ("property", "Property"),
+        ("phones_tablets", "Phones & Tablets"),
+        ("computers_office", "Computers & Office"),
+        ("electronics_appliances", "Electronics & Appliances"),
+        ("home_garden", "Home & Garden"),
         ("fashion", "Fashion"),
+        ("baby_kids", "Baby & Kids"),
+        ("health_beauty", "Health & Beauty"),
+        ("sports_fitness", "Sports & Fitness"),
+        ("business_industrial", "Business & Industrial"),
+        ("education", "Education"),
+        ("food_agriculture", "Food & Agriculture"),
         ("services", "Services"),
-        ("furniture", "Furniture"),
         ("other", "Other"),
     ]
 
