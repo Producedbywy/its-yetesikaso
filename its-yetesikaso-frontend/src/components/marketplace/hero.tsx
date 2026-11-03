@@ -6,7 +6,7 @@ import { useEffect, useState } from "react"
 
 const slides = [
   {
-    eyebrow: "YeteSikaso Marketplace",
+    eyebrow: "Yetesikaso Marketplace",
     title: "Find what you need across Ghana.",
     description:
       "Discover products, services, vehicles, property and more from sellers across the marketplace.",
@@ -21,7 +21,7 @@ const slides = [
       "Explore listings, compare what is available and connect with sellers through one marketplace.",
     action: "Explore Listings",
     href: "/marketplace",
-    image: "/images/hero/payment.jpg",
+    image: "/images/hero/payment.png",
   },
   {
     eyebrow: "Jobs & Opportunities",
@@ -29,7 +29,7 @@ const slides = [
     description:
       "Explore marketplace listings and job opportunities in one place.",
     action: "View Jobs",
-    href: "/jobs",
+    href: "https://managingghana.com",
     image: "/images/hero/opportunities.jpg",
   },
 ]
@@ -68,7 +68,9 @@ export default function Hero() {
           fill
           priority
           sizes="100vw"
-          className="object-cover"
+          className={`object-cover ${
+            currentSlide === 2 ? "object-top" : "object-center"
+          }`}
         />
 
         <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/20" />

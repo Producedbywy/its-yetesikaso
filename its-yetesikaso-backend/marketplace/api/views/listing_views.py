@@ -1,12 +1,20 @@
+import math
 from django.db.models import Exists, OuterRef, Q
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import (
+    api_view,
+    permission_classes,
+    throttle_classes,
+)
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import SimpleRateThrottle
 from django.db import transaction
 from rest_framework import status
 
+
 from marketplace.serializers import ListingSerializer
 from marketplace.services.supabase_storage import upload_listing_image
+from marketplace.services.geocoding import geocode_location
 from marketplace.models import (
     Favourite,
     Listing,
@@ -16,6 +24,19 @@ from marketplace.models import (
     OrderItem,
 )
 
+class LocationGeocodeThrottle(SimpleRateThrottle):
+    scope = "location_geocode"
+
+    def get_rate(self):
+        return "10/hour"
+
+    def get_cache_key(self, request, view):
+        ident = self.get_ident(request)
+
+        return self.cache_format % {
+            "scope": self.scope,
+            "ident": ident,
+        }
 
 def annotate_favourite_status(queryset, request):
     if not request.user.is_authenticated:
@@ -38,7 +59,8 @@ def annotate_favourite_status(queryset, request):
 @permission_classes([AllowAny])
 def listings(request):
     qs = Listing.objects.filter(
-        available_quantity__gt=0
+        status="published",
+        available_quantity__gt=0,
     )
     qs = annotate_favourite_status(qs, request)
 
@@ -136,6 +158,140 @@ def listings(request):
         "has_prev": page > 1,
     })
 
+# =========================
+# MANUAL LOCATION GEOCODING
+# =========================
+@api_view(["POST"])
+@permission_classes([AllowAny])
+@throttle_classes([LocationGeocodeThrottle])
+def geocode_manual_location(request):
+    location = request.data.get("location", "")
+
+    if not isinstance(location, str):
+        return Response(
+            {"error": "Please enter a valid location."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    location = location.strip()
+
+    if not location or len(location) > 120:
+        return Response(
+            {"error": "Enter a location between 1 and 120 characters."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    coordinates = geocode_location(location)
+
+    if coordinates is None:
+        return Response(
+            {"error": "We couldn't find that location in Ghana. Try a town or city name."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    latitude, longitude = coordinates
+
+    return Response({
+        "location": location,
+        "latitude": latitude,
+        "longitude": longitude,
+    })
+
+# =========================
+# NEARBY LISTINGS
+# =========================
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def nearby_listings(request):
+    try:
+        latitude = float(request.GET.get("latitude"))
+        longitude = float(request.GET.get("longitude"))
+        radius = float(request.GET.get("radius", 20))
+    except (TypeError, ValueError):
+        return Response(
+            {"error": "Valid latitude and longitude are required."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if not (-90 <= latitude <= 90):
+        return Response(
+            {"error": "Invalid latitude."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if not (-180 <= longitude <= 180):
+        return Response(
+            {"error": "Invalid longitude."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if not (1 <= radius <= 100):
+        return Response(
+            {"error": "Radius must be between 1 and 100 km."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Approximate bounding box to limit database results.
+    latitude_delta = radius / 111.0
+    longitude_delta = radius / (
+        111.0 * max(abs(math.cos(math.radians(latitude))), 0.01)
+    )
+
+    qs = Listing.objects.filter(
+        status="published",
+        available_quantity__gt=0,
+        latitude__isnull=False,
+        longitude__isnull=False,
+        latitude__gte=latitude - latitude_delta,
+        latitude__lte=latitude + latitude_delta,
+        longitude__gte=longitude - longitude_delta,
+        longitude__lte=longitude + longitude_delta,
+    )
+
+    nearby = []
+
+    for listing in qs:
+        lat1 = math.radians(latitude)
+        lon1 = math.radians(longitude)
+        lat2 = math.radians(listing.latitude)
+        lon2 = math.radians(listing.longitude)
+
+        dlat = lat2 - lat1
+        dlon = lon2 - lon1
+
+        a = (
+            math.sin(dlat / 2) ** 2
+            + math.cos(lat1)
+            * math.cos(lat2)
+            * math.sin(dlon / 2) ** 2
+        )
+
+        distance = 6371 * 2 * math.atan2(
+            math.sqrt(a),
+            math.sqrt(1 - a),
+        )
+
+        if distance <= radius:
+            nearby.append((distance, listing))
+
+    nearby.sort(key=lambda item: item[0])
+
+    results = []
+
+    for distance, listing in nearby[:30]:
+        serialized = ListingSerializer(
+            listing,
+            context={"request": request},
+        ).data
+
+        serialized["distance_km"] = round(distance, 1)
+        results.append(serialized)
+
+    return Response({
+        "results": results,
+        "total": len(nearby),
+        "radius_km": radius,
+    })
 
 # =========================
 # CREATE LISTING
@@ -157,18 +313,42 @@ def create_listing(request):
             status=403,
         )
 
+    if profile.verification_status not in ("verified", "pending"):
+        return Response(
+            {
+                "error": (
+                    "Your seller account must have a pending "
+                    "or approved verification application "
+                    "before creating listings."
+                )
+            },
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    listing_status = (
+        "published"
+        if profile.verification_status == "verified"
+        else "draft"
+    )
+
     data = request.data
 
     quantity = max(int(data.get("quantity", 1)), 1)
 
+    location = data["location"]
+    coordinates = geocode_location(location)
+
     listing = Listing.objects.create(
         owner=request.user,
+        status=listing_status,
         title=data["title"],
         description=data["description"],
         price=data["price"],
         pricing_type=data.get("pricing_type", "one_time"),
         category=data["category"],
-        location=data["location"],
+        location=location,
+        latitude=coordinates[0] if coordinates else None,
+        longitude=coordinates[1] if coordinates else None,
         quantity=quantity,
         available_quantity=quantity,
     )
@@ -256,6 +436,40 @@ def listing_detail(request, listing_id):
 
     data = request.data
 
+    if "status" in data:
+        requested_status = data.get("status")
+
+        if requested_status not in ("draft", "published"):
+            return Response(
+                {"error": "Invalid listing status"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if requested_status == "published":
+            try:
+                profile = request.user.seller_profile
+            except SellerProfile.DoesNotExist:
+                return Response(
+                    {"error": "Seller profile not found"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            if (
+                profile.role != "seller"
+                or profile.verification_status != "verified"
+            ):
+                return Response(
+                    {
+                        "error": (
+                            "Your seller account must be verified "
+                            "before publishing listings."
+                        )
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+        listing.status = requested_status
+
     if "title" in data:
         listing.title = data["title"]
 
@@ -272,7 +486,18 @@ def listing_detail(request, listing_id):
         listing.category = data["category"]
 
     if "location" in data:
-        listing.location = data["location"]
+        new_location = str(data["location"]).strip()
+
+        if new_location != listing.location:
+            coordinates = geocode_location(new_location)
+
+            listing.location = new_location
+            listing.latitude = (
+                coordinates[0] if coordinates else None
+            )
+            listing.longitude = (
+                coordinates[1] if coordinates else None
+            )
 
     uploaded_images = request.FILES.getlist("images")
 

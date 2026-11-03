@@ -359,15 +359,19 @@ export default function DashboardPage() {
                           </p>
                         </div>
 
-                        {isSoldOut ? (
-                          <span className="shrink-0 rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
-                            Sold Out
-                          </span>
-                        ) : (
-                          <span className="shrink-0 rounded-full bg-lime-100 px-3 py-1 text-xs font-semibold text-lime-700">
-                            Available
-                          </span>
-                        )}
+{item.status === "draft" ? (
+  <span className="shrink-0 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
+    Draft — awaiting verification
+  </span>
+) : isSoldOut ? (
+  <span className="shrink-0 rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
+    Sold Out
+  </span>
+) : (
+  <span className="shrink-0 rounded-full bg-lime-100 px-3 py-1 text-xs font-semibold text-lime-700">
+    Available
+  </span>
+)}
                       </div>
 
                       <p className="mt-2 font-bold text-lime-500">
@@ -379,7 +383,8 @@ export default function DashboardPage() {
                     </div>
 
                     {/* INVENTORY */}
-                    <div className="mt-5 rounded-xl border border-[var(--border)] bg-[var(--background)] p-4">
+                    {item.status === "published" && (
+                      <div className="mt-5 rounded-xl border border-[var(--border)] bg-[var(--background)] p-4">
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-[var(--muted)]">
                           Available
@@ -478,22 +483,27 @@ export default function DashboardPage() {
                         </p>
                       )}
                     </div>
+                    )}
 
                     {/* ACTIONS */}
                     <div className="mt-4 flex items-center justify-between gap-3">
                       <div>
-                        {!isSoldOut ? (
-                          <Link
-                            href={`/marketplace/${item.slug}`}
-                            className="text-sm font-medium text-[var(--muted)] hover:text-[var(--foreground)]"
-                          >
-                            View listing →
-                          </Link>
-                        ) : (
-                          <span className="text-sm text-[var(--muted)]">
-                            Listing sold out
-                          </span>
-                        )}
+                        {item.status === "draft" ? (
+  <span className="text-sm text-amber-700">
+    Not yet visible to buyers
+  </span>
+) : !isSoldOut ? (
+  <Link
+    href={`/marketplace/${item.slug}`}
+    className="text-sm font-medium text-[var(--muted)] hover:text-[var(--foreground)]"
+  >
+    View listing →
+  </Link>
+) : (
+  <span className="text-sm text-[var(--muted)]">
+    Listing sold out
+  </span>
+)}
                       </div>
 
                       <div className="flex items-center gap-2">

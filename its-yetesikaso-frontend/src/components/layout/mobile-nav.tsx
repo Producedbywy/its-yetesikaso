@@ -208,14 +208,16 @@ export default function MobileNav() {
                 Marketplace
               </Link>
 
-              <Link
-                href="/jobs"
+              <a
+                href="https://managingghana.com"
+                target="_blank"
+                rel="noopener noreferrer"
                 onClick={closeMenu}
                 className={linkClass("/jobs")}
               >
                 <Briefcase size={20} />
                 Jobs
-              </Link>
+              </a>
             </div>
 
             {/* LOGGED-IN */}

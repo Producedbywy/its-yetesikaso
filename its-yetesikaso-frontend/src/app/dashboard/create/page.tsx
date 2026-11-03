@@ -138,11 +138,9 @@ export default function CreateListingPage() {
 
       const profile = await getMyProfile()
 
-      if (profile.role === "user") {
-        await upgradeAccount("seller")
-      } else if (profile.role !== "seller") {
+      if (profile.role !== "seller") {
         throw new Error(
-          "This account cannot create marketplace listings."
+          "You need a seller account to create marketplace listings."
         )
       }
 
@@ -164,7 +162,11 @@ export default function CreateListingPage() {
 
       clearDraft()
 
-      router.push(`/marketplace/${listing.slug}`)
+      if (profile.verification_status === "verified") {
+        router.push(`/marketplace/${listing.slug}`)
+      } else {
+        router.push("/dashboard")
+      }
     } catch (err: unknown) {
       setError(
         err instanceof Error

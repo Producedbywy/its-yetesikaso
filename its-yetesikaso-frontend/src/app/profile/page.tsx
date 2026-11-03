@@ -40,6 +40,15 @@ export default function ProfilePage() {
     bio: "",
   })
 
+  const [applicationRole, setApplicationRole] = useState<
+    "seller" | "employer" | null
+  >(null)
+
+  const [ghanaCardForm, setGhanaCardForm] = useState({
+    ghana_card_name: "",
+    ghana_card_number: "",
+  })
+
   useEffect(() => {
     let cancelled = false
 
@@ -62,13 +71,13 @@ export default function ProfilePage() {
         })
 
         if (profileData.role === "seller") {
-          const listingsData = await getMyListings()
+  const listingsData = await getMyListings()
 
-          if (cancelled) return
+  if (cancelled) return
 
-          setListings(listingsData.results || [])
-          setJobs([])
-        } else if (profileData.role === "employer") {
+  setListings(listingsData.results || [])
+  setJobs([])
+} else if (profileData.role === "employer") {
           const jobsData = await getMyJobs()
 
           if (cancelled) return
@@ -158,39 +167,34 @@ export default function ProfilePage() {
       setError(null)
       setSuccess(null)
 
-      const updated = await upgradeAccount(role)
+      const updated = await upgradeAccount(role, {
+        ...form,
+        display_name: form.display_name.trim(),
+        phone: form.phone.trim(),
+        location: form.location.trim(),
+        bio: form.bio.trim(),
+        ghana_card_name: ghanaCardForm.ghana_card_name.trim(),
+        ghana_card_number: ghanaCardForm.ghana_card_number.trim(),
+      })
 
       setProfile(updated)
+      setListings([])
+      setJobs([])
+      setApplicationRole(null)
 
-      setForm({
-        display_name: updated.display_name || "",
-        phone: updated.phone || "",
-        location: updated.location || "",
-        bio: updated.bio || "",
+      setGhanaCardForm({
+        ghana_card_name: "",
+        ghana_card_number: "",
       })
 
       setSuccess(
-        role === "seller"
-          ? "Your account is now a seller."
-          : "Your account is now an employer."
+        "Your application has been submitted and is awaiting verification. You will be able to use your account tools after approval."
       )
-
-      if (role === "seller") {
-        const listingsData = await getMyListings()
-
-        setListings(listingsData.results || [])
-        setJobs([])
-      } else {
-        const jobsData = await getMyJobs()
-
-        setJobs(jobsData.results || [])
-        setListings([])
-      }
     } catch (err: unknown) {
       setError(
         err instanceof Error
           ? err.message
-          : "Failed to upgrade your account"
+          : "Failed to submit your application"
       )
     } finally {
       setUpgrading(null)
@@ -200,6 +204,8 @@ export default function ProfilePage() {
   const isSeller = profile?.role === "seller"
   const isEmployer = profile?.role === "employer"
   const isUser = profile?.role === "user"
+  const isVerified =
+    profile?.verification_status === "verified"
 
   const accountType = isSeller
     ? "Seller"
@@ -334,8 +340,78 @@ export default function ProfilePage() {
                   )}
                 </div>
 
+                {/* VERIFICATION STATUS */}
+                {profile?.verification_status &&
+                  profile.verification_status !== "not_submitted" && (
+                    <div className="mb-8 rounded-2xl border border-[var(--border)] bg-[var(--background)] p-5">
+                      <h2 className="text-lg font-semibold">
+                        Account Verification
+                      </h2>
+
+                      <div className="mt-3">
+                        {profile.verification_status === "pending" && (
+                          <>
+                            <span className="inline-block rounded-full bg-yellow-100 px-4 py-2 text-sm font-medium text-yellow-700">
+                              Awaiting Verification
+                            </span>
+
+                            <p className="mt-3 text-sm text-[var(--muted)]">
+                              Your application has been received and is being
+                              reviewed. Your seller or employer tools will
+                              become available once your account is approved.
+                            </p>
+                          </>
+                        )}
+
+                        {profile.verification_status === "verified" && (
+                          <>
+                            <span className="inline-block rounded-full bg-lime-100 px-4 py-2 text-sm font-medium text-lime-700">
+                              Verified
+                            </span>
+
+                            <p className="mt-3 text-sm text-[var(--muted)]">
+                              Your account has been verified. You can now
+                              access your account tools.
+                            </p>
+                          </>
+                        )}
+
+                        {profile.verification_status === "rejected" && (
+                          <>
+                            <span className="inline-block rounded-full bg-red-100 px-4 py-2 text-sm font-medium text-red-700">
+                              Verification Rejected
+                            </span>
+
+                            <p className="mt-3 text-sm text-[var(--muted)]">
+                              Your application was not approved. Please review
+                              the reason below and correct your details before
+                              resubmitting.
+                            </p>
+
+                            {profile.verification_rejection_reason && (
+                              <div className="mt-3 rounded-xl border border-red-200 bg-red-50 p-4">
+                                <p className="text-sm font-semibold text-red-700">
+                                  Reason for rejection
+                                </p>
+
+                                <p className="mt-1 text-sm text-red-700">
+                                  {profile.verification_rejection_reason}
+                                </p>
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+
                 {/* ACCOUNT UPGRADES */}
-                {isUser && (
+                {(
+                  isUser ||
+                  (profile?.verification_status === "rejected" &&
+                    (isSeller || isEmployer))
+                ) && (
                   <div className="mb-8 rounded-2xl border border-[var(--border)] bg-[var(--background)] p-6">
                     <div className="mb-5">
                       <h2 className="text-xl font-bold">
@@ -348,50 +424,146 @@ export default function ProfilePage() {
                     </div>
 
                     <div className="grid gap-4 md:grid-cols-2">
-                      <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
+  {(isUser || isSeller) && (
+    <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
+      <h3 className="text-lg font-semibold">
+        {isSeller ? "Resubmit Seller Application" : "Become a Seller"}
+      </h3>
+
+      <p className="mt-2 text-sm text-[var(--muted)]">
+        Sell products and services on the marketplace and manage your listings.
+      </p>
+
+      <button
+        type="button"
+        onClick={() => setApplicationRole("seller")}
+        disabled={upgrading !== null}
+        className="mt-5 w-full rounded-xl bg-lime-400 px-5 py-3 font-medium text-black transition hover:bg-lime-300 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        {isSeller ? "Resubmit Application" : "Become a Seller"}
+      </button>
+    </div>
+  )}
+
+  {(isUser || isEmployer) && (
+    <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
+      <h3 className="text-lg font-semibold">
+        {isEmployer ? "Resubmit Employer Application" : "Become an Employer"}
+      </h3>
+
+      <p className="mt-2 text-sm text-[var(--muted)]">
+        Post jobs and connect with people looking for opportunities.
+      </p>
+
+      <button
+        type="button"
+        onClick={() => setApplicationRole("employer")}
+        disabled={upgrading !== null}
+        className="mt-5 w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-5 py-3 font-medium transition hover:bg-[var(--card)] disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        {isEmployer ? "Resubmit Application" : "Become an Employer"}
+      </button>
+    </div>
+  )}
+</div>
+
+                    {/* GHANA CARD APPLICATION FORM */}
+                    {applicationRole && (
+                      <div className="mt-6 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
                         <h3 className="text-lg font-semibold">
-                          Become a Seller
+                          Ghana Card Verification
                         </h3>
 
                         <p className="mt-2 text-sm text-[var(--muted)]">
-                          Sell products and services on the marketplace and manage your listings.
+                          Applying for a {applicationRole} account. Enter
+                          your details exactly as they appear on your Ghana
+                          Card. Your information will only be used for
+                          verification.
                         </p>
 
-                        <button
-                          type="button"
-                          onClick={() => handleUpgrade("seller")}
-                          disabled={upgrading !== null}
-                          className="mt-5 w-full rounded-xl bg-lime-400 px-5 py-3 font-medium text-black transition hover:bg-lime-300 disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                          {upgrading === "seller"
-                            ? "Becoming a Seller..."
-                            : "Become a Seller"}
-                        </button>
+                        <div className="mt-5 space-y-5">
+                          <div>
+                            <label
+                              htmlFor="ghana_card_name"
+                              className="mb-2 block text-sm font-medium"
+                            >
+                              Full Name on Ghana Card
+                            </label>
+
+                            <input
+                              id="ghana_card_name"
+                              value={ghanaCardForm.ghana_card_name}
+                              onChange={(event) =>
+                                setGhanaCardForm((previous) => ({
+                                  ...previous,
+                                  ghana_card_name: event.target.value,
+                                }))
+                              }
+                              maxLength={150}
+                              required
+                              disabled={upgrading !== null}
+                              autoComplete="off"
+                              className="w-full rounded-2xl border border-[var(--border)] bg-[var(--background)] px-5 py-4 outline-none focus:border-lime-400 disabled:opacity-50"
+                            />
+                          </div>
+
+                          <div>
+                            <label
+                              htmlFor="ghana_card_number"
+                              className="mb-2 block text-sm font-medium"
+                            >
+                              Ghana Card Number
+                            </label>
+
+                            <input
+                              id="ghana_card_number"
+                              value={ghanaCardForm.ghana_card_number}
+                              onChange={(event) =>
+                                setGhanaCardForm((previous) => ({
+                                  ...previous,
+                                  ghana_card_number: event.target.value,
+                                }))
+                              }
+                              maxLength={30}
+                              required
+                              disabled={upgrading !== null}
+                              autoComplete="off"
+                              className="w-full rounded-2xl border border-[var(--border)] bg-[var(--background)] px-5 py-4 outline-none focus:border-lime-400 disabled:opacity-50"
+                            />
+                          </div>
+
+                          <div className="flex flex-wrap gap-3">
+                            <button
+                              type="button"
+                              onClick={() => handleUpgrade(applicationRole)}
+                              disabled={
+                                upgrading !== null ||
+                                !ghanaCardForm.ghana_card_name.trim() ||
+                                !ghanaCardForm.ghana_card_number.trim() ||
+                                !form.display_name.trim()
+                              }
+                              className="rounded-xl bg-lime-400 px-6 py-3 font-medium text-black transition hover:bg-lime-300 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              {upgrading === applicationRole
+                                ? "Submitting Application..."
+                                : "Submit Application"}
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => setApplicationRole(null)}
+                              disabled={upgrading !== null}
+                              className="rounded-xl border border-[var(--border)] px-6 py-3 font-medium transition hover:bg-[var(--background)] disabled:opacity-50"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
                       </div>
-
-                      <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
-                        <h3 className="text-lg font-semibold">
-                          Become an Employer
-                        </h3>
-
-                        <p className="mt-2 text-sm text-[var(--muted)]">
-                          Post jobs and connect with people looking for opportunities.
-                        </p>
-
-                        <button
-                          type="button"
-                          onClick={() => handleUpgrade("employer")}
-                          disabled={upgrading !== null}
-                          className="mt-5 w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-5 py-3 font-medium transition hover:bg-[var(--card)] disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                          {upgrading === "employer"
-                            ? "Becoming an Employer..."
-                            : "Become an Employer"}
-                        </button>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 )}
+
 
                 {/* PROFILE STATUS */}
                 <div className="mb-8 flex flex-wrap gap-3">
@@ -607,7 +779,7 @@ export default function ProfilePage() {
               </section>
 
               {/* EMPLOYER TOOLS */}
-              {isEmployer && (
+              {isEmployer && isVerified && (
                 <section className="mt-10">
                   <div className="mb-6">
                     <h2 className="text-2xl font-bold">
@@ -675,7 +847,7 @@ export default function ProfilePage() {
               )}
 
               {/* EMPLOYER JOBS */}
-              {isEmployer && (
+              {isEmployer && isVerified && (
                 <section className="mt-10">
                   <div className="mb-6 flex items-center justify-between">
                     <div>
@@ -776,7 +948,7 @@ export default function ProfilePage() {
               )}
 
               {/* SELLER LISTINGS */}
-              {isSeller && (
+              {isSeller && isVerified && (
                 <section className="mt-10">
                   <div className="mb-6">
                     <h2 className="text-2xl font-bold">
@@ -808,10 +980,9 @@ export default function ProfilePage() {
                   ) : (
                     <div className="grid gap-5 md:grid-cols-2">
                       {listings.map((listing) => (
-                        <Link
+                        <div
                           key={listing.id}
-                          href={`/marketplace/${listing.slug}`}
-                          className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 transition hover:-translate-y-0.5 hover:shadow-md"
+                          className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5"
                         >
                           <div className="flex items-start justify-between gap-4">
                             <div>
@@ -825,9 +996,15 @@ export default function ProfilePage() {
                               </p>
                             </div>
 
-                            <span className="shrink-0 rounded-full bg-lime-100 px-3 py-1 text-xs font-medium text-lime-700">
-                              Active
-                            </span>
+                            {listing.status === "draft" ? (
+  <span className="shrink-0 rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
+    Draft — awaiting verification
+  </span>
+) : (
+  <span className="shrink-0 rounded-full bg-lime-100 px-3 py-1 text-xs font-medium text-lime-700">
+    Active
+  </span>
+)}
                           </div>
 
                           <p className="mt-4 text-xl font-bold text-lime-500">
@@ -841,10 +1018,19 @@ export default function ProfilePage() {
                             </p>
                           )}
 
-                          <p className="mt-4 text-sm font-medium">
-                            View listing →
-                          </p>
-                        </Link>
+                          {listing.status === "published" ? (
+  <Link
+    href={`/marketplace/${listing.slug}`}
+    className="mt-4 inline-block text-sm font-medium hover:underline"
+  >
+    View listing →
+  </Link>
+) : (
+  <p className="mt-4 text-sm text-amber-700">
+    Not yet visible to buyers
+  </p>
+)}
+                        </div>
                       ))}
                     </div>
                   )}

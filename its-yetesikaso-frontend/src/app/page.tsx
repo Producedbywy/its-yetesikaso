@@ -6,6 +6,7 @@ import Categories from "@/components/marketplace/categories"
 import AdBanner from "@/components/marketplace/ad-banner"
 import MoreListings from "@/components/marketplace/more-listings"
 import CtaBanner from "@/components/marketplace/cta-banner"
+import NearbyListings from "@/components/marketplace/nearby-listings"
 
 export default function HomePage() {
   return (
@@ -45,6 +46,8 @@ export default function HomePage() {
         title="More Listings"
         description="Continue exploring products and opportunities across the marketplace."
       />
+
+      <NearbyListings />
 
       <Footer />
     </main>

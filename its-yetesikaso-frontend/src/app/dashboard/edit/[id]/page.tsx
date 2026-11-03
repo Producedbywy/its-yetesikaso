@@ -152,9 +152,12 @@ export default function EditListingPage() {
         data
       )
 
-      router.push(
-        `/marketplace/${listing.slug}`
-      )
+      if (listing.status === "published") {
+        router.push(`/marketplace/${listing.slug}`)
+      } else {
+        router.push("/dashboard")
+      }
+
       router.refresh()
     } catch (err: unknown) {
       setError(

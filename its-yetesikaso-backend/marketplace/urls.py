@@ -4,6 +4,8 @@ from .views import my_listings
 
 from marketplace.api.views.listing_views import (
     listings,
+    nearby_listings,
+    geocode_manual_location,
     create_listing,
     listing_detail,
     mark_listing_sold,
@@ -93,6 +95,18 @@ urlpatterns = [
         "listings/",
         listings,
         name="listings",
+    ),
+
+    path(
+        "locations/geocode/",
+        geocode_manual_location,
+        name="location-geocode",
+    ),
+
+    path(
+        "listings/nearby/",
+        nearby_listings,
+        name="nearby-listings",
     ),
 
     path(

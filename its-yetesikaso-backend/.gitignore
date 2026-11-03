@@ -9,3 +9,8 @@ __pycache__/
 
 # Local media
 media/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example

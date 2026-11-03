@@ -25,6 +25,7 @@ export type Listing = {
   images: string[]
   quantity: number
   available_quantity: number
+  status: "draft" | "published"
   slug: string
   created_at: string
   seller: Seller | null

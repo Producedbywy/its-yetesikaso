@@ -6,8 +6,11 @@ from pathlib import Path
 import os
 import dj_database_url
 from datetime import timedelta
+import environ
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+environ.Env.read_env(BASE_DIR / ".env")
+GHANA_CARD_ENCRYPTION_KEY = os.environ.get("GHANA_CARD_ENCRYPTION_KEY")
 
 # =========================
 # SECURITY
@@ -130,7 +133,32 @@ DATABASES = {
         conn_max_age=600,
     )
 }
+# =========================
+# REDIS CACHE
+# =========================
 
+REDIS_URL = os.environ.get("REDIS_URL")
+
+if REDIS_URL:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": REDIS_URL,
+            "OPTIONS": {
+                "socket_timeout": 5,
+                "socket_connect_timeout": 5,
+                "health_check_interval": 30,
+            },
+        }
+    }
+else:
+    # Local development fallback
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "yetesikaso-local",
+        }
+    }
 # =========================
 # VALIDATION
 # =========================

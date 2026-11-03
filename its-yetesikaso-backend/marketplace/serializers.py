@@ -61,6 +61,39 @@ class SellerProfileSerializer(serializers.ModelSerializer):
     def get_job_count(self, obj):
         return obj.user.jobs.count()
 
+
+class AuthenticatedSellerProfileSerializer(SellerProfileSerializer):
+    verification_status = serializers.CharField(read_only=True)
+
+    verification_rejection_reason = serializers.SerializerMethodField()
+
+    class Meta(SellerProfileSerializer.Meta):
+        fields = SellerProfileSerializer.Meta.fields + [
+            "verification_status",
+            "verification_rejection_reason",
+        ]
+
+        read_only_fields = (
+            SellerProfileSerializer.Meta.read_only_fields
+            + [
+                "verification_status",
+                "verification_rejection_reason",
+            ]
+        )
+
+    def get_verification_rejection_reason(self, obj):
+        verification = getattr(
+            obj,
+            "ghana_card_verification",
+            None,
+        )
+
+        if verification and verification.status == "rejected":
+            return verification.rejection_reason
+
+        return ""
+
+
 class PublicSellerProfileSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         source="user.username",
@@ -132,6 +165,7 @@ class ListingSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "owner",
+            "status",
             "title",
             "description",
             "price",
@@ -149,6 +183,7 @@ class ListingSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [
             "owner",
+            "status",
             "created_at",
             "slug",
             "seller",

@@ -120,6 +120,12 @@ def add_to_cart(request):
         id=listing_id,
     )
 
+    if listing.status != "published":
+        return Response(
+            {"error": "This listing is currently unavailable"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
     if listing.owner == request.user:
         return Response(
             {"error": "You cannot add your own listing to your cart"},
@@ -355,6 +361,16 @@ def checkout_cart(request):
 
         for cart_item in cart_items:
             listing = listings[cart_item.listing_id]
+
+            if listing.status != "published":
+                return Response(
+                    {
+                        "error": (
+                            f"'{listing.title}' is no longer available"
+                        )
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
             if listing.owner_id == request.user.id:
                 return Response(

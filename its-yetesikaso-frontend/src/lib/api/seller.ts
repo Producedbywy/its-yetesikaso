@@ -14,6 +14,8 @@ export type SellerProfile = {
   location: string
   bio: string
   onboarding_completed: boolean
+  verification_status: "not_submitted" | "pending" | "verified" | "rejected"
+  verification_rejection_reason: string
   listing_count: number
   created_at: string
   updated_at: string
@@ -196,15 +198,28 @@ export async function updateMyProfile(
 }
 
 // UPGRADE ACCOUNT
+export type SellerApplicationData = {
+  display_name: string
+  phone: string
+  location: string
+  bio: string
+  ghana_card_name: string
+  ghana_card_number: string
+}
+
 export async function upgradeAccount(
-  role: "seller" | "employer"
+  role: "seller" | "employer",
+  applicationData: SellerApplicationData
 ): Promise<SellerProfile> {
   const response = await apiClient<{
     message: string
     profile: SellerProfile
   }>("/auth/profile/upgrade/", {
     method: "POST",
-    body: JSON.stringify({ role }),
+    body: JSON.stringify({
+      role,
+      ...(applicationData ?? {}),
+    }),
   })
 
   return response.profile
