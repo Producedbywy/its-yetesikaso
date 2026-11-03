@@ -141,14 +141,21 @@ export default function Navbar() {
             Marketplace
           </Link>
 
-          <a
-            href="https://managingghana.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-lg px-2.5 py-1.5 transition-opacity hover:opacity-70"
+          <Link
+            href="/jobs"
+            className={linkClass("/jobs")}
           >
             Jobs
-          </a>
+          </Link>
+
+          {!isSeller && (
+            <Link
+              href="/become-a-seller"
+              className={linkClass("/become-a-seller")}
+            >
+              Become a Seller
+            </Link>
+          )}
 
           {authenticated ? (
             <>

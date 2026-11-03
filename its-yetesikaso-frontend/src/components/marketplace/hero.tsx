@@ -29,7 +29,7 @@ const slides = [
     description:
       "Explore marketplace listings and job opportunities in one place.",
     action: "View Jobs",
-    href: "https://managingghana.com",
+    href: "/jobs",
     image: "/images/hero/opportunities.jpg",
   },
 ]
