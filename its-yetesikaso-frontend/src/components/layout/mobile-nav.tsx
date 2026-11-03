@@ -10,6 +10,7 @@ import {
   Home,
   Search,
   Briefcase,
+  Recycle,
   ShoppingCart,
   ClipboardList,
   User,
@@ -215,6 +216,15 @@ export default function MobileNav() {
               >
                 <Briefcase size={20} />
                 Jobs
+              </Link>
+
+              <Link
+                href="/sustainability"
+                onClick={closeMenu}
+                className={linkClass("/sustainability")}
+              >
+                <Recycle size={20} />
+                Sustainability
               </Link>
             </div>
 

@@ -148,6 +148,13 @@ export default function Navbar() {
             Jobs
           </Link>
 
+          <Link
+            href="/sustainability"
+            className={linkClass("/sustainability")}
+          >
+            Sustainability
+          </Link>
+
           {!isSeller && (
             <Link
               href="/become-a-seller"

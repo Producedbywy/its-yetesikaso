@@ -15,6 +15,7 @@ const marketplaceLinks = [
 
 const companyLinks = [
   { label: "About Us", href: "/about" },
+  { label: "Sustainability", href: "/sustainability" },
   { label: "Become a Seller", href: "/become-a-seller" },
   { label: "Contact Us", href: "/contact" },
   { label: "Support", href: "/support" },

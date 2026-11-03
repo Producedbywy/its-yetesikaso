@@ -73,33 +73,73 @@ export default function Hero() {
           }`}
         />
 
-        <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/20" />
+        <div
+          className={`absolute inset-0 ${
+            currentSlide === 1
+              ? "bg-gradient-to-l from-black/90 via-black/35 to-transparent"
+              : "bg-gradient-to-r from-black/85 via-black/60 to-black/20"
+          }`}
+        />
 
         <div className="relative min-h-[420px] md:min-h-[500px]">
-          <div className="mx-auto flex min-h-[420px] max-w-7xl items-center px-6 py-16 md:min-h-[500px] md:px-14 lg:px-20">
-            <div className="max-w-2xl">
-              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-lime-400">
-                {slide.eyebrow}
-              </p>
+          <div
+            className={`mx-auto flex min-h-[420px] max-w-7xl px-6 md:min-h-[500px] md:px-14 lg:px-20 ${
+              currentSlide === 1
+                ? "items-start justify-end pb-12 pt-20"
+                : "items-center py-16"
+            }`}
+          >
+            {currentSlide === 1 ? (
+<div className="flex w-full max-w-[350px] flex-col items-start text-left md:max-w-[380px] lg:translate-x-10 xl:translate-x-16 2xl:translate-x-20">
+  <h2 className="text-4xl font-extrabold leading-[1.1] tracking-tight text-white drop-shadow-lg md:text-5xl">
+    Pay securely.
+    <span className="mt-2 block">
+      Get it delivered.
+    </span>
+  </h2>
 
-              <h1 className="text-4xl font-bold leading-tight md:text-6xl lg:text-7xl">
-                {slide.title}
-              </h1>
+  <p className="mt-5 max-w-sm text-base font-medium leading-7 text-white drop-shadow-lg md:text-lg">
+    Shop with confidence using Fafameso Plus.
+  </p>
 
-              <p className="mt-6 max-w-xl text-base leading-7 text-gray-200 md:text-lg">
-                {slide.description}
-              </p>
+  <Link
+    href={slide.href}
+    className="mt-7 inline-flex rounded-xl bg-lime-400 px-7 py-4 text-base font-bold text-black shadow-lg transition hover:bg-lime-300"
+  >
+    {slide.action}
+  </Link>
+</div>
+            ) : (
+              <div className="max-w-2xl">
+                <p className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-lime-400">
+                  {slide.eyebrow}
+                </p>
 
-              <Link
-                href={slide.href}
-                className="mt-8 inline-flex rounded-xl bg-lime-400 px-6 py-3.5 font-semibold text-black transition hover:bg-lime-300"
-              >
-                {slide.action}
-              </Link>
-            </div>
+                <h1 className="text-4xl font-bold leading-tight md:text-6xl lg:text-7xl">
+                  {slide.title}
+                </h1>
+
+                <p className="mt-6 max-w-xl text-base leading-7 text-gray-200 md:text-lg">
+                  {slide.description}
+                </p>
+
+                <Link
+                  href={slide.href}
+                  className="mt-8 inline-flex rounded-xl bg-lime-400 px-6 py-3.5 font-semibold text-black transition hover:bg-lime-300"
+                >
+                  {slide.action}
+                </Link>
+              </div>
+            )}
           </div>
 
-          <div className="absolute bottom-6 left-6 flex items-center gap-3 md:left-14 lg:left-20">
+          <div
+  className={`absolute bottom-6 left-6 z-10 flex items-center gap-3 md:left-14 lg:left-20 ${
+    currentSlide === 1
+      ? "rounded-full border border-white/20 bg-gray-950/80 px-4 py-2 shadow-lg backdrop-blur-sm"
+      : ""
+  }`}
+>
             <button
               type="button"
               onClick={showPrevious}
