@@ -14,7 +14,10 @@ from rest_framework import status
 
 from marketplace.serializers import ListingSerializer
 from marketplace.services.supabase_storage import upload_listing_image
-from marketplace.services.geocoding import geocode_location
+from marketplace.services.geocoding import (
+    geocode_location,
+    GeocodingServiceError,
+)
 from marketplace.models import (
     Favourite,
     Listing,
@@ -181,11 +184,27 @@ def geocode_manual_location(request):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    coordinates = geocode_location(location)
+    try:
+        coordinates = geocode_location(location)
+    except GeocodingServiceError:
+        return Response(
+            {
+                "error": (
+                    "Location search is temporarily unavailable. "
+                    "Please try again later."
+                )
+            },
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
 
     if coordinates is None:
         return Response(
-            {"error": "We couldn't find that location in Ghana. Try a town or city name."},
+            {
+                "error": (
+                    "We couldn't find that location in Ghana. "
+                    "Try a town, city or recognised area name."
+                )
+            },
             status=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -336,7 +355,23 @@ def create_listing(request):
     quantity = max(int(data.get("quantity", 1)), 1)
 
     location = data["location"]
-    coordinates = geocode_location(location)
+
+    try:
+        coordinates = geocode_location(location)
+    except GeocodingServiceError:
+        # Allow listing creation during a temporary provider outage.
+        coordinates = None
+    else:
+        if coordinates is None:
+            return Response(
+                {
+                    "error": (
+                        "We couldn't find that location in Ghana. "
+                        "Please enter a recognised Ghanaian location."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
     listing = Listing.objects.create(
         owner=request.user,
@@ -488,16 +523,40 @@ def listing_detail(request, listing_id):
     if "location" in data:
         new_location = str(data["location"]).strip()
 
+        if not new_location or len(new_location) > 120:
+            return Response(
+                {"error": "Enter a location between 1 and 120 characters."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         if new_location != listing.location:
-            coordinates = geocode_location(new_location)
+            try:
+                coordinates = geocode_location(new_location)
+            except GeocodingServiceError:
+                return Response(
+                    {
+                        "error": (
+                            "Location search is temporarily unavailable. "
+                            "Your listing has not been changed."
+                        )
+                    },
+                    status=status.HTTP_503_SERVICE_UNAVAILABLE,
+                )
+
+            if coordinates is None:
+                return Response(
+                    {
+                        "error": (
+                            "We couldn't find that location in Ghana. "
+                            "Your listing has not been changed."
+                        )
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
             listing.location = new_location
-            listing.latitude = (
-                coordinates[0] if coordinates else None
-            )
-            listing.longitude = (
-                coordinates[1] if coordinates else None
-            )
+            listing.latitude = coordinates[0]
+            listing.longitude = coordinates[1]
 
     uploaded_images = request.FILES.getlist("images")
 
