@@ -206,9 +206,19 @@ class ListingSerializer(serializers.ModelSerializer):
 
         request = self.context.get("request")
 
-        # Only authenticated users can view seller
-        # phone numbers and email addresses.
-        if not request or not request.user.is_authenticated:
+        is_fafameso_plus = (
+            obj.fafameso_plus_requested
+            and obj.fafameso_plus_approved
+        )
+
+        # Fafameso Plus handles transactions directly.
+        # Never expose seller contact details for these listings.
+        # Standard listings require authentication.
+        if (
+            is_fafameso_plus
+            or not request
+            or not request.user.is_authenticated
+        ):
             seller_data.pop("phone", None)
             seller_data.pop("email", None)
 
