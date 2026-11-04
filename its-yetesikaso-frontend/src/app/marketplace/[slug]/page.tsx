@@ -158,11 +158,18 @@ export default async function ListingDetailPage({
                   </div>
                 </div>
 
-                <SellerContactDetails listingSlug={listing.slug} />
+                {!(
+                  listing.fafameso_plus_requested &&
+                  listing.fafameso_plus_approved
+                ) && (
+                  <>
+                    <SellerContactDetails listingSlug={listing.slug} />
 
-                <div className="mt-5">
-                  <ContactSellerButton listingId={listing.id} />
-                </div>
+                    <div className="mt-5">
+                      <ContactSellerButton listingId={listing.id} />
+                    </div>
+                  </>
+                )}
 
                 <div className="mt-5 space-y-3">
                   {listing.fafameso_plus_requested &&
