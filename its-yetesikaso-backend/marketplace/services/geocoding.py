@@ -224,6 +224,12 @@ def geocode_location(location):
                 "Location search is incorrectly configured."
             )
 
+        if response.status_code == 404:
+            logger.info(
+                "LocationIQ could not find a match for the location."
+            )
+            return None
+
         if 400 <= response.status_code < 500:
             logger.error(
                 "LocationIQ rejected the request: HTTP %s",
