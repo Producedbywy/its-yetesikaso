@@ -250,6 +250,27 @@ def initialize_payment(request):
             status=status.HTTP_200_OK,
         )
 
+    # Block new Paystack payments for listings that are
+    # not currently approved for Fafameso Plus.
+    # Previously initialized payments remain unaffected.
+    ineligible_items = order.items.exclude(
+        listing__status="published",
+        listing__fafameso_plus_requested=True,
+        listing__fafameso_plus_approved=True,
+    )
+
+    if ineligible_items.exists():
+        return Response(
+            {
+                "error": (
+                    "This order contains listings that are "
+                    "not eligible for direct payment. "
+                    "Please contact the seller instead."
+                )
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
     callback_url = (
         f"{settings.FRONTEND_URL.rstrip('/')}"
         "/checkout/payment-callback"

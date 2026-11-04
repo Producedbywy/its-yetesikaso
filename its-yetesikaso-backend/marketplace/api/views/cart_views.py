@@ -126,6 +126,23 @@ def add_to_cart(request):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
+    # Only approved Fafameso Plus listings can be
+    # purchased directly through Yetesikaso.
+    if not (
+        listing.fafameso_plus_requested
+        and listing.fafameso_plus_approved
+    ):
+        return Response(
+            {
+                "error": (
+                    "Direct purchase is only available "
+                    "for approved Fafameso Plus listings. "
+                    "Please contact the seller instead."
+                )
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
     if listing.owner == request.user:
         return Response(
             {"error": "You cannot add your own listing to your cart"},
@@ -223,6 +240,26 @@ def update_cart_item(request, cart_item_id):
         id=cart_item_id,
         cart=cart,
     )
+
+    # Only approved Fafameso Plus listings
+    # can be updated in the shopping cart.
+    listing = cart_item.listing
+
+    if not (
+        listing.status == "published"
+        and listing.fafameso_plus_requested
+        and listing.fafameso_plus_approved
+    ):
+        return Response(
+            {
+                "error": (
+                    "This listing is not eligible for "
+                    "direct purchase. Please contact "
+                    "the seller instead."
+                )
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     if cart_item.listing.available_quantity < quantity:
         return Response(
@@ -367,6 +404,23 @@ def checkout_cart(request):
                     {
                         "error": (
                             f"'{listing.title}' is no longer available"
+                        )
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # Only approved Fafameso Plus listings
+            # are eligible for direct checkout.
+            if not (
+                listing.fafameso_plus_requested
+                and listing.fafameso_plus_approved
+            ):
+                return Response(
+                    {
+                        "error": (
+                            f"'{listing.title}' is not eligible "
+                            "for direct checkout. Please contact "
+                            "the seller instead."
                         )
                     },
                     status=status.HTTP_400_BAD_REQUEST,

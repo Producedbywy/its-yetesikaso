@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib import admin
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.utils import timezone
@@ -11,14 +12,97 @@ from .models import (
 from .services.ghana_card_encryption import decrypt_ghana_card_value
 
 
+class FafamesoListingAdminForm(forms.ModelForm):
+    class Meta:
+        model = Listing
+        fields = "__all__"
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        if not cleaned_data.get("fafameso_plus_approved"):
+            return cleaned_data
+
+        requested = (
+            cleaned_data["fafameso_plus_requested"]
+            if "fafameso_plus_requested" in cleaned_data
+            else self.instance.fafameso_plus_requested
+        )
+
+        if not requested:
+            self.add_error(
+                "fafameso_plus_approved",
+                "A seller request is required before approval.",
+            )
+
+        if cleaned_data.get("status") != "published":
+            self.add_error(
+                "fafameso_plus_approved",
+                "Only published listings can be approved.",
+            )
+
+        owner = cleaned_data.get("owner")
+
+        if owner:
+            profile = getattr(owner, "seller_profile", None)
+
+            if (
+                profile is None
+                or profile.role != "seller"
+                or profile.verification_status != "verified"
+            ):
+                self.add_error(
+                    "fafameso_plus_approved",
+                    "The seller must be verified before approval.",
+                )
+
+        return cleaned_data
+
 @admin.register(Listing)
 class ListingAdmin(admin.ModelAdmin):
+    form = FafamesoListingAdminForm
+
+    def get_readonly_fields(self, request, obj=None):
+        readonly = super().get_readonly_fields(request, obj)
+
+        # Seller requests cannot be changed in Django Admin.
+        readonly = (*readonly, "fafameso_plus_requested")
+
+        # Only superusers can approve Fafameso Plus.
+        if not request.user.is_superuser:
+            readonly = (*readonly, "fafameso_plus_approved")
+
+        return readonly
+
+    def save_model(self, request, obj, form, change):
+        if not request.user.is_superuser:
+            previously_approved = False
+
+            if change:
+                previously_approved = (
+                    Listing.objects.filter(pk=obj.pk)
+                    .values_list(
+                        "fafameso_plus_approved",
+                        flat=True,
+                    )
+                    .first()
+                ) or False
+
+            if obj.fafameso_plus_approved != previously_approved:
+                raise PermissionDenied(
+                    "Only superusers can change Fafameso Plus approval."
+                )
+
+        super().save_model(request, obj, form, change)
+
     list_display = (
         "title",
         "price",
         "category",
         "location",
         "owner",
+        "fafameso_plus_requested",
+        "fafameso_plus_approved",
         "created_at",
     )
 
@@ -31,6 +115,8 @@ class ListingAdmin(admin.ModelAdmin):
     list_filter = (
         "category",
         "location",
+        "fafameso_plus_requested",
+        "fafameso_plus_approved",
     )
 
 

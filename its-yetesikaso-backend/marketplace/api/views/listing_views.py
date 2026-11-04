@@ -1,4 +1,5 @@
 import math
+from decimal import Decimal, InvalidOperation
 from django.db.models import Exists, OuterRef, Q
 from rest_framework.decorators import (
     api_view,
@@ -352,6 +353,25 @@ def create_listing(request):
 
     data = request.data
 
+    # Sellers may request Fafameso Plus.
+    # Approval remains controlled by Yetesikaso.
+    requested_value = str(
+        data.get("fafameso_plus_requested", "false")
+    ).strip().lower()
+
+    if requested_value not in ("true", "false"):
+        return Response(
+            {
+                "error": (
+                    "fafameso_plus_requested must "
+                    "be true or false"
+                )
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    fafameso_plus_requested = requested_value == "true"
+
     quantity = max(int(data.get("quantity", 1)), 1)
 
     location = data["location"]
@@ -386,6 +406,8 @@ def create_listing(request):
         longitude=coordinates[1] if coordinates else None,
         quantity=quantity,
         available_quantity=quantity,
+        fafameso_plus_requested=fafameso_plus_requested,
+        fafameso_plus_approved=False,
     )
 
     # Support multiple images.
@@ -470,6 +492,46 @@ def listing_detail(request, listing_id):
         )
 
     data = request.data
+
+    # Preserve the approved listing details before editing.
+    approval_sensitive_fields = (
+        "title",
+        "description",
+        "price",
+        "pricing_type",
+        "category",
+        "location",
+        "status",
+    )
+
+    original_values = {
+        field: getattr(listing, field)
+        for field in approval_sensitive_fields
+    }
+
+    # Sellers may request or withdraw Fafameso Plus.
+    # Any change to the request resets admin approval.
+    if "fafameso_plus_requested" in data:
+        requested_value = str(
+            data.get("fafameso_plus_requested")
+        ).strip().lower()
+
+        if requested_value not in ("true", "false"):
+            return Response(
+                {
+                    "error": (
+                        "fafameso_plus_requested must "
+                        "be true or false"
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        new_requested = requested_value == "true"
+
+        if new_requested != listing.fafameso_plus_requested:
+            listing.fafameso_plus_requested = new_requested
+            listing.fafameso_plus_approved = False
 
     if "status" in data:
         requested_status = data.get("status")
@@ -592,6 +654,27 @@ def listing_detail(request, listing_id):
         # Keep the legacy image field synchronized
         # with the first gallery image.
         listing.image = image_urls[0]
+
+    # Changes to approved listing details require another review.
+    if listing.fafameso_plus_approved:
+        details_changed = any(
+            str(getattr(listing, field)) != str(original_values[field])
+            for field in approval_sensitive_fields
+            if field != "price"
+        )
+
+        # Compare prices numerically to avoid unnecessary
+        # approval revocation for equivalent values.
+        try:
+            price_changed = (
+                Decimal(str(listing.price))
+                != Decimal(str(original_values["price"]))
+            )
+        except (InvalidOperation, ValueError):
+            price_changed = True
+
+        if details_changed or price_changed or uploaded_images:
+            listing.fafameso_plus_approved = False
 
     listing.save()
 

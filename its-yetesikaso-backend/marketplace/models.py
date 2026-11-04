@@ -240,6 +240,17 @@ class Listing(models.Model):
         default=1,
     )
 
+    # Fafameso Plus
+    # Sellers may request the service.
+    fafameso_plus_requested = models.BooleanField(
+        default=False,
+    )
+
+    # Only Yetesikaso administrators may approve it.
+    fafameso_plus_approved = models.BooleanField(
+        default=False,
+    )
+
     slug = models.SlugField(
         unique=True,
         blank=True,

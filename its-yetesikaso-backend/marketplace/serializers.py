@@ -176,6 +176,8 @@ class ListingSerializer(serializers.ModelSerializer):
             "images",
             "quantity",
             "available_quantity",
+            "fafameso_plus_requested",
+            "fafameso_plus_approved",
             "slug",
             "created_at",
             "seller",
@@ -190,6 +192,8 @@ class ListingSerializer(serializers.ModelSerializer):
             "is_favourited",
             "images",
             "available_quantity",
+            "fafameso_plus_requested",
+            "fafameso_plus_approved",
         ]
 
     def get_seller(self, obj):
