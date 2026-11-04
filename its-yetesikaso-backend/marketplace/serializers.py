@@ -202,7 +202,17 @@ class ListingSerializer(serializers.ModelSerializer):
         except SellerProfile.DoesNotExist:
             return None
 
-        return SellerProfileSerializer(profile).data
+        seller_data = SellerProfileSerializer(profile).data
+
+        request = self.context.get("request")
+
+        # Only authenticated users can view seller
+        # phone numbers and email addresses.
+        if not request or not request.user.is_authenticated:
+            seller_data.pop("phone", None)
+            seller_data.pop("email", None)
+
+        return seller_data
 
     def get_is_favourited(self, obj):
         request = self.context.get("request")
