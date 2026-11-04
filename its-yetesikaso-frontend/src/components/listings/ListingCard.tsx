@@ -101,6 +101,14 @@ export default function ListingCard({
             </div>
           )}
 
+          {/* FAFAMESO PLUS BADGE */}
+          {listing.fafameso_plus_requested &&
+            listing.fafameso_plus_approved && (
+              <span className="absolute left-3 top-3 rounded-full bg-lime-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm">
+                Fafameso Plus
+              </span>
+            )}
+
           {/* FAVOURITE */}
           <button
             type="button"

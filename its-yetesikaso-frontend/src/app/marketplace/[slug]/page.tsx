@@ -5,6 +5,7 @@ import ListingImageGallery from '@/components/marketplace/listing-image-gallery'
 import type { Listing } from '@/types/listing'
 import ReportListingButton from '@/components/marketplace/report-listing-button'
 import BuyListingButton from '@/components/marketplace/buy-listing-button'
+import ContactSellerButton from '@/components/marketplace/contact-seller-button'
 import { getPricingTypeLabel } from '@/lib/listing-pricing'
 
 const API_BASE_URL =
@@ -157,10 +158,38 @@ export default async function ListingDetailPage({
                 </div>
 
                 <div className="space-y-3">
-                  <BuyListingButton
-                    listingId={listing.id}
-                    availableQuantity={listing.available_quantity}
-                  />
+                  {listing.fafameso_plus_requested &&
+                  listing.fafameso_plus_approved ? (
+                    <>
+                      <div className="rounded-xl border border-lime-200 bg-lime-50 p-4">
+                        <span className="inline-flex rounded-full bg-lime-600 px-3 py-1 text-xs font-semibold text-white">
+                          Fafameso Plus
+                        </span>
+
+                        <p className="mt-2 text-sm text-lime-900">
+                          Buy securely through Yetesikaso.
+                          Payment is handled online, and
+                          Yetesikaso coordinates delivery.
+                        </p>
+                      </div>
+
+                      <BuyListingButton
+                        listingId={listing.id}
+                        availableQuantity={listing.available_quantity}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-sm text-[var(--muted)]">
+                        Contact the seller directly to discuss
+                        availability, payment and collection.
+                      </p>
+
+                      <ContactSellerButton
+                        listingId={listing.id}
+                      />
+                    </>
+                  )}
                 </div>
 
                 <div className="mt-4">

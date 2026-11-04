@@ -380,6 +380,23 @@ export default function DashboardPage() {
                           item.price
                         ).toLocaleString()}
                       </p>
+
+                      {/* FAFAMESO PLUS STATUS */}
+                      {item.fafameso_plus_requested && (
+                        <div className="mt-3">
+                          <span
+                            className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                              item.fafameso_plus_approved
+                                ? "bg-lime-100 text-lime-800"
+                                : "bg-amber-100 text-amber-800"
+                            }`}
+                          >
+                            {item.fafameso_plus_approved
+                              ? "Fafameso Plus — Approved"
+                              : "Fafameso Plus — Pending Approval"}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     {/* INVENTORY */}

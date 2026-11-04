@@ -25,6 +25,8 @@ export type Listing = {
   images: string[]
   quantity: number
   available_quantity: number
+  fafameso_plus_requested: boolean
+  fafameso_plus_approved: boolean
   status: "draft" | "published"
   slug: string
   created_at: string

@@ -18,6 +18,7 @@ type ListingForm = {
   pricingType: string
   category: string
   location: string
+  fafamesoPlusRequested: boolean
 }
 
 export default function EditListingPage() {
@@ -32,11 +33,17 @@ export default function EditListingPage() {
     pricingType: "one_time",
     category: "",
     location: "",
+    fafamesoPlusRequested: false,
   })
 
   const [currentImages, setCurrentImages] = useState<string[]>([])
   const [listingSlug, setListingSlug] = useState("")
   const [newImages, setNewImages] = useState<File[]>([])
+
+  const [fafamesoPlusRequestedSaved, setFafamesoPlusRequestedSaved] =
+    useState(false)
+  const [fafamesoPlusApproved, setFafamesoPlusApproved] =
+    useState(false)
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -57,6 +64,13 @@ export default function EditListingPage() {
 
         setListingSlug(data.slug)
 
+        setFafamesoPlusRequestedSaved(
+          data.fafameso_plus_requested ?? false
+        )
+        setFafamesoPlusApproved(
+          data.fafameso_plus_approved ?? false
+        )
+
         setForm({
           title: data.title ?? "",
           description: data.description ?? "",
@@ -64,6 +78,8 @@ export default function EditListingPage() {
           pricingType: data.pricing_type ?? "one_time",
           category: data.category ?? "",
           location: data.location ?? "",
+          fafamesoPlusRequested:
+            data.fafameso_plus_requested ?? false,
         })
 
         const images =
@@ -99,7 +115,7 @@ export default function EditListingPage() {
   }, [id])
 
   function updateField(
-    field: keyof ListingForm,
+    field: Exclude<keyof ListingForm, "fafamesoPlusRequested">,
     value: string
   ) {
     setForm((prev) => ({
@@ -139,6 +155,10 @@ export default function EditListingPage() {
       data.append(
         "location",
         form.location.trim()
+      )
+      data.append(
+        "fafameso_plus_requested",
+        String(form.fafamesoPlusRequested)
       )
 
       // If new images were selected, replace the
@@ -503,6 +523,77 @@ export default function EditListingPage() {
                 placeholder="Location"
                 required
               />
+            </div>
+
+            {/* FAFAMESO PLUS */}
+            <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <h2 className="font-semibold">
+                  Fafameso Plus
+                </h2>
+
+                <span className="rounded-full bg-lime-100 px-3 py-1 text-xs font-semibold text-lime-800">
+                  {fafamesoPlusApproved
+                    ? "Approved"
+                    : fafamesoPlusRequestedSaved
+                      ? "Pending Approval"
+                      : "Not Requested"}
+                </span>
+              </div>
+
+              <label
+                htmlFor="fafamesoPlusRequested"
+                className="flex cursor-pointer items-start gap-3"
+              >
+                <input
+                  id="fafamesoPlusRequested"
+                  name="fafamesoPlusRequested"
+                  type="checkbox"
+                  checked={form.fafamesoPlusRequested}
+                  onChange={(event) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      fafamesoPlusRequested: event.target.checked,
+                    }))
+                  }
+                  disabled={saving}
+                  className="mt-1 h-5 w-5 shrink-0 accent-lime-500"
+                />
+
+                <span>
+                  <span className="block text-sm font-medium">
+                    Request Fafameso Plus
+                  </span>
+
+                  <span className="mt-1 block text-sm text-[var(--muted)]">
+                    Allow customers to pay directly through
+                    Yetesikaso, with delivery coordinated
+                    by Yetesikaso.
+                  </span>
+                </span>
+              </label>
+
+              <p className="mt-4 text-xs leading-relaxed text-[var(--muted)]">
+                Fafameso Plus requires approval from Yetesikaso.
+                Until approved, buyers must contact you directly
+                to arrange their purchase.
+              </p>
+
+              {fafamesoPlusApproved && (
+                <p className="mt-3 text-xs leading-relaxed text-[var(--muted)]">
+                  Changes to important listing details or images
+                  will remove your existing approval and require
+                  another review.
+                </p>
+              )}
+
+              {form.fafamesoPlusRequested !==
+                fafamesoPlusRequestedSaved && (
+                <p className="mt-3 text-xs font-medium text-[var(--foreground)]">
+                  Your request change will take effect when
+                  you save this listing.
+                </p>
+              )}
             </div>
 
             {/* SAVE */}

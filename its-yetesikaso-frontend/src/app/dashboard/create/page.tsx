@@ -21,6 +21,7 @@ type ListingDraft = {
   quantity: string
   category: string
   location: string
+  fafamesoPlusRequested: boolean
 }
 
 const DRAFT_KEY = "yetesikaso_listing_draft"
@@ -33,6 +34,7 @@ const defaultForm: ListingDraft = {
   quantity: "1",
   category: "property_land",
   location: "",
+  fafamesoPlusRequested: false,
 }
 
 export default function CreateListingPage() {
@@ -64,7 +66,7 @@ export default function CreateListingPage() {
   }, [])
 
   function updateField(
-    field: keyof ListingDraft,
+    field: Exclude<keyof ListingDraft, "fafamesoPlusRequested">,
     value: string
   ) {
     setForm((prev) => {
@@ -153,6 +155,10 @@ export default function CreateListingPage() {
       data.append("quantity", String(quantity))
       data.append("category", form.category)
       data.append("location", form.location.trim())
+      data.append(
+        "fafameso_plus_requested",
+        String(form.fafamesoPlusRequested)
+      )
 
       images.forEach((file) => {
         data.append("images", file)
@@ -527,6 +533,48 @@ export default function CreateListingPage() {
               </p>
 
               <ImageUploader onChange={setImages} />
+            </div>
+
+            {/* FAFAMESO PLUS */}
+            <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
+              <label
+                htmlFor="fafamesoPlusRequested"
+                className="flex cursor-pointer items-start gap-3"
+              >
+                <input
+                  id="fafamesoPlusRequested"
+                  name="fafamesoPlusRequested"
+                  type="checkbox"
+                  checked={form.fafamesoPlusRequested}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      fafamesoPlusRequested: e.target.checked,
+                    }))
+                  }
+                  disabled={loading}
+                  className="mt-1 h-5 w-5 shrink-0 accent-lime-500"
+                />
+
+                <span>
+                  <span className="block font-semibold">
+                    Request Fafameso Plus
+                  </span>
+
+                  <span className="mt-1 block text-sm text-[var(--muted)]">
+                    Allow customers to purchase this item directly
+                    through Yetesikaso using secure online payment,
+                    with delivery coordinated by Yetesikaso.
+                  </span>
+                </span>
+              </label>
+
+              <p className="mt-4 text-xs leading-relaxed text-[var(--muted)]">
+                Fafameso Plus is subject to review and approval
+                by Yetesikaso. Until approved, your listing will
+                remain a standard marketplace listing where
+                buyers contact you directly.
+              </p>
             </div>
 
             {/* ERROR */}
