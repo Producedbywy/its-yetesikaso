@@ -3,6 +3,7 @@ import Link from "next/link"
 
 import Container from "@/components/layout/container"
 import Footer from "@/components/layout/footer"
+import Navbar from "@/components/layout/navbar"
 
 export const metadata: Metadata = {
   title: "Become a Seller | Yetesikaso",
@@ -89,6 +90,8 @@ const faqs = [
 export default function BecomeASellerPage() {
   return (
     <>
+      <Navbar />
+
       <main>
         {/* HERO */}
         <section className="border-b border-[var(--border)] bg-[var(--card)] py-16 sm:py-20">

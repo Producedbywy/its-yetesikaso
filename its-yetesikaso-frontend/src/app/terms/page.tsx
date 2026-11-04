@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 
 import Container from "@/components/layout/container"
 import Footer from "@/components/layout/footer"
+import Navbar from "@/components/layout/navbar"
 
 export const metadata: Metadata = {
   title: "Terms of Service | Yetesikaso",
@@ -11,6 +12,8 @@ export const metadata: Metadata = {
 export default function TermsPage() {
   return (
     <>
+      <Navbar />
+
       <main>
         <section className="border-b border-[var(--border)] bg-[var(--card)] py-16">
           <Container>

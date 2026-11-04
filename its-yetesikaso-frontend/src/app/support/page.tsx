@@ -3,6 +3,7 @@ import Link from "next/link"
 
 import Container from "@/components/layout/container"
 import Footer from "@/components/layout/footer"
+import Navbar from "@/components/layout/navbar"
 
 export const metadata: Metadata = {
   title: "Support | Yetesikaso",
@@ -44,6 +45,8 @@ const supportTopics = [
 export default function SupportPage() {
   return (
     <>
+      <Navbar />
+
       <main>
         <section className="border-b border-[var(--border)] bg-[var(--card)] py-16 sm:py-20">
           <Container>
