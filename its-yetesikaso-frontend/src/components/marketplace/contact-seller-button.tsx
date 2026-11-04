@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 
 import { createConversation } from "@/lib/api/messages"
+import { getAccessToken } from "@/lib/auth/tokens"
 
 type ContactSellerButtonProps = {
   listingId: number
@@ -18,6 +19,13 @@ export default function ContactSellerButton({
   const [error, setError] = useState<string | null>(null)
 
   async function handleContactSeller() {
+    if (!getAccessToken()) {
+      router.push(
+        `/login?returnTo=${encodeURIComponent(window.location.pathname)}`
+      )
+      return
+    }
+
     try {
       setLoading(true)
       setError(null)
@@ -43,7 +51,7 @@ export default function ContactSellerButton({
         disabled={loading}
         className="w-full rounded-xl bg-lime-400 px-5 py-3 font-medium text-black transition hover:bg-lime-300 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {loading ? "Opening..." : "Contact Seller"}
+        {loading ? "Opening..." : "Message Seller"}
       </button>
 
       {error && (

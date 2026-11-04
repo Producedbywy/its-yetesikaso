@@ -6,6 +6,7 @@ import type { Listing } from '@/types/listing'
 import ReportListingButton from '@/components/marketplace/report-listing-button'
 import BuyListingButton from '@/components/marketplace/buy-listing-button'
 import ContactSellerButton from '@/components/marketplace/contact-seller-button'
+import SellerContactDetails from '@/components/marketplace/seller-contact-details'
 import { getPricingTypeLabel } from '@/lib/listing-pricing'
 
 const API_BASE_URL =
@@ -157,7 +158,13 @@ export default async function ListingDetailPage({
                   </div>
                 </div>
 
-                <div className="space-y-3">
+                <SellerContactDetails listingSlug={listing.slug} />
+
+                <div className="mt-5">
+                  <ContactSellerButton listingId={listing.id} />
+                </div>
+
+                <div className="mt-5 space-y-3">
                   {listing.fafameso_plus_requested &&
                   listing.fafameso_plus_approved ? (
                     <>
@@ -184,10 +191,6 @@ export default async function ListingDetailPage({
                         Contact the seller directly to discuss
                         availability, payment and collection.
                       </p>
-
-                      <ContactSellerButton
-                        listingId={listing.id}
-                      />
                     </>
                   )}
                 </div>
