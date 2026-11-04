@@ -26,6 +26,7 @@ LOCATION_ALIASES = {
     "la, accra": "La, Accra",
     "adjringanor, accra": "Adjiringanor, Accra",
     "cantoments, accra": "Cantonments, Accra",
+    "kissieman, accra": "Kisseman, Accra",
     "airport residential, accra": "Airport Residential Area, Accra",
     "airport": "Accra International Airport",
     "airport west, accra": "Airport West, Accra",
