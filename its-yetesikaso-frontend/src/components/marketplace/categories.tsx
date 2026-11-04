@@ -107,6 +107,7 @@ const categories = [
 
 export default function Categories() {
   const [category, setCategory] = useState("all")
+  const [mobileCategoriesOpen, setMobileCategoriesOpen] = useState(false)
 
   const filters = useMemo(
     () => ({
@@ -146,11 +147,34 @@ export default function Categories() {
           {/* CATEGORY SIDEBAR */}
           <aside className="lg:sticky lg:top-6 lg:self-start">
             <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
-              <h3 className="mb-4 text-base font-semibold">
+              <button
+                type="button"
+                onClick={() => setMobileCategoriesOpen((open) => !open)}
+                aria-expanded={mobileCategoriesOpen}
+                aria-controls="browse-category-options"
+                className="flex w-full items-center justify-between text-base font-semibold lg:hidden"
+              >
+                <span>Categories</span>
+                <span
+                  aria-hidden="true"
+                  className={`text-xl transition-transform ${
+                    mobileCategoriesOpen ? "rotate-180" : ""
+                  }`}
+                >
+                  ▾
+                </span>
+              </button>
+
+              <h3 className="mb-4 hidden text-base font-semibold lg:block">
                 Categories
               </h3>
 
-              <div className="space-y-1">
+              <div
+                id="browse-category-options"
+                className={`mt-4 space-y-1 lg:mt-0 ${
+                  mobileCategoriesOpen ? "block" : "hidden"
+                } lg:block`}
+              >
                 {categories.map((item) => {
                   const active = category === item.value
 
@@ -158,7 +182,10 @@ export default function Categories() {
                     <button
                       key={item.value}
                       type="button"
-                      onClick={() => setCategory(item.value)}
+                      onClick={() => {
+                        setCategory(item.value)
+                        setMobileCategoriesOpen(false)
+                      }}
                       className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm transition ${
                         active
                           ? "bg-lime-400 font-semibold text-black"
