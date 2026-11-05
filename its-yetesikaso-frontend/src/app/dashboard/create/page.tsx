@@ -47,19 +47,43 @@ export default function CreateListingPage() {
   const [restoredDraft, setRestoredDraft] = useState(false)
 
   useEffect(() => {
+    const requestedCategory = new URLSearchParams(
+      window.location.search
+    ).get("category")
+
+    const presetCategory =
+      requestedCategory === "property_land" ||
+      requestedCategory === "vehicles"
+        ? requestedCategory
+        : null
+
     try {
       const savedDraft = sessionStorage.getItem(DRAFT_KEY)
 
       if (savedDraft) {
         const parsed = JSON.parse(savedDraft) as Partial<ListingDraft>
 
+        // Preserve an existing draft, including its category.
         setForm({
           ...defaultForm,
           ...parsed,
         })
+      } else if (presetCategory) {
+        // Preselect category only for a new listing.
+        setForm((previous) => ({
+          ...previous,
+          category: presetCategory,
+        }))
       }
     } catch {
       sessionStorage.removeItem(DRAFT_KEY)
+
+      if (presetCategory) {
+        setForm((previous) => ({
+          ...previous,
+          category: presetCategory,
+        }))
+      }
     } finally {
       setRestoredDraft(true)
     }

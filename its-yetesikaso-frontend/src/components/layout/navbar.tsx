@@ -106,12 +106,15 @@ export default function Navbar() {
 
   return (
     <header className="hidden border-b border-gray-200 bg-white text-gray-900 md:block">
-      <Container className="py-1">
-        {/* LOGO */}
-        <div className="flex justify-center">
+      <Container>
+
+        {/* TOP HEADER */}
+        <div className="relative flex h-36 items-center justify-center">
+
+          {/* CENTRED LOGO */}
           <Link
             href="/"
-            className="relative block h-44 w-44"
+            className="relative block h-32 w-44"
             aria-label="Yetesikaso home"
           >
             <Image
@@ -123,165 +126,178 @@ export default function Navbar() {
               priority
             />
           </Link>
+
+          {/* ACCOUNT CONTROLS — TOP RIGHT */}
+          <div className="absolute right-0 top-1/2 -translate-y-1/2">
+
+            {authenticated ? (
+              <details key={pathname} className="relative">
+                <summary className="flex cursor-pointer list-none items-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold transition hover:bg-gray-50 [&::-webkit-details-marker]:hidden">
+                  My Account
+                  <span aria-hidden="true">⌄</span>
+                </summary>
+
+                <div className="absolute right-0 top-full z-50 mt-2 w-60 rounded-2xl border border-gray-200 bg-white p-3 shadow-xl">
+
+                  <div className="flex flex-col gap-1">
+
+                    <Link
+                      href="/profile"
+                      className={linkClass("/profile")}
+                    >
+                      Profile
+                    </Link>
+
+                    <Link
+                      href="/cart"
+                      className={`flex items-center justify-between ${linkClass("/cart")}`}
+                    >
+                      Cart
+                      {cartQuantity > 0 && (
+                        <span className="rounded-full bg-lime-400 px-2 py-0.5 text-xs text-black">
+                          {cartQuantity > 99 ? "99+" : cartQuantity}
+                        </span>
+                      )}
+                    </Link>
+
+                    <Link
+                      href="/orders"
+                      className={linkClass("/orders")}
+                    >
+                      Orders
+                    </Link>
+
+                    <Link
+                      href="/saved"
+                      className={linkClass("/saved")}
+                    >
+                      Saved Listings
+                    </Link>
+
+                    <Link
+                      href="/messages"
+                      className={`flex items-center justify-between ${linkClass("/messages")}`}
+                    >
+                      Messages
+                      {unreadMessages > 0 && (
+                        <span className="rounded-full bg-lime-400 px-2 py-0.5 text-xs text-black">
+                          {unreadMessages > 99 ? "99+" : unreadMessages}
+                        </span>
+                      )}
+                    </Link>
+
+                    {isSeller && (
+                      <Link
+                        href="/dashboard"
+                        className={linkClass("/dashboard")}
+                      >
+                        Seller Dashboard
+                      </Link>
+                    )}
+
+                    {isEmployer && (
+                      <>
+                        <Link
+                          href="/employer/dashboard"
+                          className={linkClass("/employer/dashboard")}
+                        >
+                          Employer Dashboard
+                        </Link>
+
+                        <Link
+                          href="/employer/jobs/create"
+                          className={linkClass("/employer/jobs/create")}
+                        >
+                          Post a Job
+                        </Link>
+                      </>
+                    )}
+
+                  </div>
+
+                  <div className="mt-3 border-t border-gray-200 pt-3">
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="w-full rounded-lg px-2.5 py-2 text-left text-sm font-medium text-red-600 transition hover:bg-red-50"
+                    >
+                      Logout
+                    </button>
+                  </div>
+
+                </div>
+              </details>
+            ) : (
+              <div className="flex items-center gap-3 text-sm">
+
+                <Link
+                  href="/login"
+                  className="font-semibold transition hover:text-lime-700"
+                >
+                  Login
+                </Link>
+
+                <Link
+                  href="/register"
+                  className="rounded-xl border border-gray-200 px-4 py-2.5 font-semibold transition hover:bg-gray-50"
+                >
+                  Register
+                </Link>
+
+              </div>
+            )}
+
+          </div>
         </div>
 
-        {/* NAVIGATION */}
-        <nav className="relative z-10 -mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm">
-          <Link
-            href="/"
-            className={linkClass("/")}
-          >
-            Home
-          </Link>
+        {/* MAIN NAVIGATION */}
+        <nav
+          aria-label="Main navigation"
+          className="flex min-h-16 items-center justify-between gap-4 border-t border-gray-200 py-3"
+        >
 
-          <Link
-            href="/marketplace"
-            className={linkClass("/marketplace")}
-          >
-            Marketplace
-          </Link>
+          <div className="flex flex-wrap items-center gap-2 text-sm font-semibold">
 
-          <Link
-            href="/jobs"
-            className={linkClass("/jobs")}
-          >
-            Jobs
-          </Link>
-
-          <Link
-            href="/sustainability"
-            className={linkClass("/sustainability")}
-          >
-            Sustainability
-          </Link>
-
-          {!isSeller && (
             <Link
-              href="/become-a-seller"
-              className={linkClass("/become-a-seller")}
+              href="/marketplace"
+              className={linkClass("/marketplace")}
             >
-              Become a Seller
+              Marketplace
             </Link>
-          )}
 
-          {authenticated ? (
-            <>
-              <Link
-                href="/cart"
-                className={`flex items-center gap-2 ${linkClass("/cart")}`}
-              >
-                <span>Cart</span>
-
-                {cartQuantity > 0 && (
-                  <span className="flex min-w-5 items-center justify-center rounded-full bg-lime-400 px-1.5 py-0.5 text-xs font-bold text-black">
-                    {cartQuantity > 99 ? "99+" : cartQuantity}
-                  </span>
-                )}
-              </Link>
-
-              <Link
-                href="/orders"
-                className={linkClass("/orders")}
-              >
-                Orders
-              </Link>
-
-              {isSeller && (
-                <Link
-                  href="/dashboard"
-                  className={linkClass("/dashboard")}
-                >
-                  Seller Dashboard
-                </Link>
-              )}
-
-              {isEmployer && (
-                <Link
-                  href="/employer/dashboard"
-                  className={linkClass("/employer/dashboard")}
-                >
-                  Employer Dashboard
-                </Link>
-              )}
-
-              <Link
-                href="/profile"
-                className={linkClass("/profile")}
-              >
-                Profile
-              </Link>
-
-              <Link
-                href="/saved"
-                className={linkClass("/saved")}
-              >
-                Saved
-              </Link>
-
-              <Link
-                href="/messages"
-                className={`flex items-center gap-2 ${linkClass("/messages")}`}
-              >
-                <span>Messages</span>
-
-                {unreadMessages > 0 && (
-                  <span className="flex min-w-5 items-center justify-center rounded-full bg-lime-400 px-1.5 py-0.5 text-xs font-bold text-black">
-                    {unreadMessages > 99 ? "99+" : unreadMessages}
-                  </span>
-                )}
-              </Link>
-
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="rounded-lg px-2.5 py-1.5 transition-opacity hover:opacity-70"
-              >
-                Logout
-              </button>
-            </>
-          ) : (
-            <>
-              <Link
-                href="/login"
-                className={linkClass("/login")}
-              >
-                Login
-              </Link>
-
-              <Link
-                href="/register"
-                className={linkClass("/register")}
-              >
-                Register
-              </Link>
-
-              <Link
-                href="/dashboard/create"
-                className={actionClass("/dashboard/create")}
-              >
-                Post Listing
-              </Link>
-            </>
-          )}
-
-          {isSeller && (
             <Link
-              href="/dashboard/create"
-              className={actionClass("/dashboard/create")}
+              href="/marketplace?category=property_land"
+              className="rounded-lg px-3 py-2 transition hover:bg-lime-100 hover:text-lime-800"
             >
-              Post Listing
+              Property
             </Link>
-          )}
 
-          {isEmployer && (
             <Link
-              href="/employer/jobs/create"
-              className={actionClass("/employer/jobs/create")}
+              href="/marketplace?category=vehicles"
+              className="rounded-lg px-3 py-2 transition hover:bg-lime-100 hover:text-lime-800"
             >
-              Post Job
+              Cars
             </Link>
-          )}
+
+            <Link
+              href="/jobs"
+              className={linkClass("/jobs")}
+            >
+              Jobs
+            </Link>
+
+          </div>
+
+          {/* PRIMARY POSTING ACTION */}
+          <Link
+            href="/post-listing"
+            className={`${actionClass("/post-listing")} whitespace-nowrap text-sm`}
+          >
+            + Post a Listing
+          </Link>
+
         </nav>
+
       </Container>
     </header>
   )

@@ -5,10 +5,10 @@ import Container from "./container"
 
 const marketplaceLinks = [
   { label: "Browse Listings", href: "/marketplace" },
-  { label: "Electronics", href: "/marketplace?category=electronics" },
-  { label: "Vehicles", href: "/marketplace?category=vehicles" },
-  { label: "Property", href: "/marketplace?category=property" },
-  { label: "Furniture", href: "/marketplace?category=furniture" },
+  { label: "Property & Land", href: "/marketplace?category=property_land" },
+  { label: "Cars & Vehicles", href: "/marketplace?category=vehicles" },
+  { label: "Electronics & Appliances", href: "/marketplace?category=electronics_appliances" },
+  { label: "Home & Garden", href: "/marketplace?category=home_garden" },
   { label: "Other", href: "/marketplace?category=other" },
   { label: "Saved Listings", href: "/saved" },
 ]

@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { Suspense, useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import Navbar from "@/components/layout/navbar"
 import Footer from "@/components/layout/footer"
 import Container from "@/components/layout/container"
@@ -10,9 +11,20 @@ import MobileFilterModal from "@/components/MobileFilterModal"
 import { useListings } from "@/lib/marketplace/useListings"
 
 export default function MarketplacePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[var(--background)]" />}>
+      <MarketplacePageContent />
+    </Suspense>
+  )
+}
+
+function MarketplacePageContent() {
+  const searchParams = useSearchParams()
+  const categoryFromUrl = searchParams.get("category") || "all"
+
   const [filters, setFilters] = useState({
     search: "",
-    category: "all",
+    category: categoryFromUrl,
     location: "all",
     minPrice: "",
     maxPrice: "",
@@ -55,6 +67,23 @@ export default function MarketplacePage() {
     other:
       "Items that do not fit another category.",
   }
+
+  useEffect(() => {
+    const nextCategory = Object.prototype.hasOwnProperty.call(
+      categoryDescriptions,
+      categoryFromUrl
+    )
+      ? categoryFromUrl
+      : "all"
+
+    setFilters((previous) =>
+      previous.category === nextCategory
+        ? previous
+        : { ...previous, category: nextCategory }
+    )
+
+    setPage(1)
+  }, [categoryFromUrl])
 
   const {
     data: listings = [],

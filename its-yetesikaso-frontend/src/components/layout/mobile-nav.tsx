@@ -7,10 +7,10 @@ import { usePathname } from "next/navigation"
 import {
   Menu,
   X,
-  Home,
   Search,
+  House,
+  CarFront,
   Briefcase,
-  Recycle,
   ShoppingCart,
   ClipboardList,
   User,
@@ -189,16 +189,8 @@ export default function MobileNav() {
       {open && (
         <div className="fixed inset-0 top-24 z-40 overflow-y-auto bg-white md:hidden">
           <nav className="px-4 py-6">
-            {/* GENERAL */}
+            {/* MAIN NAVIGATION */}
             <div className="space-y-1">
-              <Link
-                href="/"
-                onClick={closeMenu}
-                className={linkClass("/")}
-              >
-                <Home size={20} />
-                Home
-              </Link>
 
               <Link
                 href="/marketplace"
@@ -210,6 +202,24 @@ export default function MobileNav() {
               </Link>
 
               <Link
+                href="/marketplace?category=property_land"
+                onClick={closeMenu}
+                className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100"
+              >
+                <House size={20} />
+                Property
+              </Link>
+
+              <Link
+                href="/marketplace?category=vehicles"
+                onClick={closeMenu}
+                className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition hover:bg-gray-100"
+              >
+                <CarFront size={20} />
+                Cars
+              </Link>
+
+              <Link
                 href="/jobs"
                 onClick={closeMenu}
                 className={linkClass("/jobs")}
@@ -218,14 +228,17 @@ export default function MobileNav() {
                 Jobs
               </Link>
 
-              <Link
-                href="/sustainability"
-                onClick={closeMenu}
-                className={linkClass("/sustainability")}
-              >
-                <Recycle size={20} />
-                Sustainability
-              </Link>
+              <div className="pt-4">
+                <Link
+                  href="/post-listing"
+                  onClick={closeMenu}
+                  className="flex items-center justify-center gap-2 rounded-xl bg-lime-400 px-5 py-3 font-semibold text-black transition hover:bg-lime-300"
+                >
+                  <PlusCircle size={20} />
+                  Post a Listing
+                </Link>
+              </div>
+
             </div>
 
             {/* LOGGED-IN */}
@@ -319,14 +332,6 @@ export default function MobileNav() {
                         Seller Dashboard
                       </Link>
 
-                      <Link
-                        href="/dashboard/create"
-                        onClick={closeMenu}
-                        className={actionClass("/dashboard/create")}
-                      >
-                        <PlusCircle size={20} />
-                        Post Listing
-                      </Link>
                     </div>
                   </>
                 )}
