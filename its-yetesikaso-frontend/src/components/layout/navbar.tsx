@@ -250,14 +250,17 @@ export default function Navbar() {
           </div>
         </div>
 
+
         {/* MAIN NAVIGATION */}
         <nav
           aria-label="Main navigation"
-          className="flex min-h-16 items-center justify-between gap-4 border-t border-gray-200 py-3"
+          className="grid min-h-16 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 border-t border-gray-200 py-3"
         >
+          {/* BALANCE SPACE TO KEEP LINKS CENTRED */}
+          <div aria-hidden="true" />
 
-          <div className="flex flex-wrap items-center gap-2 text-sm font-semibold">
-
+          {/* CENTRED NAVIGATION LINKS */}
+          <div className="flex items-center justify-center gap-4 whitespace-nowrap text-sm font-semibold lg:gap-12">
             <Link
               href="/marketplace"
               className={linkClass("/marketplace")}
@@ -285,18 +288,17 @@ export default function Navbar() {
             >
               Jobs
             </Link>
-
           </div>
 
-          {/* PRIMARY POSTING ACTION */}
+          {/* POST LISTING BUTTON — RIGHT */}
           <Link
             href="/post-listing"
-            className={`${actionClass("/post-listing")} whitespace-nowrap text-sm`}
+            className={`${actionClass("/post-listing")} justify-self-end whitespace-nowrap text-sm`}
           >
             + Post a Listing
           </Link>
-
         </nav>
+
 
       </Container>
     </header>
