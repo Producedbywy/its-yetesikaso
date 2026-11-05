@@ -45,6 +45,7 @@ export default function CreateListingPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [restoredDraft, setRestoredDraft] = useState(false)
+  const [showAuthModal, setShowAuthModal] = useState(false)
 
   useEffect(() => {
     const requestedCategory = new URLSearchParams(
@@ -148,13 +149,8 @@ export default function CreateListingPage() {
 
     if (!token) {
       saveDraft()
-
-      router.push(
-        `/login?returnTo=${encodeURIComponent(
-          "/dashboard/create"
-        )}`
-      )
-
+      setError(null)
+      setShowAuthModal(true)
       return
     }
 
@@ -623,7 +619,80 @@ export default function CreateListingPage() {
             </button>
           </form>
         </div>
+
       </Container>
+
+      {showAuthModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 px-4 py-6">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="listing-auth-title"
+            className="w-full max-w-md rounded-3xl bg-white p-6 text-gray-900 shadow-2xl sm:p-8"
+          >
+            <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-lime-100 text-2xl">
+              🔒
+            </div>
+
+            <h2
+              id="listing-auth-title"
+              className="text-2xl font-bold"
+            >
+              You're almost there!
+            </h2>
+
+            <p className="mt-3 text-sm leading-6 text-gray-600">
+              Your listing is ready. To complete the process,
+              please log in or create a Yetesikaso account.
+            </p>
+
+            <div className="mt-5 rounded-xl bg-lime-50 p-4 text-sm leading-6 text-gray-700">
+              Your listing details have been saved in this tab.
+              You'll be able to continue after signing in.
+              Uploaded photos will need to be selected again.
+            </div>
+
+            <div className="mt-6 space-y-3">
+              <button
+                type="button"
+                autoFocus
+                onClick={() =>
+                  router.push(
+                    `/login?returnTo=${encodeURIComponent(
+                      "/dashboard/create"
+                    )}`
+                  )
+                }
+                className="w-full rounded-xl bg-lime-400 px-5 py-3.5 font-semibold text-black transition hover:bg-lime-300"
+              >
+                Log In
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  router.push(
+                    `/register?returnTo=${encodeURIComponent(
+                      "/dashboard/create"
+                    )}`
+                  )
+                }
+                className="w-full rounded-xl border border-gray-300 px-5 py-3.5 font-semibold transition hover:bg-gray-50"
+              >
+                Create an Account
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowAuthModal(false)}
+                className="w-full px-5 py-3 text-sm font-medium text-gray-500 transition hover:text-gray-900"
+              >
+                Continue Editing
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }
