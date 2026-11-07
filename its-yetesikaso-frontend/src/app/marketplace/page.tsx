@@ -6,7 +6,6 @@ import Navbar from "@/components/layout/navbar"
 import Footer from "@/components/layout/footer"
 import Container from "@/components/layout/container"
 import ListingCard from "@/components/marketplace/listing-card"
-import MobileStickySearch from "@/components/MobileStickySearch"
 import MobileFilterModal from "@/components/MobileFilterModal"
 import { useListings } from "@/lib/marketplace/useListings"
 
@@ -118,13 +117,6 @@ function MarketplacePageContent() {
   return (
     <main className="min-h-screen bg-[var(--background)]">
       <Navbar />
-
-      <MobileStickySearch
-        value={filters.search}
-        onChange={(search) => {
-          updateFilters({ search })
-        }}
-      />
 
       <MobileFilterModal
         filters={filters}

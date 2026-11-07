@@ -10,6 +10,7 @@ import { getAccessToken, clearTokens } from "@/lib/auth/tokens"
 import { getConversations } from "@/lib/api/messages"
 import { getMyCart } from "@/lib/api/cart"
 import { getMyProfile, type AccountRole } from "@/lib/api/seller"
+import { Search } from "lucide-react"
 
 export default function Navbar() {
   const pathname = usePathname()
@@ -299,6 +300,44 @@ export default function Navbar() {
           </Link>
         </nav>
 
+        {/* GLOBAL SEARCH */}
+        <div className="border-t border-gray-100 py-4">
+          <form
+            action="/search"
+            method="get"
+            role="search"
+            className="flex w-full items-center gap-3 rounded-2xl border border-gray-200 bg-gray-50 p-2 shadow-sm transition focus-within:border-lime-500"
+          >
+            <label
+              htmlFor="global-search-desktop"
+              className="sr-only"
+            >
+              Search all of Yetesikaso
+            </label>
+
+            <Search
+              size={21}
+              aria-hidden="true"
+              className="ml-3 shrink-0 text-gray-500"
+            />
+
+            <input
+              id="global-search-desktop"
+              name="q"
+              type="search"
+              required
+              placeholder="Search products, property, cars and jobs..."
+              className="min-w-0 flex-1 bg-transparent py-2.5 text-sm text-gray-900 outline-none placeholder:text-gray-500"
+            />
+
+            <button
+              type="submit"
+              className="shrink-0 rounded-xl bg-lime-400 px-5 py-3 text-sm font-semibold text-black transition hover:bg-lime-300"
+            >
+              Search
+            </button>
+          </form>
+        </div>
 
       </Container>
     </header>

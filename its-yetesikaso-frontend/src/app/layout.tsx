@@ -34,7 +34,7 @@ export default function RootLayout({
     >
       <body className="min-h-full">
         <ThemeProvider>
-          <main className="pt-24 md:pt-0">
+          <main className="pt-40 md:pt-0">
             {children}
           </main>
           <MobileNav />

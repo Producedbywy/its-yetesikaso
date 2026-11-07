@@ -181,13 +181,54 @@ export default function MobileNav() {
             ) : (
               <Menu size={24} />
             )}
+
           </button>
         </div>
+
+        {/* MOBILE GLOBAL SEARCH */}
+        <form
+          action="/search"
+          method="get"
+          role="search"
+          className="px-4 pb-3"
+        >
+          <div className="flex h-12 items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3">
+            <Search
+              size={19}
+              aria-hidden="true"
+              className="shrink-0 text-gray-500"
+            />
+
+            <label
+              htmlFor="global-search-mobile"
+              className="sr-only"
+            >
+              Search all of Yetesikaso
+            </label>
+
+            <input
+              id="global-search-mobile"
+              name="q"
+              type="search"
+              required
+              placeholder="Search all of Yetesikaso..."
+              className="min-w-0 flex-1 bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-500"
+            />
+
+            <button
+              type="submit"
+              className="shrink-0 rounded-lg bg-lime-400 px-4 py-2 text-sm font-semibold text-black"
+            >
+              Search
+            </button>
+          </div>
+        </form>
       </div>
 
       {/* MOBILE MENU */}
+
       {open && (
-        <div className="fixed inset-0 top-24 z-40 overflow-y-auto bg-white md:hidden">
+        <div className="fixed inset-0 top-40 z-40 overflow-y-auto bg-white md:hidden">
           <nav className="px-4 py-6">
             {/* MAIN NAVIGATION */}
             <div className="space-y-1">

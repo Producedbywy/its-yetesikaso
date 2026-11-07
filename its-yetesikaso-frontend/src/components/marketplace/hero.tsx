@@ -68,17 +68,21 @@ export default function Hero() {
           fill
           priority
           sizes="100vw"
-          className={`object-cover ${
-            currentSlide === 2 ? "object-top" : "object-center"
-          }`}
+className={`object-cover ${
+  currentSlide === 1
+    ? "object-right md:object-center"
+    : currentSlide === 2
+      ? "object-top"
+      : "object-center"
+}`}
         />
 
         <div
-          className={`absolute inset-0 ${
-            currentSlide === 1
-              ? "bg-gradient-to-l from-black/90 via-black/35 to-transparent"
-              : "bg-gradient-to-r from-black/85 via-black/60 to-black/20"
-          }`}
+className={`absolute inset-0 ${
+  currentSlide === 1
+    ? "bg-gradient-to-r from-black/95 via-black/80 to-black/10 md:bg-gradient-to-l md:from-black/90 md:via-black/35 md:to-transparent"
+    : "bg-gradient-to-r from-black/85 via-black/60 to-black/20"
+}`}
         />
 
         <div className="relative min-h-[420px] md:min-h-[500px]">
