@@ -93,3 +93,17 @@ export async function checkoutCart(): Promise<CheckoutResponse> {
     method: "POST",
   })
 }
+
+
+export async function buyNow(
+  listingId: number,
+  quantity: number
+): Promise<CheckoutResponse> {
+  return apiClient<CheckoutResponse>("/buy-now/", {
+    method: "POST",
+    body: JSON.stringify({
+      listing_id: listingId,
+      quantity,
+    }),
+  })
+}

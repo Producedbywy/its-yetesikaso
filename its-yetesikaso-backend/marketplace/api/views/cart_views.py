@@ -533,3 +533,147 @@ def checkout_cart(request):
         },
         status=status.HTTP_201_CREATED,
     )
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def buy_now(request):
+    listing_id = request.data.get("listing_id")
+
+    try:
+        listing_id = int(listing_id)
+        quantity = int(request.data.get("quantity", 1))
+    except (TypeError, ValueError):
+        return Response(
+            {"error": "Valid listing ID and quantity are required"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if listing_id < 1 or quantity < 1:
+        return Response(
+            {"error": "Listing ID and quantity must be at least 1"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    with transaction.atomic():
+        listing = get_object_or_404(
+            Listing.objects
+            .select_for_update()
+            .select_related("owner"),
+            id=listing_id,
+        )
+
+        if listing.status != "published":
+            return Response(
+                {"error": "This listing is no longer available"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not (
+            listing.fafameso_plus_requested
+            and listing.fafameso_plus_approved
+        ):
+            return Response(
+                {
+                    "error": (
+                        "This listing is not eligible for online "
+                        "checkout. Please contact the seller."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if listing.owner_id == request.user.id:
+            return Response(
+                {"error": "You cannot purchase your own listing"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        now = timezone.now()
+        expires_at = now + timedelta(minutes=20)
+
+        InventoryReservation.objects.filter(
+            listing=listing,
+            status="active",
+            expires_at__lte=now,
+        ).update(
+            status="expired",
+            released_at=now,
+        )
+
+        reserved_quantity = (
+            InventoryReservation.objects.filter(
+                listing=listing,
+                status="active",
+                expires_at__gt=now,
+            ).aggregate(total=Sum("quantity"))["total"] or 0
+        )
+
+        available_for_checkout = (
+            listing.available_quantity - reserved_quantity
+        )
+
+        if quantity > available_for_checkout:
+            return Response(
+                {"error": "Insufficient available quantity"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        order_reference = (
+            f"YT-{now.strftime('%Y%m%d%H%M%S')}-"
+            f"{uuid4().hex[:8].upper()}"
+        )
+
+        total_amount = Decimal(listing.price) * quantity
+
+        order = Order.objects.create(
+            buyer=request.user,
+            order_reference=order_reference,
+            total_amount=total_amount,
+            payment_status="unpaid",
+            fulfilment_status="awaiting_payment",
+            expires_at=expires_at,
+        )
+
+        order_item = OrderItem.objects.create(
+            order=order,
+            listing=listing,
+            seller=listing.owner,
+            quantity=quantity,
+            unit_price=listing.price,
+            total_amount=total_amount,
+        )
+
+        InventoryReservation.objects.create(
+            order=order,
+            order_item=order_item,
+            listing=listing,
+            quantity=quantity,
+            status="active",
+            expires_at=expires_at,
+        )
+
+    return Response(
+        {
+            "message": "Order created successfully",
+            "order": {
+                "id": order.id,
+                "order_reference": order.order_reference,
+                "total_amount": str(order.total_amount),
+                "payment_status": order.payment_status,
+                "fulfilment_status": order.fulfilment_status,
+                "expires_at": order.expires_at,
+                "items": [
+                    {
+                        "id": order_item.id,
+                        "listing": listing.id,
+                        "listing_title": listing.title,
+                        "seller": listing.owner_id,
+                        "quantity": quantity,
+                        "unit_price": str(listing.price),
+                        "total_amount": str(total_amount),
+                    }
+                ],
+            },
+        },
+        status=status.HTTP_201_CREATED,
+    )

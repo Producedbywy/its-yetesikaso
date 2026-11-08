@@ -724,6 +724,16 @@ class Payment(models.Model):
         unique=True,
     )
 
+    authorization_url = models.URLField(
+        max_length=2048,
+        blank=True,
+    )
+
+    access_code = models.CharField(
+        max_length=255,
+        blank=True,
+    )
+
     amount = models.DecimalField(
         max_digits=12,
         decimal_places=2,

@@ -63,6 +63,7 @@ from marketplace.api.views.cart_views import (
     remove_from_cart,
     clear_cart,
     checkout_cart,
+    buy_now,
 )
 
 from marketplace.api.views.payment_views import (
@@ -199,6 +200,12 @@ urlpatterns = [
         "cart/checkout/",
         checkout_cart,
         name="checkout-cart",
+    ),
+
+    path(
+        "buy-now/",
+        buy_now,
+        name="buy-now",
     ),
 
     path(

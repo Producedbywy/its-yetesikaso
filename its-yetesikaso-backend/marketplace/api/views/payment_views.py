@@ -245,6 +245,8 @@ def initialize_payment(request):
                     "amount": str(payment.amount),
                     "currency": payment.currency,
                     "status": payment.status,
+                    "authorization_url": payment.authorization_url,
+                    "access_code": payment.access_code,
                 },
             },
             status=status.HTTP_200_OK,
@@ -343,6 +345,8 @@ def initialize_payment(request):
         amount=order.total_amount,
         currency="GHS",
         status="initiated",
+        authorization_url=authorization_url,
+        access_code=access_code,
     )
 
     return Response(
