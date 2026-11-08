@@ -10,6 +10,7 @@ import {
   Search,
   House,
   CarFront,
+  BadgeCheck,
   Briefcase,
   ShoppingCart,
   ClipboardList,
@@ -258,6 +259,15 @@ export default function MobileNav() {
               >
                 <CarFront size={20} />
                 Cars
+              </Link>
+
+              <Link
+                href="/fafameso-plus"
+                onClick={closeMenu}
+                className="flex items-center gap-3 rounded-xl bg-[#F58220] px-4 py-3 font-bold text-[#073A78] transition hover:bg-[#ff9c48]"
+              >
+                <BadgeCheck size={20} />
+                Fafameso Plus
               </Link>
 
               <Link

@@ -261,7 +261,7 @@ export default function Navbar() {
           <div aria-hidden="true" />
 
           {/* CENTRED NAVIGATION LINKS */}
-          <div className="flex items-center justify-center gap-4 whitespace-nowrap text-sm font-semibold lg:gap-12">
+          <div className="flex items-center justify-center gap-3 whitespace-nowrap text-sm font-semibold lg:gap-7">
             <Link
               href="/marketplace"
               className={linkClass("/marketplace")}
@@ -281,6 +281,13 @@ export default function Navbar() {
               className="rounded-lg px-3 py-2 transition hover:bg-lime-100 hover:text-lime-800"
             >
               Cars
+            </Link>
+
+            <Link
+              href="/fafameso-plus"
+              className="rounded-lg bg-[#F58220] px-3 py-2 font-bold text-[#073A78] transition hover:bg-[#ff9c48]"
+            >
+              Fafameso Plus
             </Link>
 
             <Link
