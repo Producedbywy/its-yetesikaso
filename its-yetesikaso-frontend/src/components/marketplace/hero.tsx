@@ -68,13 +68,13 @@ export default function Hero() {
           fill
           priority
           sizes="100vw"
-className={`object-cover ${
+className={
   currentSlide === 1
-    ? "object-right md:object-center"
+    ? "object-cover object-center xl:object-contain"
     : currentSlide === 2
-      ? "object-top"
-      : "object-center"
-}`}
+      ? "object-cover object-top"
+      : "object-cover object-center"
+}
         />
 
         <div
@@ -85,9 +85,17 @@ className={`absolute inset-0 ${
 }`}
         />
 
-        <div className="relative min-h-[360px] md:min-h-[420px]">
+        <div
+          className={
+            currentSlide === 1
+              ? "relative min-h-[360px] md:min-h-[420px] xl:aspect-[3/1] xl:min-h-0"
+              : "relative min-h-[360px] md:min-h-[420px]"
+          }
+        >
           <div
             className={`mx-auto flex min-h-[360px] max-w-7xl px-6 md:min-h-[420px] md:px-14 lg:px-20 ${
+              currentSlide === 1 ? "xl:h-full xl:min-h-0" : ""
+            } ${
               currentSlide === 1
                 ? "items-start justify-end pb-10 pt-12"
                 : "items-center py-10 md:py-12"

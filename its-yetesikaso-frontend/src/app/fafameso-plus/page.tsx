@@ -76,6 +76,7 @@ export default function FafamesoPlusPage() {
             <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Link
                 href="/marketplace"
+                style={{ color: "#ffffff" }}
                 className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#073A78] px-7 py-3.5 font-bold text-white transition hover:bg-[#0b509e] sm:w-auto"
               >
                 Explore Marketplace
@@ -248,6 +249,7 @@ export default function FafamesoPlusPage() {
 
               <Link
                 href="/become-a-seller"
+                style={{ color: "#ffffff" }}
                 className="mt-7 inline-flex items-center gap-2 rounded-xl bg-[#073A78] px-6 py-3.5 font-bold text-white transition hover:bg-[#0b509e]"
               >
                 Become a Seller
@@ -312,6 +314,7 @@ export default function FafamesoPlusPage() {
 
           <Link
             href="/marketplace"
+            style={{ color: "#ffffff" }}
             className="mt-7 inline-flex items-center gap-2 rounded-xl bg-[#073A78] px-7 py-3.5 font-bold text-white transition hover:bg-[#0b509e]"
           >
             Browse Marketplace
