@@ -109,27 +109,70 @@ export default function Navbar() {
     <header className="hidden border-b border-gray-200 bg-white text-gray-900 md:block">
       <Container>
 
-        {/* TOP HEADER */}
-        <div className="relative flex h-36 items-center justify-center">
+        {/* TOP HEADER — LARGE CENTRED LOGO */}
+        <div className="relative flex h-52 items-center justify-center">
 
           {/* CENTRED LOGO */}
           <Link
             href="/"
-            className="relative block h-32 w-56"
+            className="relative block h-40 w-80"
             aria-label="Yetesikaso home"
           >
             <Image
               src="/images/Yetesikaso New Logo.png"
               alt="Yetesikaso"
               fill
-              sizes="176px"
-              className="scale-[1.55] object-contain"
+              sizes="320px"
+              className="scale-[1.3] object-contain"
               priority
             />
-          </Link>
 
-          {/* ACCOUNT CONTROLS — TOP RIGHT */}
-          <div className="absolute right-0 top-1/2 -translate-y-1/2">
+          </Link>
+        </div>
+
+        {/* SEARCH AND ACCOUNT ROW */}
+        <div className="flex items-center gap-3 border-t border-gray-100 py-4 lg:gap-5">
+
+          {/* GLOBAL SEARCH */}
+          <form
+            action="/search"
+            method="get"
+            role="search"
+            className="flex min-w-0 flex-1 items-center gap-2 rounded-2xl border border-gray-200 bg-gray-50 p-2 shadow-sm transition focus-within:border-lime-500"
+          >
+            <label
+              htmlFor="global-search-desktop-top"
+              className="sr-only"
+            >
+              Search all of Yetesikaso
+            </label>
+
+            <Search
+              size={21}
+              aria-hidden="true"
+              className="ml-2 shrink-0 text-gray-500"
+            />
+
+            <input
+              id="global-search-desktop-top"
+              name="q"
+              type="search"
+              required
+              placeholder="Search products, property, cars and jobs..."
+              className="min-w-0 flex-1 bg-transparent py-2.5 text-sm text-gray-900 outline-none placeholder:text-gray-500"
+            />
+
+            <button
+              type="submit"
+              className="shrink-0 rounded-xl bg-lime-400 px-4 py-3 text-sm font-semibold text-black transition hover:bg-lime-300"
+            >
+              Search
+            </button>
+          </form>
+
+          {/* ACCOUNT CONTROLS — SAME ROW AS SEARCH */}
+          <div className="relative shrink-0">
+
 
             {authenticated ? (
               <details key={pathname} className="relative">
@@ -315,45 +358,6 @@ export default function Navbar() {
             + Post a Listing
           </Link>
         </nav>
-
-        {/* GLOBAL SEARCH */}
-        <div className="border-t border-gray-100 py-4">
-          <form
-            action="/search"
-            method="get"
-            role="search"
-            className="flex w-full items-center gap-3 rounded-2xl border border-gray-200 bg-gray-50 p-2 shadow-sm transition focus-within:border-lime-500"
-          >
-            <label
-              htmlFor="global-search-desktop"
-              className="sr-only"
-            >
-              Search all of Yetesikaso
-            </label>
-
-            <Search
-              size={21}
-              aria-hidden="true"
-              className="ml-3 shrink-0 text-gray-500"
-            />
-
-            <input
-              id="global-search-desktop"
-              name="q"
-              type="search"
-              required
-              placeholder="Search products, property, cars and jobs..."
-              className="min-w-0 flex-1 bg-transparent py-2.5 text-sm text-gray-900 outline-none placeholder:text-gray-500"
-            />
-
-            <button
-              type="submit"
-              className="shrink-0 rounded-xl bg-lime-400 px-5 py-3 text-sm font-semibold text-black transition hover:bg-lime-300"
-            >
-              Search
-            </button>
-          </form>
-        </div>
 
       </Container>
     </header>
