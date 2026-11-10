@@ -110,20 +110,20 @@ export default function Navbar() {
       <Container>
 
         {/* TOP HEADER — LARGE CENTRED LOGO */}
-        <div className="relative flex h-52 items-center justify-center">
+        <div className="relative flex h-48 items-center justify-center">
 
           {/* CENTRED LOGO */}
           <Link
             href="/"
-            className="relative block h-40 w-80"
+            className="relative block h-40 w-96"
             aria-label="Yetesikaso home"
           >
             <Image
               src="/images/Yetesikaso New Logo.png"
               alt="Yetesikaso"
               fill
-              sizes="320px"
-              className="scale-[1.3] object-contain"
+              sizes="384px"
+              className="scale-[1.9] object-contain"
               priority
             />
 
