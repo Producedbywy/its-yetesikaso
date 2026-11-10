@@ -119,14 +119,14 @@ export default function BecomeASellerPage() {
 
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link
-                  href="/register"
+                  href="/register/seller"
                   className="rounded-lg bg-[var(--primary)] px-6 py-3 text-sm font-semibold text-white"
                 >
                   Create an Account
                 </Link>
 
                 <Link
-                  href="/login"
+                  href="/login/seller"
                   className="rounded-lg border border-[var(--border)] px-6 py-3 text-sm font-semibold"
                 >
                   Already Registered? Log In
@@ -349,7 +349,7 @@ export default function BecomeASellerPage() {
 
               <div className="flex flex-wrap gap-3">
                 <Link
-                  href="/register"
+                  href="/register/seller"
                   className="rounded-lg bg-[var(--primary)] px-5 py-3 text-sm font-semibold text-white"
                 >
                   Create an Account

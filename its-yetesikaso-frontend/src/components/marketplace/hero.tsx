@@ -19,8 +19,8 @@ const slides = [
     title: "A simpler way to buy and sell.",
     description:
       "Explore listings, compare what is available and connect with sellers through one marketplace.",
-    action: "Explore Listings",
-    href: "/marketplace",
+    action: "Learn About Fafameso Plus",
+    href: "/fafameso-plus",
     image: "/images/hero/payment.png",
   },
   {
@@ -60,7 +60,7 @@ export default function Hero() {
   }
 
   return (
-    <section className="py-6 md:py-8">
+    <section className="py-3 md:py-4">
       <div className="relative w-full overflow-hidden bg-gray-950 text-white">
         <Image
           src={slide.image}
@@ -85,12 +85,12 @@ className={`absolute inset-0 ${
 }`}
         />
 
-        <div className="relative min-h-[420px] md:min-h-[500px]">
+        <div className="relative min-h-[360px] md:min-h-[420px]">
           <div
-            className={`mx-auto flex min-h-[420px] max-w-7xl px-6 md:min-h-[500px] md:px-14 lg:px-20 ${
+            className={`mx-auto flex min-h-[360px] max-w-7xl px-6 md:min-h-[420px] md:px-14 lg:px-20 ${
               currentSlide === 1
-                ? "items-start justify-end pb-12 pt-20"
-                : "items-center py-16"
+                ? "items-start justify-end pb-10 pt-12"
+                : "items-center py-10 md:py-12"
             }`}
           >
             {currentSlide === 1 ? (
@@ -119,7 +119,7 @@ className={`absolute inset-0 ${
                   {slide.eyebrow}
                 </p>
 
-                <h1 className="text-4xl font-bold leading-tight md:text-6xl lg:text-7xl">
+                <h1 className="text-4xl font-bold leading-tight md:text-5xl lg:text-6xl">
                   {slide.title}
                 </h1>
 
@@ -138,17 +138,17 @@ className={`absolute inset-0 ${
           </div>
 
           <div
-  className={`absolute bottom-6 left-6 z-10 flex items-center gap-3 md:left-14 lg:left-20 ${
-    currentSlide === 1
-      ? "rounded-full border border-white/20 bg-gray-950/80 px-4 py-2 shadow-lg backdrop-blur-sm"
-      : ""
-  }`}
->
+            className={`absolute bottom-4 z-10 flex items-center gap-2 md:bottom-6 ${
+              currentSlide === 1
+                ? "left-4 rounded-full border border-white/20 bg-gray-950/80 px-3 py-2 shadow-lg backdrop-blur-sm md:left-10 lg:left-14"
+                : "right-4 md:right-10 lg:right-14"
+            }`}
+          >
             <button
               type="button"
               onClick={showPrevious}
               aria-label="Previous slide"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 text-lg transition hover:bg-white/20"
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/10 text-base transition hover:bg-white/20"
             >
               ←
             </button>
@@ -163,7 +163,7 @@ className={`absolute inset-0 ${
                   aria-current={index === currentSlide}
                   className={`h-2 rounded-full transition-all ${
                     index === currentSlide
-                      ? "w-8 bg-lime-400"
+                      ? "w-6 bg-lime-400"
                       : "w-2 bg-white/40 hover:bg-white/70"
                   }`}
                 />
@@ -174,7 +174,7 @@ className={`absolute inset-0 ${
               type="button"
               onClick={showNext}
               aria-label="Next slide"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 text-lg transition hover:bg-white/20"
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/10 text-base transition hover:bg-white/20"
             >
               →
             </button>

@@ -1,264 +1,109 @@
-"use client"
 
-import { useMemo, useState } from "react"
+import Link from "next/link"
+import {
+  ArrowRight,
+  CarFront,
+  House,
+  Laptop,
+  Shirt,
+  Smartphone,
+  Sofa,
+  Tv,
+  Wrench,
+} from "lucide-react"
 
 import Container from "@/components/layout/container"
-import ListingCard from "@/components/marketplace/listing-card"
-import { useListings } from "@/lib/marketplace/useListings"
 
 const categories = [
   {
-    label: "All Categories",
-    value: "all",
-    description:
-      "Explore what is available across the marketplace and browse by category.",
-  },
-  {
     label: "Property & Land",
-    value: "property_land",
-    description:
-      "Property, houses, apartments, land and plots.",
+    href: "/marketplace?category=property_land",
+    icon: House,
   },
   {
     label: "Vehicles",
-    value: "vehicles",
-    description:
-      "Cars, motorcycles, trucks and other vehicles.",
+    href: "/marketplace?category=vehicles",
+    icon: CarFront,
   },
   {
     label: "Phones & Tablets",
-    value: "phones_tablets",
-    description:
-      "Mobile phones, tablets and related accessories.",
+    href: "/marketplace?category=phones_tablets",
+    icon: Smartphone,
   },
   {
-    label: "Computers & Office",
-    value: "computers_office",
-    description:
-      "Laptops, desktops, printers and office equipment.",
+    label: "Electronics",
+    href: "/marketplace?category=electronics_appliances",
+    icon: Tv,
   },
   {
-    label: "Electronics & Appliances",
-    value: "electronics_appliances",
-    description:
-      "TVs, refrigerators, washing machines and appliances.",
+    label: "Computers",
+    href: "/marketplace?category=computers_office",
+    icon: Laptop,
   },
   {
     label: "Home & Garden",
-    value: "home_garden",
-    description:
-      "Furniture, home items, garden and outdoor products.",
+    href: "/marketplace?category=home_garden",
+    icon: Sofa,
   },
   {
     label: "Fashion",
-    value: "fashion",
-    description:
-      "Clothing, shoes, bags and fashion accessories.",
-  },
-  {
-    label: "Baby & Kids",
-    value: "baby_kids",
-    description:
-      "Baby products, children's items, toys and equipment.",
-  },
-  {
-    label: "Health & Beauty",
-    value: "health_beauty",
-    description:
-      "Beauty products, personal care and wellness items.",
-  },
-  {
-    label: "Sports & Fitness",
-    value: "sports_fitness",
-    description:
-      "Sports equipment, gym gear and fitness products.",
-  },
-  {
-    label: "Business & Industrial",
-    value: "business_industrial",
-    description:
-      "Commercial equipment, machinery, tools and business supplies.",
-  },
-  {
-    label: "Education",
-    value: "education",
-    description:
-      "Books, school supplies, courses and educational materials.",
-  },
-  {
-    label: "Food & Agriculture",
-    value: "food_agriculture",
-    description:
-      "Food products, farm produce and agricultural supplies.",
+    href: "/marketplace?category=fashion",
+    icon: Shirt,
   },
   {
     label: "Services",
-    value: "services",
-    description:
-      "Professional, household, technical and other services.",
-  },
-  {
-    label: "Other",
-    value: "other",
-    description:
-      "Items that do not fit another category.",
+    href: "/marketplace?category=services",
+    icon: Wrench,
   },
 ]
 
 export default function Categories() {
-  const [category, setCategory] = useState("all")
-  const [mobileCategoriesOpen, setMobileCategoriesOpen] = useState(false)
-
-  const filters = useMemo(
-    () => ({
-      search: "",
-      category,
-      location: "all",
-      minPrice: "",
-      maxPrice: "",
-      sort: "newest",
-    }),
-    [category]
-  )
-
-  const {
-    data: listings = [],
-    loading,
-  } = useListings(filters, 1)
-
   return (
-    <section className="py-12 md:py-16">
+    <section className="py-7 md:py-9">
       <Container>
-        <div className="mb-8">
-          <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-lime-600">
-            Explore
-          </p>
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-bold tracking-tight text-[var(--foreground)] sm:text-2xl">
+              Shop by Category
+            </h2>
 
-          <h2 className="text-3xl font-bold text-[var(--foreground)] md:text-4xl">
-            Browse Listings
-          </h2>
+            <p className="mt-1 text-sm text-[var(--muted)]">
+              Find what you're looking for faster.
+            </p>
+          </div>
 
-          <p className="mt-3 max-w-2xl text-[var(--muted)]">
-            {categories.find((item) => item.value === category)?.description}
-          </p>
+          <Link
+            href="/marketplace"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-lime-700 transition hover:text-lime-900"
+          >
+            Browse All
+            <ArrowRight size={16} />
+          </Link>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-[240px_minmax(0,1fr)]">
-          {/* CATEGORY SIDEBAR */}
-          <aside className="lg:sticky lg:top-6 lg:self-start">
-            <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
-              <button
-                type="button"
-                onClick={() => setMobileCategoriesOpen((open) => !open)}
-                aria-expanded={mobileCategoriesOpen}
-                aria-controls="browse-category-options"
-                className="flex w-full items-center justify-between text-base font-semibold lg:hidden"
+        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4 xl:grid-cols-8">
+          {categories.map((category) => {
+            const Icon = category.icon
+
+            return (
+              <Link
+                key={category.href}
+                href={category.href}
+                className="group flex min-h-24 flex-col items-center justify-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-4 text-center transition hover:border-lime-400 hover:bg-lime-50 hover:shadow-sm"
               >
-                <span>Categories</span>
-                <span
+                <Icon
+                  size={25}
+                  strokeWidth={1.8}
+                  className="text-[var(--foreground)] transition group-hover:text-lime-700"
                   aria-hidden="true"
-                  className={`text-xl transition-transform ${
-                    mobileCategoriesOpen ? "rotate-180" : ""
-                  }`}
-                >
-                  ▾
+                />
+
+                <span className="text-xs font-semibold leading-snug text-[var(--foreground)]">
+                  {category.label}
                 </span>
-              </button>
-
-              <h3 className="mb-4 hidden text-base font-semibold lg:block">
-                Categories
-              </h3>
-
-              <div
-                id="browse-category-options"
-                className={`mt-4 space-y-1 lg:mt-0 ${
-                  mobileCategoriesOpen ? "block" : "hidden"
-                } lg:block`}
-              >
-                {categories.map((item) => {
-                  const active = category === item.value
-
-                  return (
-                    <button
-                      key={item.value}
-                      type="button"
-                      onClick={() => {
-                        setCategory(item.value)
-                        setMobileCategoriesOpen(false)
-                      }}
-                      className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm transition ${
-                        active
-                          ? "bg-lime-400 font-semibold text-black"
-                          : "text-[var(--muted)] hover:bg-[var(--background)] hover:text-[var(--foreground)]"
-                      }`}
-                    >
-                      <span>{item.label}</span>
-
-                      {active && (
-                        <span className="text-xs">
-                          →
-                        </span>
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          </aside>
-
-          {/* LISTINGS */}
-          <div className="min-w-0">
-            {loading && listings.length === 0 && (
-              <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-                {Array.from({ length: 6 }).map((_, index) => (
-                  <div
-                    key={index}
-                    className="h-80 animate-pulse rounded-2xl bg-[var(--border)]"
-                  />
-                ))}
-              </div>
-            )}
-
-            {!loading && listings.length > 0 && (
-              <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-                {listings.slice(0, 6).map((listing) => (
-                  <ListingCard
-                    key={listing.id}
-                    listing={listing}
-                  />
-                ))}
-              </div>
-            )}
-
-            {loading && listings.length > 0 && (
-              <div className="relative">
-                <div className="absolute right-2 top-2 z-10 rounded-full bg-[var(--card)] px-3 py-1 text-xs text-[var(--muted)] shadow-sm">
-                  Updating…
-                </div>
-
-                <div className="grid gap-5 opacity-60 sm:grid-cols-2 xl:grid-cols-3">
-                  {listings.slice(0, 6).map((listing) => (
-                    <ListingCard
-                      key={listing.id}
-                      listing={listing}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {!loading && listings.length === 0 && (
-              <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] py-16 text-center">
-                <p className="text-lg font-medium">
-                  No listings in this category yet.
-                </p>
-
-                <p className="mt-2 text-sm text-[var(--muted)]">
-                  Try another category.
-                </p>
-              </div>
-            )}
-          </div>
+              </Link>
+            )
+          })}
         </div>
       </Container>
     </section>

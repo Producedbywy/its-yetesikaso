@@ -47,6 +47,7 @@ export default function NearbyListings() {
   const [manualError, setManualError] = useState("")
   const [submittingLocation, setSubmittingLocation] = useState(false)
   const [isManualLocation, setIsManualLocation] = useState(false)
+const [locationControlsOpen, setLocationControlsOpen] = useState(false)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -231,179 +232,215 @@ export default function NearbyListings() {
     }
   }
 
+
   const locationName = [location?.city, location?.region]
     .filter(Boolean)
     .join(", ")
 
+  const showLocationControls =
+    locationControlsOpen || (!loadingLocation && !location)
+
   return (
-    <section className="py-12 md:py-16">
+    <section className="py-7 md:py-10">
       <Container>
-        <div className="mb-8">
-          <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-lime-600">
-            Discover Nearby
-          </p>
-
-          <h2 className="text-3xl font-bold text-[var(--foreground)] md:text-4xl">
-            More in Your Area
-          </h2>
-
-          <p className="mt-3 max-w-2xl text-[var(--muted)]">
-            Discover recently added listings around your location.
-          </p>
-        </div>
-
-        <div className="mb-8 flex flex-col gap-5 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
+        {/* SECTION HEADER */}
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p className="text-sm font-medium text-[var(--foreground)]">
-              Your selected area
+            <h2 className="text-xl font-bold tracking-tight text-[var(--foreground)] sm:text-2xl">
+              Listings Near You
+            </h2>
+
+            <p className="mt-1 text-sm text-[var(--muted)]">
+              {loadingLocation
+                ? "Finding your approximate area..."
+                : location
+                  ? `Showing listings around ${
+                      locationName || "your approximate area"
+                    }${isManualLocation ? " (selected)" : ""}`
+                  : "Select an area to discover nearby listings."}
             </p>
-
-            {loadingLocation && (
-              <p className="mt-1 text-sm text-[var(--muted)]">
-                Finding your approximate area...
-              </p>
-            )}
-
-            {!loadingLocation && location && (
-              <p className="mt-1 text-sm text-[var(--muted)]">
-                {locationName || "Approximate location detected"}
-                {isManualLocation && " (manually selected)"}
-              </p>
-            )}
-
-            {!loadingLocation && locationError && !location && (
-              <p className="mt-1 text-sm text-[var(--muted)]">
-                We couldn't detect your area automatically. You can enter it below.
-              </p>
-            )}
           </div>
 
-          <form
-            onSubmit={handleManualLocationSubmit}
-            className="flex flex-col gap-3 sm:flex-row sm:items-end"
-          >
-            <div className="min-w-0 flex-1">
-              <label
-                htmlFor="nearby-manual-location"
-                className="mb-2 block text-sm font-medium"
-              >
-                Change location
-              </label>
-
-              <input
-                id="nearby-manual-location"
-                type="text"
-                value={manualLocation}
-                onChange={(event) => setManualLocation(event.target.value)}
-                placeholder="e.g. Osu, Accra"
-                maxLength={120}
-                className="w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-4 py-3 text-sm text-[var(--foreground)] outline-none focus:border-lime-600"
-              />
-            </div>
-
+          {location && (
             <button
-              type="submit"
-              disabled={submittingLocation}
-              className="rounded-lg bg-lime-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-lime-800 disabled:cursor-not-allowed disabled:opacity-60"
+              type="button"
+              onClick={() =>
+                setLocationControlsOpen((open) => !open)
+              }
+              aria-expanded={showLocationControls}
+              aria-controls="nearby-location-options"
+              className="inline-flex items-center rounded-lg border border-[var(--border)] bg-[var(--card)] px-4 py-2.5 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--background)]"
             >
-              {submittingLocation ? "Searching..." : "Use this location"}
+              {showLocationControls
+                ? "Hide location options"
+                : "Change area / radius"}
             </button>
-          </form>
-
-          {manualError && (
-            <p role="alert" className="text-sm text-red-600">
-              {manualError}
-            </p>
           )}
-
-          <div className="w-full sm:max-w-xs">
-            <div className="mb-2 flex items-center justify-between">
-              <label
-                htmlFor="nearby-radius"
-                className="text-sm font-medium"
-              >
-                Search radius
-              </label>
-
-              <span className="text-sm font-semibold text-lime-700">
-                {radius} km
-              </span>
-            </div>
-
-            <input
-              id="nearby-radius"
-              type="range"
-              min="1"
-              max="100"
-              step="1"
-              value={radius}
-              onChange={(event) => setRadius(Number(event.target.value))}
-              className="w-full cursor-pointer accent-lime-600"
-            />
-
-            <div className="flex justify-between text-xs text-[var(--muted)]">
-              <span>1 km</span>
-              <span>100 km</span>
-            </div>
-          </div>
         </div>
 
+        {/* EXPANDABLE LOCATION OPTIONS */}
+        {showLocationControls && (
+          <div
+            id="nearby-location-options"
+            className="mb-6 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 sm:p-5"
+          >
+            <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_240px] lg:items-end">
+              {/* MANUAL LOCATION */}
+              <form
+                onSubmit={handleManualLocationSubmit}
+                className="flex flex-col gap-2 sm:flex-row sm:items-end"
+              >
+                <div className="min-w-0 flex-1">
+                  <label
+                    htmlFor="nearby-manual-location"
+                    className="mb-2 block text-sm font-medium"
+                  >
+                    Town, city or area
+                  </label>
+
+                  <input
+                    id="nearby-manual-location"
+                    type="text"
+                    value={manualLocation}
+                    onChange={(event) =>
+                      setManualLocation(event.target.value)
+                    }
+                    placeholder="e.g. Osu, Accra"
+                    maxLength={120}
+                    className="w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2.5 text-sm text-[var(--foreground)] outline-none focus:border-lime-600"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={submittingLocation}
+                  className="shrink-0 rounded-lg bg-lime-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-lime-800 disabled:opacity-60"
+                >
+                  {submittingLocation
+                    ? "Searching..."
+                    : "Update location"}
+                </button>
+              </form>
+
+              {/* SEARCH RADIUS */}
+              <div>
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <label
+                    htmlFor="nearby-radius"
+                    className="text-sm font-medium"
+                  >
+                    Search radius
+                  </label>
+
+                  <span className="text-sm font-semibold text-lime-700">
+                    {radius} km
+                  </span>
+                </div>
+
+                <input
+                  id="nearby-radius"
+                  type="range"
+                  min="1"
+                  max="100"
+                  step="1"
+                  value={radius}
+                  onChange={(event) =>
+                    setRadius(Number(event.target.value))
+                  }
+                  className="w-full cursor-pointer accent-lime-600"
+                />
+
+                <div className="flex justify-between text-xs text-[var(--muted)]">
+                  <span>1 km</span>
+                  <span>100 km</span>
+                </div>
+              </div>
+            </div>
+
+            {manualError && (
+              <p role="alert" className="mt-3 text-sm text-red-600">
+                {manualError}
+              </p>
+            )}
+
+            {locationError && !location && (
+              <p className="mt-3 text-sm text-[var(--muted)]">
+                We couldn't detect your area automatically.
+                Enter your preferred location above.
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* LOCATION LOADING */}
         {loadingLocation && (
-          <p className="py-8 text-center text-sm text-[var(--muted)]">
+          <p className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-6 text-sm text-[var(--muted)]">
             Preparing nearby listings...
           </p>
         )}
 
+        {/* LOCATION UNAVAILABLE */}
         {!loadingLocation && !location && (
-          <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] py-10 text-center">
+          <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-6 text-center">
             <p className="font-medium">
-              Nearby discovery is temporarily unavailable.
+              Choose an area to explore nearby listings.
             </p>
+
             <p className="mt-2 text-sm text-[var(--muted)]">
-              You can still browse all listings across the marketplace.
+              You can also browse products across Ghana
+              from the marketplace.
             </p>
           </div>
         )}
 
+        {/* LISTINGS LOADING */}
         {location && loadingListings && (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {Array.from({ length: 4 }).map((_, index) => (
               <div
                 key={index}
-                className="h-80 animate-pulse rounded-2xl bg-[var(--border)]"
+                className="h-64 animate-pulse rounded-xl bg-[var(--border)]"
               />
             ))}
           </div>
         )}
 
-        {location && !loadingListings && listings.length > 0 && (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {listings.slice(0, 8).map((listing) => (
-              <div key={listing.id}>
-                <ListingCard listing={listing} />
-                <p className="mt-2 text-sm text-[var(--muted)]">
-                  Approximately {listing.distance_km} km from your selected area
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
+        {/* NEARBY PRODUCT GRID */}
+        {location &&
+          !loadingListings &&
+          listings.length > 0 && (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {listings.slice(0, 8).map((listing) => (
+                <div key={listing.id}>
+                  <ListingCard listing={listing} />
 
-        {location && !loadingListings && listings.length === 0 && (
-          <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] py-10 text-center">
-            <p className="font-medium">
-              No nearby listings found within {radius} km.
-            </p>
-            <p className="mt-2 text-sm text-[var(--muted)]">
-              Try increasing your search radius.
-            </p>
-          </div>
-        )}
+                  <p className="mt-2 text-xs text-[var(--muted)]">
+                    Approximately {listing.distance_km} km away
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
 
-        <p className="mt-6 text-xs text-[var(--muted)]">
-          Automatically detected locations are estimated using your internet
-          connection and may not represent your exact position. IP geolocation
-          by ipdata.co.
+        {/* NO RESULTS */}
+        {location &&
+          !loadingListings &&
+          listings.length === 0 && (
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-6 py-8 text-center">
+              <p className="font-medium">
+                No nearby listings found within {radius} km.
+              </p>
+
+              <p className="mt-2 text-sm text-[var(--muted)]">
+                Try increasing your search radius
+                or choosing another area.
+              </p>
+            </div>
+          )}
+
+        <p className="mt-4 text-xs text-[var(--muted)]">
+          Automatically detected locations are approximate
+          and may not represent your exact position.
         </p>
       </Container>
     </section>

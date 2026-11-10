@@ -10,7 +10,6 @@ import {
   Search,
   House,
   CarFront,
-  BadgeCheck,
   Briefcase,
   ShoppingCart,
   ClipboardList,
@@ -230,12 +229,25 @@ export default function MobileNav() {
 
       {open && (
         <div className="fixed inset-0 top-40 z-40 overflow-y-auto bg-white md:hidden">
+
           <nav className="px-4 py-6">
             {/* MAIN NAVIGATION */}
             <div className="space-y-1">
 
+              {/* PROMINENT SELLER REGISTRATION */}
+              {!isSeller && !isEmployer && (
+                <Link
+                  href="/become-a-seller"
+                  onClick={closeMenu}
+                  className="mb-4 flex items-center justify-center rounded-xl bg-lime-400 px-4 py-3 font-semibold text-black transition hover:bg-lime-300"
+                >
+                  Become a Seller
+                </Link>
+              )}
+
               <Link
                 href="/marketplace"
+
                 onClick={closeMenu}
                 className={linkClass("/marketplace")}
               >
@@ -262,21 +274,20 @@ export default function MobileNav() {
               </Link>
 
               <Link
-                href="/fafameso-plus"
-                onClick={closeMenu}
-                className="flex items-center gap-3 rounded-xl bg-[#F58220] px-4 py-3 font-bold text-[#073A78] transition hover:bg-[#ff9c48]"
-              >
-                <BadgeCheck size={20} />
-                Fafameso Plus
-              </Link>
-
-              <Link
                 href="/jobs"
                 onClick={closeMenu}
                 className={linkClass("/jobs")}
               >
                 <Briefcase size={20} />
                 Jobs
+              </Link>
+
+              <Link
+                href="/fafameso-plus"
+                onClick={closeMenu}
+                className={linkClass("/fafameso-plus")}
+              >
+                Fafameso Plus
               </Link>
 
               <div className="pt-4">
@@ -448,7 +459,7 @@ export default function MobileNav() {
                   </Link>
 
                   <Link
-                    href="/register"
+                    href="/register/buyer"
                     onClick={closeMenu}
                     className={linkClass("/register")}
                   >

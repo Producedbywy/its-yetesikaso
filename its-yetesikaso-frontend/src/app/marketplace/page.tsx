@@ -20,9 +20,11 @@ export default function MarketplacePage() {
 function MarketplacePageContent() {
   const searchParams = useSearchParams()
   const categoryFromUrl = searchParams.get("category") || "all"
+  const searchFromUrl =
+    searchParams.get("search") || searchParams.get("q") || ""
 
   const [filters, setFilters] = useState({
-    search: "",
+    search: searchFromUrl,
     category: categoryFromUrl,
     location: "all",
     minPrice: "",
@@ -76,13 +78,18 @@ function MarketplacePageContent() {
       : "all"
 
     setFilters((previous) =>
-      previous.category === nextCategory
+      previous.category === nextCategory &&
+      previous.search === searchFromUrl
         ? previous
-        : { ...previous, category: nextCategory }
+        : {
+            ...previous,
+            category: nextCategory,
+            search: searchFromUrl,
+          }
     )
 
     setPage(1)
-  }, [categoryFromUrl])
+  }, [categoryFromUrl, searchFromUrl])
 
   const {
     data: listings = [],
@@ -264,7 +271,7 @@ function MarketplacePageContent() {
       {/* CONTENT */}
       <section className="py-12">
         <Container>
-          <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
+          <div className="grid gap-5 lg:grid-cols-[230px_minmax(0,1fr)]">
 
             {/* SIDEBAR */}
             <aside className="hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 lg:block">
@@ -284,8 +291,8 @@ function MarketplacePageContent() {
 
               <div className="space-y-6">
 
-                {/* CATEGORY */}
-                <div>
+                {/* CATEGORY — AVAILABLE IN TOP SEARCH FILTERS */}
+                <div className="hidden">
                   <p className="mb-3 font-medium">
                     Category
                   </p>
@@ -650,7 +657,7 @@ function MarketplacePageContent() {
 
               {/* LOADING */}
               {loading && listings.length === 0 && (
-                <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                   {Array.from({ length: 6 }).map(
                     (_, i) => (
                       <div
@@ -672,7 +679,7 @@ function MarketplacePageContent() {
                   )}
 
                   <div
-                    className={`grid gap-6 transition-opacity md:grid-cols-2 xl:grid-cols-3 ${
+                    className={`grid gap-3 transition-opacity sm:grid-cols-2 xl:grid-cols-3 ${
                       loading
                         ? "opacity-60"
                         : "opacity-100"
@@ -743,7 +750,7 @@ function MarketplacePageContent() {
                   <button
                     type="button"
                     className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2 disabled:opacity-40"
-                    disabled={listings.length < 12}
+                    disabled={page * 12 >= total}
                     onClick={() =>
                       setPage((p) => p + 1)
                     }

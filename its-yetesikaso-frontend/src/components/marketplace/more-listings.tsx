@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { useMemo } from "react"
 
 import Container from "@/components/layout/container"
@@ -63,24 +64,33 @@ export default function MoreListings({
   ])
 
   return (
-    <section className="py-12 md:py-16">
+    <section className="py-7 md:py-10">
       <Container>
-        <div className="mb-8">
-          <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-lime-600">
-            {eyebrow}
-          </p>
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-lime-700">
+              {eyebrow}
+            </p>
 
-          <h2 className="text-3xl font-bold text-[var(--foreground)] md:text-4xl">
-            {title}
-          </h2>
+            <h2 className="text-xl font-bold tracking-tight text-[var(--foreground)] sm:text-2xl">
+              {title}
+            </h2>
 
-          <p className="mt-3 max-w-2xl text-[var(--muted)]">
-            {description}
-          </p>
+            <p className="mt-1 text-sm text-[var(--muted)]">
+              {description}
+            </p>
+          </div>
+
+          <Link
+            href="/marketplace"
+            className="shrink-0 text-sm font-semibold text-lime-700 transition hover:text-lime-900"
+          >
+            View All Listings →
+          </Link>
         </div>
 
         {loading && (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {Array.from({
               length: endIndex - startIndex,
             }).map((_, index) => (
@@ -93,7 +103,7 @@ export default function MoreListings({
         )}
 
         {!loading && listings.length > 0 && (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {listings.map((listing) => (
               <ListingCard key={listing.id} listing={listing} />
             ))}

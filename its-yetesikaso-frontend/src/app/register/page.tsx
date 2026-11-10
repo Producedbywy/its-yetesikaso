@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import Navbar from "@/components/layout/navbar"
 import Container from "@/components/layout/container"
 import { useAuth } from "@/lib/auth/useAuth"
@@ -42,6 +42,10 @@ function PasswordInput({
 export default function RegisterPage() {
   const { register, loading, error } = useAuth()
   const router = useRouter()
+  const pathname = usePathname()
+
+  const isSellerRegistration = pathname === "/register/seller"
+  const isBuyerRegistration = pathname === "/register/buyer"
 
   const [username, setUsername] = useState("")
   const [email, setEmail] = useState("")
@@ -71,9 +75,17 @@ export default function RegisterPage() {
             )
           : null
 
+      const loginBase = isSellerRegistration
+        ? "/login/seller"
+        : isBuyerRegistration
+          ? "/login/buyer"
+          : "/login"
+
       const loginUrl = returnTo
-        ? `/login?returnTo=${encodeURIComponent(returnTo)}`
-        : "/login"
+        ? `${loginBase}?returnTo=${encodeURIComponent(returnTo)}`
+        : isSellerRegistration
+          ? `${loginBase}?returnTo=${encodeURIComponent("/profile")}`
+          : loginBase
 
       router.push(loginUrl)
     }
@@ -87,12 +99,17 @@ export default function RegisterPage() {
         <Container>
           <div className="mx-auto max-w-md rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
             <h1 className="mb-3 text-4xl font-bold">
-              Create Account
+              {isSellerRegistration
+                ? "Register as a Seller"
+                : isBuyerRegistration
+                  ? "Register as a Buyer"
+                  : "Create Account"}
             </h1>
 
             <p className="mb-8 text-sm text-[var(--muted)]">
-              Create your Yetesikaso account. You can choose to
-              become a seller or employer later.
+              {isSellerRegistration
+                ? "Create your Yetesikaso account, then complete the seller application and identity verification before you start selling."
+                : "Create your Yetesikaso account to discover products, contact sellers, save listings and make purchases."}
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -120,13 +137,15 @@ export default function RegisterPage() {
 
               <div className="rounded-2xl border border-[var(--border)] bg-[var(--background)] p-5">
                 <p className="font-medium">
-                  Start as a User
+                  {isSellerRegistration
+                    ? "Your Seller Application"
+                    : "Your Buyer Account"}
                 </p>
 
                 <p className="mt-1 text-sm text-[var(--muted)]">
-                  Browse the marketplace and use Yetesikaso
-                  normally. You can become a Seller or Employer
-                  later from your profile.
+                  {isSellerRegistration
+                    ? "After creating your account, sign in and submit your seller details, including the required Ghana Card information. Seller access is subject to verification and approval."
+                    : "Browse products, contact sellers, save favourites and manage purchases. You can also apply to become a seller later."}
                 </p>
               </div>
 

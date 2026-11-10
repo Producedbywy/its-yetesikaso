@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { usePathname } from "next/navigation"
 import Navbar from "@/components/layout/navbar"
 import Container from "@/components/layout/container"
 import { useAuth } from "@/lib/auth/useAuth"
@@ -41,6 +42,10 @@ function PasswordInput({
 
 export default function LoginPage() {
   const { login, loading, error } = useAuth()
+  const pathname = usePathname()
+
+  const isSellerLogin = pathname === "/login/seller"
+  const isBuyerLogin = pathname === "/login/buyer"
 
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
@@ -65,9 +70,21 @@ export default function LoginPage() {
       <section className="flex min-h-[80vh] items-center py-20">
         <Container>
           <div className="mx-auto max-w-md rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
-            <h1 className="mb-6 text-4xl font-bold">
-              Login
+            <h1 className="mb-3 text-4xl font-bold">
+              {isSellerLogin
+                ? "Seller Login"
+                : isBuyerLogin
+                  ? "Buyer Login"
+                  : "Login"}
             </h1>
+
+            <p className="mb-8 text-sm text-[var(--muted)]">
+              {isSellerLogin
+                ? "Sign in to manage your seller account, verification and marketplace listings."
+                : isBuyerLogin
+                  ? "Sign in to browse, save products, contact sellers and manage your purchases."
+                  : "Sign in to your Yetesikaso account."}
+            </p>
 
             <form
               onSubmit={handleSubmit}

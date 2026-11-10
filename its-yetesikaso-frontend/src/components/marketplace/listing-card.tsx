@@ -1,8 +1,9 @@
+
 "use client"
 
 import Image from "next/image"
 import Link from "next/link"
-import { Heart } from "lucide-react"
+import { Heart, MapPin } from "lucide-react"
 import { motion } from "framer-motion"
 import { useState } from "react"
 
@@ -54,8 +55,24 @@ export default function ListingCard({
   const [saving, setSaving] = useState(false)
 
   const imageSrc = getImageUrl(listing.image)
-
   const formattedDate = formatListingDate(listing.created_at)
+  const pricingLabel = getPricingTypeLabel(listing.pricing_type)
+
+  const formattedCategory = listing.category
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (character) => character.toUpperCase())
+
+  const formattedPrice = Number(listing.price).toLocaleString(
+    "en-GH",
+    {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }
+  )
+
+  const isFafamesoPlus =
+    listing.fafameso_plus_requested &&
+    listing.fafameso_plus_approved
 
   async function handleFavourite(
     event: React.MouseEvent<HTMLButtonElement>
@@ -84,40 +101,39 @@ export default function ListingCard({
 
   return (
     <motion.div
-      whileHover={{ y: -6 }}
+      whileHover={{ y: -3 }}
       transition={{ duration: 0.2 }}
+      className="h-full"
     >
       <Link
         href={`/marketplace/${listing.slug}`}
-        className="block overflow-hidden rounded-3xl border border-[var(--border)] bg-white transition hover:shadow-xl dark:bg-[var(--card)]"
+        className="group flex h-full flex-col overflow-hidden rounded-xl border border-[var(--border)] bg-white transition hover:border-gray-300 hover:shadow-md dark:bg-[var(--card)]"
       >
-        {/* IMAGE */}
-        <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-100 dark:bg-gray-900">
+        {/* PRODUCT IMAGE */}
+        <div className="relative aspect-[16/10] w-full shrink-0 overflow-hidden bg-gray-100 dark:bg-gray-900">
           {imageSrc ? (
             <Image
               src={imageSrc}
               alt={listing.title}
               fill
-              priority
-              sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
-              className="object-cover object-center transition duration-500 hover:scale-105"
+              sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, (max-width: 1279px) 33vw, 25vw"
+              className="object-cover object-center transition duration-300 group-hover:scale-[1.03]"
               unoptimized
             />
           ) : (
-            <div className="flex h-full items-center justify-center text-sm text-[var(--muted)]">
-              No image
+            <div className="flex h-full items-center justify-center text-xs text-[var(--muted)]">
+              No image available
             </div>
           )}
 
-          {/* FAFAMESO PLUS BADGE */}
-          {listing.fafameso_plus_requested &&
-            listing.fafameso_plus_approved && (
-              <span className="absolute left-3 top-3 rounded-full bg-lime-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm">
-                Fafameso Plus
-              </span>
-            )}
+          {/* FAFAMESO PLUS */}
+          {isFafamesoPlus && (
+            <span className="absolute left-2.5 top-2.5 rounded-md bg-[#F58220] px-2.5 py-1 text-[11px] font-bold text-[#073A78] shadow-sm">
+              Fafameso Plus
+            </span>
+          )}
 
-          {/* SAVE BUTTON */}
+          {/* SAVE LISTING */}
           <button
             type="button"
             onClick={handleFavourite}
@@ -128,51 +144,66 @@ export default function ListingCard({
                 : "Save listing"
             }
             aria-pressed={saved}
-            className="absolute right-3 top-3 rounded-full bg-white/90 p-2 shadow-sm transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+            className="absolute right-2.5 top-2.5 rounded-full bg-white/95 p-2 shadow-sm transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
           >
             <Heart
               className={`h-4 w-4 ${
                 saved
                   ? "fill-red-500 text-red-500"
-                  : "text-[var(--muted)]"
+                  : "text-gray-600"
               }`}
             />
           </button>
         </div>
 
-        {/* CONTENT */}
-        <div className="space-y-3 p-5">
-          <div className="flex items-center justify-between gap-3">
-            <span className="rounded-full bg-lime-100 px-3 py-1 text-xs font-medium text-lime-700">
-              {listing.category}
+        {/* LISTING INFORMATION */}
+        <div className="flex flex-1 flex-col p-3.5 sm:p-4">
+          {/* CATEGORY AND DATE */}
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <span className="min-w-0 truncate text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">
+              {formattedCategory}
             </span>
 
             {formattedDate && (
-              <span className="text-sm text-[var(--muted)]">
+              <span className="shrink-0 text-[11px] text-[var(--muted)]">
                 {formattedDate}
               </span>
             )}
           </div>
 
-          <h3 className="text-lg font-semibold leading-snug">
+          {/* TITLE */}
+          <h3
+            title={listing.title}
+            className="line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-5 text-[var(--foreground)] sm:text-[15px]"
+          >
             {listing.title}
           </h3>
 
-          <div>
-            <p className="text-2xl font-bold">
-              GH₵ {listing.price.toLocaleString()}
+          {/* PRICE */}
+          <div className="mt-auto pt-3">
+            <p className="text-xl font-extrabold tracking-tight text-[var(--foreground)]">
+              GH₵ {formattedPrice}
             </p>
 
-            {getPricingTypeLabel(listing.pricing_type) && (
-              <p className="mt-1 text-sm text-[var(--muted)]">
-                {getPricingTypeLabel(listing.pricing_type)}
+            {pricingLabel && (
+              <p className="mt-0.5 text-xs text-[var(--muted)]">
+                {pricingLabel}
               </p>
             )}
           </div>
 
-          <p className="text-sm text-[var(--muted)]">
-            {listing.location}
-          </p>
+          {/* LOCATION */}
+          <div className="mt-3 flex items-center gap-1.5 border-t border-[var(--border)] pt-2.5 text-xs text-[var(--muted)]">
+            <MapPin
+              size={14}
+              className="shrink-0"
+              aria-hidden="true"
+            />
+
+            <span className="truncate">
+              {listing.location}
+            </span>
+          </div>
         </div>
       </Link>
     </motion.div>

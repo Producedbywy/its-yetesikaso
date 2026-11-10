@@ -7,6 +7,8 @@ type Filters = {
   search: string
   category: string
   location: string
+  minPrice: string
+  maxPrice: string
   sort: string
 }
 
@@ -24,6 +26,8 @@ export default function MobileFilterModal({
   const [localFilters, setLocalFilters] = useState({
     category: filters.category,
     location: filters.location,
+    minPrice: filters.minPrice,
+    maxPrice: filters.maxPrice,
     sort: filters.sort,
   })
 
@@ -31,6 +35,8 @@ export default function MobileFilterModal({
     setLocalFilters({
       category: filters.category,
       location: filters.location,
+      minPrice: filters.minPrice,
+      maxPrice: filters.maxPrice,
       sort: filters.sort,
     })
 
@@ -47,14 +53,14 @@ export default function MobileFilterModal({
       {/* Trigger Button */}
       <button
         onClick={handleOpen}
-        className="fixed bottom-20 right-4 z-40 rounded-full bg-black p-3 text-white shadow-lg md:hidden"
+        className="fixed bottom-20 right-4 z-40 rounded-full bg-black p-3 text-white shadow-lg lg:hidden"
       >
         <SlidersHorizontal className="h-5 w-5" />
       </button>
 
       {/* Modal */}
       {open && (
-        <div className="fixed inset-0 z-50 flex flex-col bg-white md:hidden">
+        <div className="fixed inset-0 z-50 flex flex-col bg-white lg:hidden">
           {/* Header */}
           <div className="flex items-center justify-between border-b p-4">
             <h2 className="text-lg font-semibold">Filters</h2>
@@ -127,6 +133,63 @@ export default function MobileFilterModal({
                 <option value="kumasi">Kumasi</option>
                 <option value="tamale">Tamale</option>
               </select>
+            </div>
+
+            {/* PRICE RANGE */}
+            <div>
+              <label className="text-sm font-semibold">
+                Price Range (GH₵)
+              </label>
+
+              <div className="mt-2 grid grid-cols-2 gap-3">
+                <div>
+                  <label
+                    htmlFor="mobile-min-price"
+                    className="mb-1 block text-xs text-gray-600"
+                  >
+                    Minimum
+                  </label>
+
+                  <input
+                    id="mobile-min-price"
+                    type="number"
+                    min="0"
+                    value={localFilters.minPrice}
+                    onChange={(event) =>
+                      setLocalFilters({
+                        ...localFilters,
+                        minPrice: event.target.value,
+                      })
+                    }
+                    placeholder="From"
+                    className="w-full rounded-xl border p-3 text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="mobile-max-price"
+                    className="mb-1 block text-xs text-gray-600"
+                  >
+                    Maximum
+                  </label>
+
+                  <input
+                    id="mobile-max-price"
+                    type="number"
+                    min="0"
+                    value={localFilters.maxPrice}
+                    onChange={(event) =>
+                      setLocalFilters({
+                        ...localFilters,
+                        maxPrice: event.target.value,
+                      })
+                    }
+                    placeholder="To"
+                    className="w-full rounded-xl border p-3 text-sm"
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Sort */}

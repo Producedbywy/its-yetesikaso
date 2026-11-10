@@ -115,7 +115,7 @@ export default function Navbar() {
           {/* CENTRED LOGO */}
           <Link
             href="/"
-            className="relative block h-32 w-44"
+            className="relative block h-32 w-56"
             aria-label="Yetesikaso home"
           >
             <Image
@@ -123,7 +123,7 @@ export default function Navbar() {
               alt="Yetesikaso"
               fill
               sizes="176px"
-              className="scale-125 object-contain"
+              className="scale-[1.55] object-contain"
               priority
             />
           </Link>
@@ -228,25 +228,34 @@ export default function Navbar() {
 
                 </div>
               </details>
+
             ) : (
-              <div className="flex items-center gap-3 text-sm">
+              <div className="flex items-center justify-end gap-1.5 whitespace-nowrap text-xs lg:gap-2 lg:text-sm">
 
                 <Link
                   href="/login"
-                  className="font-semibold transition hover:text-lime-700"
+                  className="rounded-lg px-3 py-1.5 font-semibold transition hover:text-lime-700 xl:py-2.5"
                 >
                   Login
                 </Link>
 
                 <Link
-                  href="/register"
-                  className="rounded-xl border border-gray-200 px-4 py-2.5 font-semibold transition hover:bg-gray-50"
+                  href="/register/buyer"
+                  className="rounded-xl border border-gray-200 px-3 py-1.5 font-semibold transition hover:bg-gray-50 xl:px-4 xl:py-2.5"
                 >
                   Register
                 </Link>
 
+                <Link
+                  href="/become-a-seller"
+                  className="whitespace-nowrap rounded-xl bg-lime-400 px-3 py-1.5 font-semibold text-black transition hover:bg-lime-300 xl:px-4 xl:py-2.5"
+                >
+                  Become a Seller
+                </Link>
+
               </div>
             )}
+
 
           </div>
         </div>
@@ -284,17 +293,17 @@ export default function Navbar() {
             </Link>
 
             <Link
-              href="/fafameso-plus"
-              className="rounded-lg bg-[#F58220] px-3 py-2 font-bold text-[#073A78] transition hover:bg-[#ff9c48]"
-            >
-              Fafameso Plus
-            </Link>
-
-            <Link
               href="/jobs"
               className={linkClass("/jobs")}
             >
               Jobs
+            </Link>
+
+            <Link
+              href="/fafameso-plus"
+              className={linkClass("/fafameso-plus")}
+            >
+              Fafameso Plus
             </Link>
           </div>
 
