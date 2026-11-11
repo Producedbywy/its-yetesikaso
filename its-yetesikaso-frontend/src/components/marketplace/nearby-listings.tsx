@@ -395,26 +395,35 @@ const [locationControlsOpen, setLocationControlsOpen] = useState(false)
 
         {/* LISTINGS LOADING */}
         {location && loadingListings && (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="flex max-w-full gap-3 overflow-hidden pb-6 pt-1">
             {Array.from({ length: 4 }).map((_, index) => (
               <div
                 key={index}
-                className="h-64 animate-pulse rounded-xl bg-[var(--border)]"
+                className="h-64 w-[78vw] max-w-[300px] shrink-0 animate-pulse rounded-xl bg-[var(--border)] sm:w-[280px] lg:w-[300px]"
               />
             ))}
           </div>
         )}
 
-        {/* NEARBY PRODUCT GRID */}
+
+        {/* NEARBY PRODUCTS — SINGLE SCROLLING ROW */}
         {location &&
           !loadingListings &&
           listings.length > 0 && (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div
+              className="flex max-w-full snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain pb-6 pt-1"
+              role="region"
+              aria-label="Nearby listings — scroll horizontally"
+              tabIndex={0}
+            >
               {listings.slice(0, 8).map((listing) => (
-                <div key={listing.id}>
+                <div
+                  key={listing.id}
+                  className="w-[78vw] max-w-[300px] shrink-0 snap-start sm:w-[280px] lg:w-[300px]"
+                >
                   <ListingCard listing={listing} />
 
-                  <p className="mt-2 text-xs text-[var(--muted)]">
+                  <p className="mt-3 px-1 text-xs text-[var(--muted)]">
                     Approximately {listing.distance_km} km away
                   </p>
                 </div>

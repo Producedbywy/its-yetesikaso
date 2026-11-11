@@ -657,7 +657,7 @@ function MarketplacePageContent() {
 
               {/* LOADING */}
               {loading && listings.length === 0 && (
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {Array.from({ length: 6 }).map(
                     (_, i) => (
                       <div
@@ -679,7 +679,7 @@ function MarketplacePageContent() {
                   )}
 
                   <div
-                    className={`grid gap-3 transition-opacity sm:grid-cols-2 xl:grid-cols-3 ${
+                    className={`grid gap-3 transition-opacity sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 ${
                       loading
                         ? "opacity-60"
                         : "opacity-100"
