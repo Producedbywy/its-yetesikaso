@@ -18,9 +18,6 @@ export default function HomePage() {
 
       <Categories />
 
-
-      <NearbyListings />
-
       {/* SMALL SPONSORED ADVERTISEMENT */}
       <section
         aria-label="Sponsored advertisement"
@@ -104,6 +101,8 @@ export default function HomePage() {
       />
 
       <CtaBanner />
+
+      <NearbyListings />
 
       <Footer />
     </main>
