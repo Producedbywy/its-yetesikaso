@@ -1,91 +1,150 @@
+
 import type { Metadata } from "next"
+import Image from "next/image"
 import Link from "next/link"
 
 import Container from "@/components/layout/container"
 import Footer from "@/components/layout/footer"
 import Navbar from "@/components/layout/navbar"
+import SellerBannerSlider from "@/components/marketplace/seller-banner-slider"
+import SellerEnquiryForm from "@/components/marketplace/seller-enquiry-form"
 
 export const metadata: Metadata = {
   title: "Become a Seller | Yetesikaso",
   description:
-    "Join Yetesikaso as a seller. Create an account, complete your seller application and reach customers across Ghana.",
+    "Start selling on Yetesikaso. Apply to become a seller, complete verification and reach customers across Ghana.",
 }
 
 const sellingSteps = [
   {
-    number: "01",
-    title: "Create your account",
+    number: "1",
+    title: "Application",
     description:
-      "Register for a Yetesikaso account using your username, email address and password. If you already have an account, simply log in.",
+      "Create your account and tell us about your business, products or services.",
+    icon: "application",
   },
   {
-    number: "02",
-    title: "Open your profile",
+    number: "2",
+    title: "Verification",
     description:
-      "Once logged in, visit your Profile page. Select the Become a Seller option to begin your seller application.",
+      "Provide your seller information and Ghana Card details for identity review.",
+    icon: "verification",
   },
   {
-    number: "03",
-    title: "Complete your application",
+    number: "3",
+    title: "Approval",
     description:
-      "Provide your seller display name, contact details, location and a short description of what you intend to sell. You will also be asked for your Ghana Card name and number for verification.",
+      "Our team reviews your application and confirms your seller status.",
+    icon: "approval",
   },
   {
-    number: "04",
-    title: "Submit for review",
+    number: "4",
+    title: "Onboarding",
     description:
-      "Submit your application for review. Your account will show a pending verification status while your application is being reviewed.",
+      "Set up your seller profile and get familiar with your Seller Dashboard.",
+    icon: "onboarding",
   },
   {
-    number: "05",
-    title: "Access your seller tools",
+    number: "5",
+    title: "Sales",
     description:
-      "Once your seller account is approved, you can access the Seller Dashboard and begin creating marketplace listings.",
+      "Create your listings and make your products or services available to buyers.",
+    icon: "sales",
   },
   {
-    number: "06",
-    title: "Create your listings",
+    number: "6",
+    title: "Growth",
     description:
-      "Add your products or services with a clear title, description, price, category, location and relevant images. Keep your listing information accurate and up to date.",
+      "Manage your listings, connect with customers and grow your business.",
+    icon: "growth",
   },
-]
-
-const listingDetails = [
-  "A clear and descriptive title",
-  "An accurate description of the product or service",
-  "Your price and applicable pricing period",
-  "The correct marketplace category",
-  "Your location",
-  "Clear images of the item, where applicable",
 ]
 
 const faqs = [
   {
-    question: "Do I need an account before becoming a seller?",
+    question: "How do I start selling on Yetesikaso?",
     answer:
-      "Yes. You first create a standard Yetesikaso account. After logging in, open your Profile page and select Become a Seller.",
+      "Create an account, complete your seller application and submit your identity details for review. Once approved, you can access your Seller Dashboard and publish listings.",
   },
   {
-    question: "What information is needed for the application?",
+    question: "What information is required to become a seller?",
     answer:
-      "You will be asked for your seller display name, phone number, location, a short bio, your name as shown on your Ghana Card and your Ghana Card number.",
+      "You will need your seller display name, contact details, location, a short description of your business or selling activity, and your Ghana Card name and number.",
   },
   {
-    question: "Can I create listings while my application is pending?",
+    question: "How does seller verification work?",
     answer:
-      "You can prepare listing information, but seller publishing access is subject to your account being approved. Your Seller Dashboard becomes available after approval.",
+      "Your application is reviewed using the information you provide. You can check your verification status from your Profile page. If corrections are needed, you can update your information and resubmit.",
   },
   {
-    question: "What happens if my application is rejected?",
+    question: "Can I sell before my application is approved?",
     answer:
-      "Your profile will show the verification status and the reason provided. You can review the information, make the necessary corrections and resubmit your application.",
-  },
-  {
-    question: "What can I sell on Yetesikaso?",
-    answer:
-      "Yetesikaso supports a range of products and services, including property and land, vehicles, electronics, fashion, home and garden items, business equipment, food and agriculture, education and professional services.",
+      "Seller publishing access is subject to approval. Once your account is approved, you can use the Seller Dashboard to create and manage listings.",
   },
 ]
+
+function StepIcon({ type }: { type: string }) {
+  return (
+    <svg
+      viewBox="0 0 48 48"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-11 w-11"
+      aria-hidden="true"
+    >
+      {type === "application" && (
+        <>
+          <rect x="10" y="7" width="28" height="35" rx="3" />
+          <path d="M17 7V4h14v3M17 18h14M17 25h10M17 32h8" />
+          <path d="m30 33 8-8 3 3-8 8-5 2z" />
+        </>
+      )}
+
+      {type === "verification" && (
+        <>
+          <rect x="5" y="9" width="38" height="30" rx="4" />
+          <circle cx="16" cy="22" r="5" />
+          <path d="M9 33c1-5 13-5 14 0M28 18h9M28 24h9" />
+          <path d="m29 31 3 3 6-7" />
+        </>
+      )}
+
+      {type === "approval" && (
+        <>
+          <path d="M24 4 39 10v13c0 10-6 16-15 21C15 39 9 33 9 23V10z" />
+          <path d="m16 24 6 6 11-12" />
+        </>
+      )}
+
+      {type === "onboarding" && (
+        <>
+          <rect x="6" y="8" width="36" height="27" rx="2" />
+          <path d="M3 40h42M18 35v5M30 35v5" />
+          <path d="M14 17h20M14 23h12M14 29h16" />
+        </>
+      )}
+
+      {type === "sales" && (
+        <>
+          <path d="M10 17h28l-3 25H13z" />
+          <path d="M17 19v-7a7 7 0 0 1 14 0v7" />
+          <path d="m18 29 5 5 8-9" />
+        </>
+      )}
+
+      {type === "growth" && (
+        <>
+          <path d="M7 39V27M17 39V21M27 39V14M37 39V7" />
+          <path d="M5 18 17 10l9 5L41 3" />
+          <path d="M33 3h8v8" />
+        </>
+      )}
+    </svg>
+  )
+}
 
 export default function BecomeASellerPage() {
   return (
@@ -93,275 +152,175 @@ export default function BecomeASellerPage() {
       <Navbar />
 
       <main>
-        {/* HERO */}
-        <section className="border-b border-[var(--border)] bg-[var(--card)] py-16 sm:py-20">
+        {/* LARGE BANNER SLIDER */}
+        <SellerBannerSlider />
+
+        {/* SELLER INTRODUCTION */}
+        <section className="py-20 sm:py-24 lg:py-28">
           <Container>
-            <div className="max-w-3xl">
-              <p className="mb-4 text-sm font-semibold uppercase tracking-wider text-[var(--muted)]">
-                Sell on Yetesikaso
-              </p>
+            <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
+              <div>
+                <p className="mb-5 text-sm font-bold uppercase tracking-[0.16em] text-lime-600 dark:text-lime-400">
+                  Ghana&apos;s online marketplace
+                </p>
 
-              <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-                Reach more customers. Start selling with Yetesikaso.
-              </h1>
+                <h1 className="max-w-xl text-4xl font-bold leading-[1.12] tracking-tight sm:text-5xl lg:text-[56px]">
+                  Grow your business with Yetesikaso.
+                </h1>
 
-              <p className="mt-6 text-lg leading-8 text-[var(--muted)]">
-                Whether you sell products, offer services or run a business,
-                Yetesikaso gives you a place to showcase what you offer and
-                connect with potential customers across Ghana.
-              </p>
+                <p className="mt-6 max-w-xl text-lg leading-8 text-[var(--muted)]">
+                  Join a growing marketplace connecting sellers with
+                  customers across Ghana. Showcase your products and
+                  services, manage your listings and discover new
+                  opportunities to grow.
+                </p>
 
-              <p className="mt-4 leading-7 text-[var(--muted)]">
-                Getting started is straightforward. Create an account,
-                complete your seller application and, once approved, start
-                publishing your listings.
-              </p>
+                <div className="mt-8 flex flex-wrap items-center gap-4">
+                  <Link
+                    href="/register/seller"
+                    className="inline-flex min-h-12 items-center justify-center rounded-xl bg-[var(--primary)] px-8 py-3 text-sm font-bold text-[#111827] transition hover:bg-[var(--primary-dark)]"
+                  >
+                    Become a seller
+                  </Link>
 
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Link
-                  href="/register/seller"
-                  className="rounded-lg bg-[var(--primary)] px-6 py-3 text-sm font-semibold text-white"
-                >
-                  Create an Account
-                </Link>
+                  <Link
+                    href="/login/seller"
+                    className="text-sm font-semibold underline underline-offset-4 transition hover:text-lime-600"
+                  >
+                    Already registered? Log in
+                  </Link>
+                </div>
+              </div>
 
-                <Link
-                  href="/login/seller"
-                  className="rounded-lg border border-[var(--border)] px-6 py-3 text-sm font-semibold"
-                >
-                  Already Registered? Log In
-                </Link>
+              <div className="relative h-[350px] overflow-hidden rounded-2xl sm:h-[450px] lg:h-[490px]">
+                <Image
+                  src="/images/hero/marketplace.jpg"
+                  alt="Explore products and selling opportunities on Yetesikaso"
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="object-cover"
+                />
               </div>
             </div>
           </Container>
         </section>
 
-        {/* BENEFITS */}
-        <section className="py-16 sm:py-20">
-          <Container>
-            <div className="max-w-2xl">
-              <h2 className="text-2xl font-bold sm:text-3xl">
-                Why sell on Yetesikaso?
-              </h2>
+        {/* SIX-STEP SELLER PROCESS */}
+        <section className="bg-[var(--primary)] py-14 text-[#111827] sm:py-16">
+          <div className="mx-auto max-w-[1500px] px-5 sm:px-8">
+            <h2 className="text-center font-serif text-xl font-medium uppercase tracking-wide sm:text-2xl">
+              Start selling online in just a few easy steps
+            </h2>
 
-              <p className="mt-4 leading-7 text-[var(--muted)]">
-                Bring your products and services to a marketplace where
-                customers can discover listings, review information and
-                communicate with sellers.
-              </p>
-            </div>
-
-            <div className="mt-10 grid gap-6 md:grid-cols-3">
-              <div className="rounded-2xl border border-[var(--border)] p-6">
-                <h3 className="text-lg font-semibold">
-                  Showcase what you offer
-                </h3>
-
-                <p className="mt-3 leading-7 text-[var(--muted)]">
-                  Create listings for your products or services and provide
-                  customers with the information they need.
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-[var(--border)] p-6">
-                <h3 className="text-lg font-semibold">
-                  Connect with customers
-                </h3>
-
-                <p className="mt-3 leading-7 text-[var(--muted)]">
-                  Give potential buyers a way to discover your listings and
-                  communicate with you through the marketplace.
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-[var(--border)] p-6">
-                <h3 className="text-lg font-semibold">
-                  Manage your listings
-                </h3>
-
-                <p className="mt-3 leading-7 text-[var(--muted)]">
-                  Use your Seller Dashboard to manage your marketplace
-                  activity and keep your listings up to date.
-                </p>
-              </div>
-            </div>
-          </Container>
-        </section>
-
-        {/* SELLER JOURNEY */}
-        <section className="border-y border-[var(--border)] bg-[var(--card)] py-16 sm:py-20">
-          <Container>
-            <div className="max-w-2xl">
-              <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-[var(--muted)]">
-                Getting started
-              </p>
-
-              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                How to become a seller
-              </h2>
-
-              <p className="mt-4 leading-7 text-[var(--muted)]">
-                Follow these steps to apply, complete verification and start
-                listing on Yetesikaso.
-              </p>
-            </div>
-
-            <div className="mt-10 grid gap-5 md:grid-cols-2">
+            <div className="mt-14 grid grid-cols-2 gap-x-5 gap-y-12 sm:grid-cols-3 lg:grid-cols-6 lg:gap-x-6">
               {sellingSteps.map((step) => (
                 <div
                   key={step.number}
-                  className="rounded-2xl border border-[var(--border)] bg-[var(--background)] p-6 sm:p-7"
+                  className="flex flex-col items-center text-center"
                 >
-                  <p className="text-sm font-bold tracking-wider text-[var(--muted)]">
-                    STEP {step.number}
-                  </p>
+                  <div className="relative flex h-24 w-24 items-center justify-center rounded-full border-2 border-slate-700 bg-white text-slate-800 shadow-sm">
+                    <StepIcon type={step.icon} />
 
-                  <h3 className="mt-3 text-xl font-semibold">
+                    <span className="absolute -left-2 -top-3 flex h-10 w-10 items-center justify-center rounded-full border-2 border-slate-500 bg-slate-700 text-lg font-bold text-white">
+                      {step.number}
+                    </span>
+                  </div>
+
+                  <h3 className="mt-8 font-serif text-[23px] font-medium">
                     {step.title}
                   </h3>
 
-                  <p className="mt-3 leading-7 text-[var(--muted)]">
+                  <p className="mt-5 max-w-[210px] text-sm leading-6">
                     {step.description}
                   </p>
                 </div>
               ))}
             </div>
-          </Container>
-        </section>
-
-        {/* LISTING GUIDANCE */}
-        <section className="py-16 sm:py-20">
-          <Container>
-            <div className="grid gap-10 md:grid-cols-2">
-              <div>
-                <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-[var(--muted)]">
-                  Creating a listing
-                </p>
-
-                <h2 className="text-2xl font-bold sm:text-3xl">
-                  Make your listings clear and informative.
-                </h2>
-
-                <p className="mt-4 leading-7 text-[var(--muted)]">
-                  When creating a listing, provide accurate information so
-                  potential customers can understand exactly what you are
-                  offering.
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 sm:p-8">
-                <h3 className="text-lg font-semibold">
-                  Include the following:
-                </h3>
-
-                <ul className="mt-5 space-y-4">
-                  {listingDetails.map((detail) => (
-                    <li key={detail} className="flex gap-3">
-                      <span
-                        className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-lime-100 text-xs font-bold text-lime-800"
-                        aria-hidden="true"
-                      >
-                        ✓
-                      </span>
-
-                      <span className="leading-6 text-[var(--muted)]">
-                        {detail}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-
-                <p className="mt-6 border-t border-[var(--border)] pt-5 text-sm leading-6 text-[var(--muted)]">
-                  Services do not require a quantity entry. For products,
-                  enter the number of units available.
-                </p>
-              </div>
-            </div>
-          </Container>
-        </section>
-
-        {/* VERIFICATION */}
-        <section className="border-y border-[var(--border)] bg-[var(--card)] py-16 sm:py-20">
-          <Container>
-            <div className="max-w-3xl">
-              <h2 className="text-2xl font-bold sm:text-3xl">
-                Seller verification
-              </h2>
-
-              <p className="mt-4 leading-7 text-[var(--muted)]">
-                Seller applications include identity details for verification.
-                Make sure the name and Ghana Card information you provide are
-                accurate and match your identification.
-              </p>
-
-              <p className="mt-4 leading-7 text-[var(--muted)]">
-                You can check your application status from your Profile page.
-                If further information or corrections are needed, review the
-                feedback shown there before resubmitting.
-              </p>
-            </div>
-          </Container>
+          </div>
         </section>
 
         {/* FAQ */}
-        <section className="py-16 sm:py-20">
+        <section className="py-20 sm:py-24 lg:py-28">
           <Container>
-            <div className="max-w-2xl">
-              <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-[var(--muted)]">
-                Seller help
-              </p>
+            <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
+              <div>
+                <p className="mb-5 text-sm font-bold uppercase tracking-[0.16em] text-lime-600 dark:text-lime-400">
+                  FAQ
+                </p>
 
-              <h2 className="text-3xl font-bold tracking-tight">
-                Frequently asked questions
-              </h2>
-            </div>
+                <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">
+                  Ask us anything.
+                </h2>
 
-            <div className="mt-8 max-w-3xl divide-y divide-[var(--border)] border-y border-[var(--border)]">
-              {faqs.map((faq) => (
-                <div key={faq.question} className="py-6">
-                  <h3 className="text-lg font-semibold">
-                    {faq.question}
-                  </h3>
+                <p className="mt-6 max-w-md text-lg leading-8 text-[var(--muted)]">
+                  Have questions about becoming a seller, verification
+                  or managing your listings? We&apos;re here to help you
+                  get started with confidence.
+                </p>
 
-                  <p className="mt-3 leading-7 text-[var(--muted)]">
-                    {faq.answer}
-                  </p>
-                </div>
-              ))}
+                <Link
+                  href="/support"
+                  className="mt-8 inline-flex min-h-12 items-center justify-center rounded-full bg-[var(--primary)] px-8 text-sm font-bold text-[#111827] transition hover:bg-[var(--primary-dark)]"
+                >
+                  Contact Support
+                </Link>
+              </div>
+
+              <div className="space-y-4">
+                {faqs.map((faq, index) => (
+                  <details
+                    key={faq.question}
+                    open={index === 0}
+                    className="group overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]"
+                  >
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-5 bg-[var(--background)] px-6 py-6 font-semibold marker:hidden [&::-webkit-details-marker]:hidden">
+                      <span>{faq.question}</span>
+
+                      <span
+                        aria-hidden="true"
+                        className="text-2xl font-light text-lime-600 transition-transform group-open:rotate-180"
+                      >
+                        ⌄
+                      </span>
+                    </summary>
+
+                    <div className="border-t border-[var(--border)] px-6 py-6">
+                      <p className="leading-8 text-[var(--muted)]">
+                        {faq.answer}
+                      </p>
+                    </div>
+                  </details>
+                ))}
+              </div>
             </div>
           </Container>
         </section>
 
-        {/* CLOSING CTA */}
-        <section className="border-t border-[var(--border)] bg-[var(--card)] py-16 sm:py-20">
+
+        {/* SELLER CONTACT SECTION */}
+        <section
+          id="seller-support"
+          className="border-t border-[var(--border)] bg-[var(--card)] py-20 sm:py-24 lg:py-28"
+        >
           <Container>
-            <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className="grid items-start gap-12 lg:grid-cols-2 lg:gap-20">
               <div>
-                <h2 className="text-2xl font-bold">
-                  Ready to start selling?
+                <p className="mb-5 text-sm font-bold uppercase tracking-[0.16em] text-lime-600 dark:text-lime-400">
+                  Get in touch
+                </p>
+
+                <h2 className="max-w-lg text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
+                  We&apos;d love to hear from you.
                 </h2>
 
-                <p className="mt-2 leading-7 text-[var(--muted)]">
-                  Create your account and take the first step towards
-                  becoming a Yetesikaso seller.
+                <p className="mt-6 max-w-lg text-lg leading-8 text-[var(--muted)]">
+                  Whether you&apos;re preparing to become a seller,
+                  checking your application or looking for marketplace
+                  assistance, the Yetesikaso team is here to help.
                 </p>
               </div>
 
-              <div className="flex flex-wrap gap-3">
-                <Link
-                  href="/register/seller"
-                  className="rounded-lg bg-[var(--primary)] px-5 py-3 text-sm font-semibold text-white"
-                >
-                  Create an Account
-                </Link>
-
-                <Link
-                  href="/profile"
-                  className="rounded-lg border border-[var(--border)] px-5 py-3 text-sm font-semibold"
-                >
-                  Go to My Profile
-                </Link>
-              </div>
+              <SellerEnquiryForm />
             </div>
           </Container>
         </section>
